@@ -1,0 +1,37 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: Application
+metadata:
+  name: consumer-utdanning-elev
+  labels:
+    app.kubernetes.io/name: consumer-utdanning-elev
+    app.kubernetes.io/instance: consumer-utdanning-elev_rogfk_no
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: consumer
+    app.kubernetes.io/part-of: utdanning-elev
+    fintlabs.no/team: flais
+spec:
+  port: 80
+  orgId: rogfk.no
+  image: docker/getting-started
+  env:
+    - name: ENV1
+      value: test
+    - name: ENV2
+      value: test
+#  envFrom:
+#    - secretRef:
+#        name: namerator
+#    - configMapRef:
+#        name: test
+  resources:
+    limits:
+      memory: "1024Mi"
+      cpu: "1"
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+  restartPolicy: Always
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }

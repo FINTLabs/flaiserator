@@ -1,0 +1,39 @@
+plugins {
+    id 'org.springframework.boot' version '2.7.3'
+    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id 'java'
+}
+
+group = 'no.fintlabs'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    annotationProcessor "io.javaoperatorsdk:operator-framework:3.2.0"
+    implementation "io.javaoperatorsdk:operator-framework-spring-boot-starter:3.2.0"
+    annotationProcessor 'io.fabric8:crd-generator-apt:6.1.1'
+
+    compileOnly 'org.projectlombok:lombok'
+
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
