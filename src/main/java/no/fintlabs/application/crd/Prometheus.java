@@ -1,4 +1,4 @@
-package no.fintlabs.operator.crd;
+package no.fintlabs.application.crd;
 
 import lombok.*;
 
