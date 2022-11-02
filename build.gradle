@@ -1,7 +1,8 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.3'
-    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id 'org.springframework.boot' version '2.7.5'
+    id 'io.spring.dependency-management' version '1.1.0'
     id 'java'
+    id 'groovy'
 }
 
 group = 'no.fintlabs'
@@ -16,14 +17,21 @@ configurations {
 
 repositories {
     mavenCentral()
+    repositories {
+        maven {
+            url "https://repo.fintlabs.no/releases"
+        }
+    }
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-    annotationProcessor "io.javaoperatorsdk:operator-framework:3.2.0"
-    implementation "io.javaoperatorsdk:operator-framework-spring-boot-starter:3.2.0"
-    annotationProcessor 'io.fabric8:crd-generator-apt:6.1.1'
+    //annotationProcessor "io.javaoperatorsdk:operator-framework:3.2.0"
+    annotationProcessor 'io.fabric8:crd-generator-apt:6.2.0'
+
+    implementation 'no.fintlabs:flais-operator-starter:1.0.0-rc-3'
+
 
     compileOnly 'org.projectlombok:lombok'
 
@@ -31,6 +39,9 @@ dependencies {
 
     annotationProcessor 'org.projectlombok:lombok'
 
+    testImplementation 'cglib:cglib-nodep:3.3.0'
+    testImplementation 'org.spockframework:spock-spring:2.3-groovy-3.0'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

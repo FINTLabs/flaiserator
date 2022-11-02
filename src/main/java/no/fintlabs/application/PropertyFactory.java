@@ -1,8 +1,8 @@
-package no.fintlabs.operator;
+package no.fintlabs.application;
 
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.EnvVarBuilder;
-import no.fintlabs.operator.crd.FlaisApplicationCrd;
+import no.fintlabs.application.crd.FlaisApplicationCrd;
 
 import java.util.ArrayList;
 import java.util.List;

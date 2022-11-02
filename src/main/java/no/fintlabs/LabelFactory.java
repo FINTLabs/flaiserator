@@ -1,6 +1,6 @@
-package no.fintlabs.operator;
+package no.fintlabs;
 
-import no.fintlabs.operator.crd.FlaisApplicationCrd;
+import no.fintlabs.application.crd.FlaisApplicationCrd;
 
 import java.util.HashMap;
 import java.util.Map;
