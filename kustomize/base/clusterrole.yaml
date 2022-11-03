@@ -1,0 +1,45 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: flaiserator
+  labels:
+    app.kubernetes.io/name: flaiserator
+    app.kubernetes.io/instance: flais-flaiserator
+    app.kubernetes.io/version: "latest"
+    app.kubernetes.io/managed-by: GA
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
+    fintlabs.no/team: flais
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: 
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - fintlabs.no
+    resources:
+      - "*"
+#      - namoauthclientapplicationresources
+#      - namoauthclientapplicationresources/finalizers
+#      - namoauthclientapplicationresources/status
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - patch
+      - update

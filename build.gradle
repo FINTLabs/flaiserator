@@ -50,3 +50,16 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.register('copyResourceDefinition', Copy) {
+    from "$buildDir/classes/java/main/META-INF/fabric8/applications.fintlabs.no-v1.yml"
+    into "$projectDir/kustomize/base"
+}
+
+tasks.named("build") { finalizedBy("copyResourceDefinition") }
+
+tasks.named("clean") {
+    doLast {
+        project.delete("$projectDir/kustomize/base/applications.fintlabs.no-v1.yml")
+    }
+}
