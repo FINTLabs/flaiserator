@@ -13,10 +13,16 @@ spec:
   port: 80
   orgId: rogfk.no
   image: docker/getting-started
+  prometheus:
+    enabled: true
+    port: "80"
+    path: /prometheus
   env:
     - name: ENV1
       value: test
     - name: ENV2
+      value: test
+    - name: ENV3
       value: test
 #  envFrom:
 #    - secretRef:
