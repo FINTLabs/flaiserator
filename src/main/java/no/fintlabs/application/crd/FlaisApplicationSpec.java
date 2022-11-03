@@ -5,7 +5,10 @@ import io.fabric8.kubernetes.api.model.EnvFromSource;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import no.fintlabs.FlaisSpec;
 
 import java.util.ArrayList;
@@ -13,7 +16,6 @@ import java.util.List;
 
 @Getter
 @Setter
-//@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class FlaisApplicationSpec implements FlaisSpec {
@@ -24,14 +26,14 @@ public class FlaisApplicationSpec implements FlaisSpec {
     @JsonPropertyDescription("")
     private List<EnvVar> env = new ArrayList<>();
 
-    @JsonPropertyDescription("")
+    @JsonPropertyDescription("Same as envFrom in a Deployment.apps")
     private List<EnvFromSource> envFrom = new ArrayList<>();
 
 
-    @JsonPropertyDescription("")
+    @JsonPropertyDescription("Same as image in Deployment.apps")
     private String image;
 
-    @JsonPropertyDescription("")
+    @JsonPropertyDescription("Same as replicas in Deployment.apps")
     private Integer replicas;
 
     @JsonPropertyDescription("")
