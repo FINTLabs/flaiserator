@@ -23,10 +23,11 @@ public class Prometheus {
     public  Map<String, String> getPrometheusAnnotations() {
         Map<String, String> annotations = new HashMap<>();
 
-        annotations.put("prometheus.io/scrape", String.valueOf(enabled));
-        annotations.put("prometheus.io/port", port);
-        annotations.put("prometheus.io/path", path);
-
+        if (enabled) {
+            annotations.put("prometheus.io/scrape", String.valueOf(enabled));
+            annotations.put("prometheus.io/port", port);
+            annotations.put("prometheus.io/path", path);
+        }
         return annotations;
     }
 }

@@ -8,11 +8,12 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
 import lombok.*;
 import no.fintlabs.FlaisSpec;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-@Builder
+//@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class FlaisApplicationSpec implements FlaisSpec {
@@ -21,10 +22,10 @@ public class FlaisApplicationSpec implements FlaisSpec {
     private String orgId;
 
     @JsonPropertyDescription("")
-    private List<EnvVar> env;
+    private List<EnvVar> env = new ArrayList<>();
 
     @JsonPropertyDescription("")
-    private List<EnvFromSource> envFrom;
+    private List<EnvFromSource> envFrom = new ArrayList<>();
 
 
     @JsonPropertyDescription("")
@@ -37,17 +38,18 @@ public class FlaisApplicationSpec implements FlaisSpec {
     private ResourceRequirements resources;
 
     @JsonPropertyDescription("")
-    @Builder.Default
+    //@Builder.Default
     private Integer port = 8080;
 
     @JsonPropertyDescription("")
-    @Builder.Default
+    //@Builder.Default
     private String restartPolicy = "Always";
 
     @JsonPropertyDescription("")
     private DeploymentStrategy strategy;
 
     @JsonPropertyDescription("")
-    private Prometheus prometheus;
+    //@Builder.Default
+    private Prometheus prometheus = new Prometheus();
 
 }

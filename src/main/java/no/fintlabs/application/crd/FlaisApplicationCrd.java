@@ -10,4 +10,9 @@ import no.fintlabs.FlaisCrd;
 @Version("v1alpha1")
 @Kind("Application")
 public class FlaisApplicationCrd extends FlaisCrd<FlaisApplicationSpec> implements Namespaced {
+
+    @Override
+    protected FlaisApplicationSpec initSpec() {
+        return new FlaisApplicationSpec();
+    }
 }

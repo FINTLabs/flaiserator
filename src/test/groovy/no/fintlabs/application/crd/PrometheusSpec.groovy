@@ -3,16 +3,15 @@ package no.fintlabs.application.crd
 import spock.lang.Specification
 
 class PrometheusSpec extends Specification {
-    def "Creating a prometheus object with default values only shold contain 3 annotations and scraping should be turned of"() {
+    def "Creating a prometheus object with default values only should contain 0 annotations"() {
         given:
-        def prometheus = Prometheus.builder().build()
+        def prometheus = new Prometheus()
 
         when:
         def annotations = prometheus.getPrometheusAnnotations()
 
         then:
-        annotations.size() == 3
-        annotations.get("prometheus.io/scrape") == "false"
+        annotations.size() == 0
     }
 
     def "Creating a prometheus object with custom values the values should be reflected in the annotations"() {
