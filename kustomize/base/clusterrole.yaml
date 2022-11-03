@@ -37,9 +37,6 @@ rules:
       - fintlabs.no
     resources:
       - "*"
-#      - namoauthclientapplicationresources
-#      - namoauthclientapplicationresources/finalizers
-#      - namoauthclientapplicationresources/status
     verbs:
       - get
       - list
