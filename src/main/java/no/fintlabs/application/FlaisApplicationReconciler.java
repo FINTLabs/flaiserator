@@ -15,7 +15,7 @@ import java.util.List;
 @Slf4j
 @Component
 @ControllerConfiguration(
-        generationAwareEventProcessing = false
+        generationAwareEventProcessing = true
 )
 public class FlaisApplicationReconciler extends FlaisReconiler<FlaisApplicationCrd, FlaisApplicationSpec> {
     public FlaisApplicationReconciler(FlaisWorkflow<FlaisApplicationCrd, FlaisApplicationSpec> workflow, List<? extends EventSourceProvider<FlaisApplicationCrd>> eventSourceProviders, List<? extends Deleter<FlaisApplicationCrd>> deleters) {

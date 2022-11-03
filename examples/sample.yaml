@@ -1,14 +1,14 @@
 apiVersion: fintlabs.no/v1alpha1
 kind: Application
 metadata:
-  name: consumer-utdanning-elev
+  name: flais-test-application
   namespace: frode
   labels:
-    app.kubernetes.io/name: consumer-utdanning-elev
-    app.kubernetes.io/instance: consumer-utdanning-elev_rogfk_no
+    app.kubernetes.io/name: flais-test-application
+    app.kubernetes.io/instance: flais-test-application_rogfk_no
     app.kubernetes.io/version: latest
-    app.kubernetes.io/component: consumer
-    app.kubernetes.io/part-of: utdanning-elev
+    app.kubernetes.io/component: test-application
+    app.kubernetes.io/part-of: flais
     fintlabs.no/team: flais
 spec:
   port: 80
@@ -25,9 +25,9 @@ spec:
       value: test
     - name: ENV3
       value: test
-#  envFrom:
-#    - secretRef:
-#        name: namerator
+  envFrom:
+    - secretRef:
+        name: flais-test-application-secret
 #    - configMapRef:
 #        name: test
   resources:
@@ -42,3 +42,19 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: flais-test-application-secret
+  namespace: frode
+  labels:
+    app.kubernetes.io/name: flais-test-application
+    app.kubernetes.io/instance: flais-test-application_rogfk_no
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: test-application
+    app.kubernetes.io/part-of: flais
+    fintlabs.no/team: flais
+stringData:
+  username: admin
+  password: t0p-Secret
