@@ -2,6 +2,7 @@ apiVersion: fintlabs.no/v1alpha1
 kind: Application
 metadata:
   name: consumer-utdanning-elev
+  namespace: frode
   labels:
     app.kubernetes.io/name: consumer-utdanning-elev
     app.kubernetes.io/instance: consumer-utdanning-elev_rogfk_no

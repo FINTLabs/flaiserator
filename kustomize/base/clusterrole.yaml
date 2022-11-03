@@ -11,8 +11,13 @@ metadata:
     app.kubernetes.io/part-of: fintlabs-application-infrastructure-services
     fintlabs.no/team: flais
 rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
+  - apiGroups:
+      - ""
+      - "apps"
+    resources:
+      - secrets
+      - deployments
+      - services
     verbs: 
       - create
       - delete
