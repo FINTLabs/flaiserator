@@ -38,9 +38,6 @@ spec:
           env:
             - name: logging.level.no.fintlabs
               value: DEBUG
-          envFrom:
-            - secretRef:
-                name: flaiserator
           ports:
             - name: http
               containerPort: 8080
