@@ -28,8 +28,8 @@ spec:
   envFrom:
     - secretRef:
         name: flais-test-application-secret
-#    - configMapRef:
-#        name: test
+  onePassword:
+    itemPath: "vaults/aks-alpha-vault/items/azurerator"
   resources:
     limits:
       memory: "1024Mi"

@@ -143,6 +143,11 @@ spec:
                   port:
                     type: string
                 type: object
+              onePassword:
+                properties:
+                  itemPath:
+                    type: string
+                type: object
             type: object
           status:
             properties:

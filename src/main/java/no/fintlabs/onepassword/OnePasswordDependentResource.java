@@ -1,20 +1,21 @@
 package no.fintlabs.onepassword;
 
-import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
-import io.fabric8.kubernetes.api.model.GenericKubernetesResourceList;
-import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
-import io.fabric8.kubernetes.client.dsl.Resource;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import no.fintlabs.FlaisKubernetesDependentResource;
 import no.fintlabs.FlaisWorkflow;
 import no.fintlabs.LabelFactory;
+import no.fintlabs.application.FlaisApplicationWorkflow;
 import no.fintlabs.application.crd.FlaisApplicationCrd;
 import no.fintlabs.application.crd.FlaisApplicationSpec;
+import org.springframework.stereotype.Component;
 
-public class OnePasswordDependentResource extends FlaisKubernetesDependentResource<OnePasswordCrd, FlaisApplicationCrd, FlaisApplicationSpec> {
-    public OnePasswordDependentResource(FlaisWorkflow<FlaisApplicationCrd, FlaisApplicationSpec> workflow, KubernetesClient kubernetesClient) {
+@Component
+@KubernetesDependent(labelSelector = "app.kubernetes.io/managed-by=flaiserator")
+public class OnePasswordDependentResource
+        extends FlaisKubernetesDependentResource<OnePasswordCrd, FlaisApplicationCrd, FlaisApplicationSpec> {
+    public OnePasswordDependentResource(FlaisApplicationWorkflow workflow, KubernetesClient kubernetesClient) {
         super(OnePasswordCrd.class, workflow, kubernetesClient);
     }
 
@@ -22,9 +23,6 @@ public class OnePasswordDependentResource extends FlaisKubernetesDependentResour
     @Override
     protected OnePasswordCrd desired(FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
 
-//        primary.getSpec().getOnePassword().getItemPaths().forEach(itemPath -> {
-//
-//        });
         OnePasswordCrd onePasswordCrd = new OnePasswordCrd();
         onePasswordCrd.getMetadata().setLabels(LabelFactory.updateRecommendedLabels(primary));
         onePasswordCrd.getMetadata().setName(primary.getMetadata().getName());
