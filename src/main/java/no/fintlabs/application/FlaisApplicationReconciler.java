@@ -2,6 +2,7 @@ package no.fintlabs.application;
 
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Deleter;
+import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.EventSourceProvider;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.FlaisReconiler;
@@ -18,7 +19,10 @@ import java.util.List;
         generationAwareEventProcessing = true
 )
 public class FlaisApplicationReconciler extends FlaisReconiler<FlaisApplicationCrd, FlaisApplicationSpec> {
-    public FlaisApplicationReconciler(FlaisWorkflow<FlaisApplicationCrd, FlaisApplicationSpec> workflow, List<? extends EventSourceProvider<FlaisApplicationCrd>> eventSourceProviders, List<? extends Deleter<FlaisApplicationCrd>> deleters) {
+    public FlaisApplicationReconciler(FlaisWorkflow<FlaisApplicationCrd,
+            FlaisApplicationSpec> workflow,
+                                      List<? extends DependentResource<?,FlaisApplicationCrd>> eventSourceProviders,
+                                      List<? extends Deleter<FlaisApplicationCrd>> deleters) {
         super(workflow, eventSourceProviders, deleters);
     }
 }
