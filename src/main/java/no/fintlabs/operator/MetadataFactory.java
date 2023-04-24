@@ -1,9 +1,8 @@
-package no.fintlabs;
+package no.fintlabs.operator;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
-import no.fintlabs.application.crd.FlaisApplicationCrd;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +12,7 @@ public class MetadataFactory {
         return new ObjectMetaBuilder()
                 .withName(resource.getMetadata().getName())
                 .withNamespace(resource.getMetadata().getNamespace())
-                .withLabels(LabelFactory.updateRecommendedLabels(resource))
+                .withLabels(LabelFactory.recommendedLabels(resource))
                 .build();
     }
 

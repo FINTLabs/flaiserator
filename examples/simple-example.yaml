@@ -10,14 +10,15 @@ metadata:
     app.kubernetes.io/component: test-application
     app.kubernetes.io/part-of: flais
     fintlabs.no/team: flais
+    fintlabs.no/org-id: fintlabs.no
 spec:
   port: 80
   orgId: rogfk.no
   image: docker/getting-started
   prometheus:
     enabled: true
-    port: "80"
-    path: /prometheus
+#    port: "80"
+#    path: /prometheus
   env:
     - name: ENV1
       value: test
@@ -25,15 +26,15 @@ spec:
       value: test
     - name: ENV3
       value: test
-  envFrom:
-    - secretRef:
-        name: flais-test-application-secret
+#  envFrom:
+#    - secretRef:
+#        name: flais-test-application-secret
   onePassword:
     itemPath: "vaults/aks-alpha-vault/items/azurerator"
   resources:
     limits:
       memory: "1024Mi"
-      cpu: "1"
+      cpu: "100m"
     requests:
       memory: "128Mi"
       cpu: "100m"

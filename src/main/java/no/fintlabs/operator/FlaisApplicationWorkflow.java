@@ -1,8 +1,6 @@
-package no.fintlabs.application;
+package no.fintlabs.operator;
 
 import no.fintlabs.FlaisWorkflow;
-import no.fintlabs.application.crd.FlaisApplicationCrd;
-import no.fintlabs.application.crd.FlaisApplicationSpec;
 import org.springframework.stereotype.Component;
 
 @Component

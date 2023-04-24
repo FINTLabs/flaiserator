@@ -1,4 +1,4 @@
-package no.fintlabs.application;
+package no.fintlabs.operator.deployment;
 
 import io.fabric8.kubernetes.api.model.PodSpec;
 import io.fabric8.kubernetes.api.model.PodSpecBuilder;
@@ -11,27 +11,37 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentSpecBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResourceConfig;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.FlaisKubernetesDependentResource;
-import no.fintlabs.LabelFactory;
-import no.fintlabs.MetadataFactory;
-import no.fintlabs.application.crd.FlaisApplicationCrd;
-import no.fintlabs.application.crd.FlaisApplicationSpec;
+import no.fintlabs.operator.*;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
-@KubernetesDependent(labelSelector = "app.kubernetes.io/managed-by=flaiserator")
+@KubernetesDependent
 public class DeploymentDependentResource
         extends FlaisKubernetesDependentResource<Deployment, FlaisApplicationCrd, FlaisApplicationSpec> {
 
     private final MetadataFactory metadataFactory;
+    private final EnvFromFactory envFromFactory;
 
-    public DeploymentDependentResource(FlaisApplicationWorkflow workflow, KubernetesClient kubernetesClient, MetadataFactory metadataFactory) {
+    public DeploymentDependentResource(FlaisApplicationWorkflow workflow,
+                                       KubernetesClient kubernetesClient,
+                                       MetadataFactory metadataFactory,
+                                       List<FlaisKubernetesDependentResource<?, FlaisApplicationCrd, FlaisApplicationSpec>> dependentResourcesWithSecret) {
 
         super(Deployment.class, workflow, kubernetesClient);
 
         this.metadataFactory = metadataFactory;
+        this.envFromFactory = new EnvFromFactory(dependentResourcesWithSecret);
+
+        configureWith(
+                new KubernetesDependentResourceConfig<Deployment>()
+                        .setLabelSelector("app.kubernetes.io/managed-by=flaiserator")
+        );
     }
 
     @Override
@@ -47,7 +57,7 @@ public class DeploymentDependentResource
                 .withContainerPort(resource.getSpec().getPort())
                 .endPort()
                 .withEnv(resource.getSpec().getEnv())
-                .withEnvFrom(resource.getSpec().getEnvFrom())
+                .withEnvFrom(envFromFactory.getEnvFrom(resource))
                 .endContainer()
                 .build();
 
@@ -60,7 +70,7 @@ public class DeploymentDependentResource
                 .withReplicas(resource.getSpec().getReplicas())
                 .withStrategy(resource.getSpec().getStrategy())
                 .withNewSelector()
-                .withMatchLabels(LabelFactory.createMatchLabels(resource))
+                .withMatchLabels(LabelFactory.recommendedLabels(resource))
                 .endSelector()
                 .withTemplate(podTemplateSpec)
                 .build();
@@ -71,7 +81,7 @@ public class DeploymentDependentResource
                 .withSpec(deploymentSpec)
                 .build();
 
-        deployment.getSpec().getTemplate().getSpec().getContainers().forEach(container -> container.getEnv().addAll(PropertyFactory.getStandardSpringBootProperties(resource)));
+        deployment.getSpec().getTemplate().getSpec().getContainers().forEach(container -> container.getEnv().addAll(PropertyFactory.standardProperties(resource)));
         return deployment;
     }
 }

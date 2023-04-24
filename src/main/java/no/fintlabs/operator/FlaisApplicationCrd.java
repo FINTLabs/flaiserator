@@ -1,4 +1,4 @@
-package no.fintlabs.application.crd;
+package no.fintlabs.operator;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.model.annotation.Group;

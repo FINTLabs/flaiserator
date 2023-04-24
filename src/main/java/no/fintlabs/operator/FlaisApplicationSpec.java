@@ -1,4 +1,4 @@
-package no.fintlabs.application.crd;
+package no.fintlabs.operator;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import io.fabric8.kubernetes.api.model.EnvFromSource;
@@ -7,14 +7,13 @@ import io.fabric8.kubernetes.api.model.ResourceRequirements;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
 import lombok.*;
 import no.fintlabs.FlaisSpec;
-import no.fintlabs.onepassword.OnePassword;
+import no.fintlabs.operator.onepassword.OnePassword;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
-//@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class FlaisApplicationSpec implements FlaisSpec {

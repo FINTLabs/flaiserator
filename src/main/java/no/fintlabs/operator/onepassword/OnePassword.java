@@ -1,9 +1,6 @@
-package no.fintlabs.onepassword;
+package no.fintlabs.operator.onepassword;
 
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class OnePassword {

@@ -1,4 +1,4 @@
-package no.fintlabs.onepassword;
+package no.fintlabs.operator.onepassword;
 
 import io.fabric8.kubernetes.api.model.Namespaced;
 import io.fabric8.kubernetes.client.CustomResource;

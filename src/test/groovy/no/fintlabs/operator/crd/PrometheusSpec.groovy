@@ -1,5 +1,6 @@
-package no.fintlabs.application.crd
+package no.fintlabs.operator.crd
 
+import no.fintlabs.operator.Prometheus
 import spock.lang.Specification
 
 class PrometheusSpec extends Specification {

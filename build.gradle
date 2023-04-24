@@ -28,9 +28,10 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-    annotationProcessor 'io.fabric8:crd-generator-apt:6.2.0'
+    annotationProcessor 'io.fabric8:crd-generator-apt:6.5.1'
 
-    implementation 'no.fintlabs:flais-operator-starter:1.0.0-rc-5'
+    implementation 'no.fintlabs:flais-operator-starter:1.0.0-rc-11'
+    //implementation 'no.fintlabs:flais-operator-starter:0-SNAPSHOT'
 
     compileOnly 'org.projectlombok:lombok'
 
