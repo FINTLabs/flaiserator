@@ -52,6 +52,7 @@ public class DeploymentDependentResource
                 .addNewContainer()
                 .withName(resource.getMetadata().getName())
                 .withImage(resource.getSpec().getImage())
+                .withImagePullPolicy(resource.getSpec().getImagePullPolicy())
                 .withResources(resource.getSpec().getResources())
                 .addNewPort()
                 .withContainerPort(resource.getSpec().getPort())
@@ -62,7 +63,7 @@ public class DeploymentDependentResource
                 .build();
 
         PodTemplateSpec podTemplateSpec = new PodTemplateSpecBuilder()
-                .withMetadata(metadataFactory.createObjectMetadataWithPrometheus(resource))
+                .withMetadata(metadataFactory.metadataWithPrometheus(resource))
                 .withSpec(podSpec)
                 .build();
 
@@ -77,11 +78,12 @@ public class DeploymentDependentResource
 
         log.info("Creating desired deployment...");
         Deployment deployment = new DeploymentBuilder()
-                .withMetadata(metadataFactory.createObjectMetadata(resource))
+                .withMetadata(metadataFactory.metadata(resource))
                 .withSpec(deploymentSpec)
                 .build();
 
         deployment.getSpec().getTemplate().getSpec().getContainers().forEach(container -> container.getEnv().addAll(PropertyFactory.standardProperties(resource)));
+
         return deployment;
     }
 }

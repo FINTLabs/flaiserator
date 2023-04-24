@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MetadataFactory {
 
-    public ObjectMeta createObjectMetadata(HasMetadata resource) {
+    public ObjectMeta metadata(HasMetadata resource) {
         return new ObjectMetaBuilder()
                 .withName(resource.getMetadata().getName())
                 .withNamespace(resource.getMetadata().getNamespace())
@@ -16,8 +16,8 @@ public class MetadataFactory {
                 .build();
     }
 
-    public ObjectMeta createObjectMetadataWithPrometheus(FlaisApplicationCrd crd) {
-        ObjectMeta objectMetadata = createObjectMetadata(crd);
+    public ObjectMeta metadataWithPrometheus(FlaisApplicationCrd crd) {
+        ObjectMeta objectMetadata = metadata(crd);
         objectMetadata.getAnnotations().putAll(crd.getSpec().getPrometheus().getPrometheusAnnotations());
 
         return objectMetadata;

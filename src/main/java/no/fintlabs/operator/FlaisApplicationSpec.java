@@ -1,15 +1,17 @@
 package no.fintlabs.operator;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import io.fabric8.kubernetes.api.model.EnvFromSource;
-import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.ResourceRequirements;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import no.fintlabs.FlaisSpec;
 import no.fintlabs.operator.onepassword.OnePassword;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Getter
@@ -26,10 +28,20 @@ public class FlaisApplicationSpec implements FlaisSpec {
     private List<EnvFromSource> envFrom = new ArrayList<>();
 
     private String image;
+    private String imagePullPolicy = "IfNotPresent";
 
-    private Integer replicas;
+    private Integer replicas = 1;
 
-    private ResourceRequirements resources;
+    private ResourceRequirements resources = new ResourceRequirementsBuilder()
+            .withRequests(new HashMap<>() {{
+                put("cpu", new Quantity("250m"));
+                put("memory", new Quantity("256"));
+            }})
+            .withLimits(new HashMap<>() {{
+                put("cpu", new Quantity("500m"));
+                put("memory", new Quantity("512Mi"));
+            }})
+            .build();
 
     private Integer port = 8080;
 

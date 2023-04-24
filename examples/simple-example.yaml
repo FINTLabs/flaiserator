@@ -2,7 +2,7 @@ apiVersion: fintlabs.no/v1alpha1
 kind: Application
 metadata:
   name: flais-test-application
-  namespace: frode
+  namespace: test
   labels:
     app.kubernetes.io/name: flais-test-application
     app.kubernetes.io/instance: flais-test-application_rogfk_no
@@ -12,13 +12,13 @@ metadata:
     fintlabs.no/team: flais
     fintlabs.no/org-id: fintlabs.no
 spec:
-  port: 80
+  port: 8080
   orgId: rogfk.no
   image: docker/getting-started
-  prometheus:
-    enabled: true
-#    port: "80"
-#    path: /prometheus
+#  prometheus:
+#    enabled: true
+##    port: "80"
+##    path: /prometheus
   env:
     - name: ENV1
       value: test
@@ -31,16 +31,16 @@ spec:
 #        name: flais-test-application-secret
   onePassword:
     itemPath: "vaults/aks-alpha-vault/items/azurerator"
-  resources:
-    limits:
-      memory: "1024Mi"
-      cpu: "100m"
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-  restartPolicy: Always
-  replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+#  resources:
+#    limits:
+#      memory: "1024Mi"
+#      cpu: "100m"
+#    requests:
+#      memory: "128Mi"
+#      cpu: "100m"
+#  restartPolicy: Always
+#  replicas: 2
+#  strategy:
+#    type: RollingUpdate
+#    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
 
