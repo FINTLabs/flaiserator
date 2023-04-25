@@ -4,9 +4,22 @@ import no.fintlabs.operator.Prometheus
 import spock.lang.Specification
 
 class PrometheusSpec extends Specification {
-    def "Creating a prometheus object with default values only should contain 0 annotations"() {
+    def "Creating a prometheus object with default values should contain 3 annotations"() {
         given:
         def prometheus = new Prometheus()
+
+        when:
+        def annotations = prometheus.getPrometheusAnnotations()
+
+        then:
+        annotations.size() == 3
+    }
+
+    def "Creating a prometheus object with enabled = false should contain 0 annotations"() {
+        given:
+        def prometheus = Prometheus.builder()
+                .enabled(false)
+                .build()
 
         when:
         def annotations = prometheus.getPrometheusAnnotations()
@@ -18,9 +31,9 @@ class PrometheusSpec extends Specification {
     def "Creating a prometheus object with custom values the values should be reflected in the annotations"() {
         given:
         def prometheus = Prometheus.builder()
-        .enabled(true)
-        .path("/path")
-        .port("80")
+                .enabled(true)
+                .path("/path")
+                .port("80")
                 .build()
 
         when:

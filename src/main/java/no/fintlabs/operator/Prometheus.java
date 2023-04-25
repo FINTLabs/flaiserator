@@ -12,6 +12,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class Prometheus {
 
+    @Builder.Default
     private boolean enabled = true;
 
     @Builder.Default
