@@ -27,9 +27,9 @@ spec:
       value: test
     - name: ENV3
       value: test
-  envFrom:
-    - secretRef:
-        name: flais-test-application-secret
+#  envFrom:
+#    - secretRef:
+#        name: flais-test-application-secret
   onePassword:
     itemPath: "vaults/aks-alpha-vault/items/azurerator"
   kafka:
@@ -40,7 +40,12 @@ spec:
       - topic: '*.test2.topic'
         permission: admin
   database:
-    enabled: false
+    enabled: true
+  url:
+    hostname: test.flais.io
+    basePath: /alpha/fintlabs-no
+  ingress:
+    enabled: true
   resources:
     limits:
       memory: "1024Mi"
