@@ -10,6 +10,7 @@ import lombok.Setter;
 import no.fintlabs.FlaisSpec;
 import no.fintlabs.operator.kafka.Kafka;
 import no.fintlabs.operator.onepassword.OnePassword;
+import no.fintlabs.operator.pg.Database;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,5 +56,7 @@ public class FlaisApplicationSpec implements FlaisSpec {
     private OnePassword onePassword = new OnePassword();
 
     private Kafka kafka = new Kafka();
+
+    private Database database = new Database();
 
 }

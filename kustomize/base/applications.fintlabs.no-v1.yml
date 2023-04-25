@@ -171,6 +171,11 @@ spec:
                       type: object
                     type: array
                 type: object
+              database:
+                properties:
+                  enabled:
+                    type: boolean
+                type: object
             type: object
           status:
             properties:

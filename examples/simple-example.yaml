@@ -39,6 +39,8 @@ spec:
         permission: read
       - topic: '*.test2.topic'
         permission: admin
+  database:
+    enabled: false
   resources:
     limits:
       memory: "1024Mi"
