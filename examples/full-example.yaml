@@ -30,12 +30,11 @@ spec:
         name: flais-test-application-secret
   onePassword:
     itemPath: "vaults/aks-alpha-vault/items/azurerator"
-  persistence:
-    storage:
-      container-blob: true
-      file-share: true
-    database:
-      name: fint_flyt_integration_service
+  storage:
+    container-blob: true
+    file-share: true
+  database:
+    enabled: true
   auth:
     application:
       enabled: true
