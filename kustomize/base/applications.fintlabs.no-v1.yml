@@ -157,6 +157,20 @@ spec:
                   itemPath:
                     type: string
                 type: object
+              kafka:
+                properties:
+                  enabled:
+                    type: boolean
+                  acls:
+                    items:
+                      properties:
+                        topic:
+                          type: string
+                        permission:
+                          type: string
+                      type: object
+                    type: array
+                type: object
             type: object
           status:
             properties:

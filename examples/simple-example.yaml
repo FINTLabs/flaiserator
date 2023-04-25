@@ -32,6 +32,13 @@ spec:
         name: flais-test-application-secret
   onePassword:
     itemPath: "vaults/aks-alpha-vault/items/azurerator"
+  kafka:
+    enabled: true
+    acls:
+      - topic: '*.test.topic'
+        permission: read
+      - topic: '*.test2.topic'
+        permission: admin
   resources:
     limits:
       memory: "1024Mi"
