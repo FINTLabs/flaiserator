@@ -63,5 +63,4 @@ public class FlaisApplicationSpec implements FlaisSpec {
     private Url url = new Url();
 
     private Ingress ingress = new Ingress();
-
 }

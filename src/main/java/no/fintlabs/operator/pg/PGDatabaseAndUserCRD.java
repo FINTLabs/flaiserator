@@ -10,5 +10,6 @@ import no.fintlabs.FlaisCrd;
 @Version("v1alpha1")
 @Kind("PGDatabaseAndUser")
 public class PGDatabaseAndUserCRD extends FlaisCrd<PGDatabaseAndUserSpec> implements Namespaced {
+
 }
 
