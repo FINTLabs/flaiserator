@@ -35,6 +35,7 @@ rules:
       - list
   - apiGroups:
       - fintlabs.no
+      - onepassword.com
     resources:
       - "*"
     verbs:

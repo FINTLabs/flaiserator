@@ -12,7 +12,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class Prometheus {
 
-    private boolean enabled;
+    private boolean enabled = true;
 
     @Builder.Default
     private String path = "/actuator/prometheus";
