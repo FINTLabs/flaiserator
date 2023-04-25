@@ -33,7 +33,7 @@ public class KafkaDependentResource
 
         KafkaUserAndAclCrd kafkaUserAndAclCrd = new KafkaUserAndAclCrd();
         kafkaUserAndAclCrd.getMetadata().setLabels(LabelFactory.recommendedLabels(primary));
-        kafkaUserAndAclCrd.getMetadata().setName(getSecretName(primary));
+        kafkaUserAndAclCrd.getMetadata().setName(primary.getMetadata().getName());
         kafkaUserAndAclCrd.getMetadata().setNamespace(primary.getMetadata().getNamespace());
         kafkaUserAndAclCrd.getSpec().setAcls(primary.getSpec().getKafka().getAcls());
 

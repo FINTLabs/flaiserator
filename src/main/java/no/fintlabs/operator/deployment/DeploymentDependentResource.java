@@ -57,7 +57,7 @@ public class DeploymentDependentResource
                 .addNewPort()
                 .withContainerPort(resource.getSpec().getPort())
                 .endPort()
-                .withEnv(resource.getSpec().getEnv())
+                .withEnv(envFromFactory.envs(resource))
                 .withEnvFrom(envFromFactory.getEnvFrom(resource))
                 .endContainer()
                 .build();

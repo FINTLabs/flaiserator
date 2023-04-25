@@ -176,6 +176,18 @@ spec:
                   enabled:
                     type: boolean
                 type: object
+              url:
+                properties:
+                  hostname:
+                    type: string
+                  basePath:
+                    type: string
+                type: object
+              ingress:
+                properties:
+                  enabled:
+                    type: boolean
+                type: object
             type: object
           status:
             properties:
