@@ -54,12 +54,16 @@ spec:
       components:
         - administrasjon_kodeverk
         - administrasjon_personal
+  url:
+    hostname: test.flais.io
+    basePath: /alpha/fintlabs-no
   ingress:
-    match: Host(`alpha.felleskomponent.no`) && PathPrefix(`/`)
+    enabled: true
+    #match: Host(`alpha.felleskomponent.no`) && PathPrefix(`/`)
   kafka:
-    acl:
-      topic: '*.test.topic'
-      permission: read
+    acls:
+      - topic: '*.test.topic'
+        permission: read
   resources:
     limits:
       memory: "1024Mi"

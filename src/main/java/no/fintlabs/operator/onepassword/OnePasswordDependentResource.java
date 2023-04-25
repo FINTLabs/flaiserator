@@ -19,11 +19,11 @@ import java.util.Objects;
 public class OnePasswordDependentResource
         extends FlaisKubernetesDependentResource<OnePasswordCrd, FlaisApplicationCrd, FlaisApplicationSpec> {
     public OnePasswordDependentResource(FlaisApplicationWorkflow workflow, KubernetesClient kubernetesClient) {
-        super(OnePasswordCrd.class, workflow, new OnePasswordCondition(),kubernetesClient);
+        super(OnePasswordCrd.class, workflow, new OnePasswordCondition(), kubernetesClient);
 
         configureWith(
                 new KubernetesDependentResourceConfig<OnePasswordCrd>()
-                        .setLabelSelector("app.kubernetes.io/managed-by=finterator")
+                        .setLabelSelector("app.kubernetes.io/managed-by=flaiserator")
         );
 
     }

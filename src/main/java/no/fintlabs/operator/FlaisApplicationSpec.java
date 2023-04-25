@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.fintlabs.FlaisSpec;
+import no.fintlabs.operator.kafka.Kafka;
 import no.fintlabs.operator.onepassword.OnePassword;
 
 import java.util.ArrayList;
@@ -52,5 +53,7 @@ public class FlaisApplicationSpec implements FlaisSpec {
     private Prometheus prometheus = new Prometheus();
 
     private OnePassword onePassword = new OnePassword();
+
+    private Kafka kafka = new Kafka();
 
 }
