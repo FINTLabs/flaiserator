@@ -36,6 +36,7 @@ rules:
   - apiGroups:
       - fintlabs.no
       - onepassword.com
+      - traefik.containo.us
     resources:
       - "*"
     verbs:
