@@ -1,9 +1,6 @@
 package no.fintlabs.operator.deployment;
 
-import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.api.model.PodSpecBuilder;
-import io.fabric8.kubernetes.api.model.PodTemplateSpec;
-import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
@@ -26,7 +23,7 @@ public class DeploymentDependentResource
         extends FlaisKubernetesDependentResource<Deployment, FlaisApplicationCrd, FlaisApplicationSpec> {
 
     private final MetadataFactory metadataFactory;
-    private final EnvFromFactory envFromFactory;
+    private final DeploymentFactory deploymentFactory;
 
     public DeploymentDependentResource(FlaisApplicationWorkflow workflow,
                                        KubernetesClient kubernetesClient,
@@ -36,7 +33,7 @@ public class DeploymentDependentResource
         super(Deployment.class, workflow, kubernetesClient);
 
         this.metadataFactory = metadataFactory;
-        this.envFromFactory = new EnvFromFactory(dependentResourcesWithSecret);
+        this.deploymentFactory = new DeploymentFactory(dependentResourcesWithSecret);
 
         configureWith(
                 new KubernetesDependentResourceConfig<Deployment>()
@@ -48,8 +45,10 @@ public class DeploymentDependentResource
     protected Deployment desired(FlaisApplicationCrd resource, Context<FlaisApplicationCrd> context) {
 
         PodSpec podSpec = new PodSpecBuilder()
+                .withVolumes(deploymentFactory.volumes(resource))
                 .withRestartPolicy(resource.getSpec().getRestartPolicy())
                 .addNewContainer()
+                .withVolumeMounts(deploymentFactory.volumeMounts(resource))
                 .withName(resource.getMetadata().getName())
                 .withImage(resource.getSpec().getImage())
                 .withImagePullPolicy(resource.getSpec().getImagePullPolicy())
@@ -57,8 +56,8 @@ public class DeploymentDependentResource
                 .addNewPort()
                 .withContainerPort(resource.getSpec().getPort())
                 .endPort()
-                .withEnv(envFromFactory.envs(resource))
-                .withEnvFrom(envFromFactory.getEnvFrom(resource))
+                .withEnv(deploymentFactory.envs(resource))
+                .withEnvFrom(deploymentFactory.getEnvFrom(resource))
                 .endContainer()
                 .build();
 
