@@ -8,10 +8,10 @@ import no.fintlabs.operator.FlaisApplicationSpec;
 
 import java.util.*;
 
-public class EnvFromFactory {
+public class DeploymentFactory {
     private final List<FlaisKubernetesDependentResource<?, FlaisApplicationCrd, FlaisApplicationSpec>> dependentResourcesWithSecret;
 
-    public EnvFromFactory(List<FlaisKubernetesDependentResource<?, FlaisApplicationCrd, FlaisApplicationSpec>> dependentResourcesWithSecret) {
+    public DeploymentFactory(List<FlaisKubernetesDependentResource<?, FlaisApplicationCrd, FlaisApplicationSpec>> dependentResourcesWithSecret) {
         this.dependentResourcesWithSecret = dependentResourcesWithSecret;
     }
 

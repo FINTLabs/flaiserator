@@ -23,7 +23,7 @@ public class DeploymentDependentResource
         extends FlaisKubernetesDependentResource<Deployment, FlaisApplicationCrd, FlaisApplicationSpec> {
 
     private final MetadataFactory metadataFactory;
-    private final EnvFromFactory envFromFactory;
+    private final DeploymentFactory deploymentFactory;
 
     public DeploymentDependentResource(FlaisApplicationWorkflow workflow,
                                        KubernetesClient kubernetesClient,
@@ -33,7 +33,7 @@ public class DeploymentDependentResource
         super(Deployment.class, workflow, kubernetesClient);
 
         this.metadataFactory = metadataFactory;
-        this.envFromFactory = new EnvFromFactory(dependentResourcesWithSecret);
+        this.deploymentFactory = new DeploymentFactory(dependentResourcesWithSecret);
 
         configureWith(
                 new KubernetesDependentResourceConfig<Deployment>()
@@ -45,10 +45,10 @@ public class DeploymentDependentResource
     protected Deployment desired(FlaisApplicationCrd resource, Context<FlaisApplicationCrd> context) {
 
         PodSpec podSpec = new PodSpecBuilder()
-                .withVolumes(envFromFactory.volumes(resource))
+                .withVolumes(deploymentFactory.volumes(resource))
                 .withRestartPolicy(resource.getSpec().getRestartPolicy())
                 .addNewContainer()
-                .withVolumeMounts(envFromFactory.volumeMounts(resource))
+                .withVolumeMounts(deploymentFactory.volumeMounts(resource))
                 .withName(resource.getMetadata().getName())
                 .withImage(resource.getSpec().getImage())
                 .withImagePullPolicy(resource.getSpec().getImagePullPolicy())
@@ -56,8 +56,8 @@ public class DeploymentDependentResource
                 .addNewPort()
                 .withContainerPort(resource.getSpec().getPort())
                 .endPort()
-                .withEnv(envFromFactory.envs(resource))
-                .withEnvFrom(envFromFactory.getEnvFrom(resource))
+                .withEnv(deploymentFactory.envs(resource))
+                .withEnvFrom(deploymentFactory.getEnvFrom(resource))
                 .endContainer()
                 .build();
 
