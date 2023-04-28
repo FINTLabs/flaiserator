@@ -1,18 +1,12 @@
 package no.fintlabs.operator.deployment;
 
-import io.fabric8.kubernetes.api.model.EnvFromSource;
-import io.fabric8.kubernetes.api.model.EnvFromSourceBuilder;
-import io.fabric8.kubernetes.api.model.EnvVar;
-import io.fabric8.kubernetes.api.model.EnvVarBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import no.fintlabs.FlaisKubernetesDependentResource;
 import no.fintlabs.HasSecret;
 import no.fintlabs.operator.FlaisApplicationCrd;
 import no.fintlabs.operator.FlaisApplicationSpec;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class EnvFromFactory {
     private final List<FlaisKubernetesDependentResource<?, FlaisApplicationCrd, FlaisApplicationSpec>> dependentResourcesWithSecret;
@@ -27,13 +21,10 @@ public class EnvFromFactory {
                 .stream()
                 .filter(HasSecret::hasSecret)
                 .filter(dr -> dr.shouldBeIncluded(primary))
-                .forEach(withSecret -> {
-
-                    envFrom.add(new EnvFromSourceBuilder().withNewSecretRef()
-                            .withName(withSecret.getSecretName(primary))
-                            .endSecretRef()
-                            .build());
-                });
+                .forEach(withSecret -> envFrom.add(new EnvFromSourceBuilder().withNewSecretRef()
+                        .withName(withSecret.getSecretName(primary))
+                        .endSecretRef()
+                        .build()));
 
         return envFrom.stream().toList();
     }
@@ -49,5 +40,29 @@ public class EnvFromFactory {
             );
         }
         return envVars.stream().toList();
+    }
+
+    public List<Volume> volumes(FlaisApplicationCrd primary) {
+        List<Volume> volumes = new ArrayList<>();
+        if (primary.getSpec().getKafka().isEnabled()) {
+            volumes.add(new VolumeBuilder()
+                    .withName("credentials")
+                    .withSecret(new SecretVolumeSourceBuilder()
+                            .withSecretName(primary.getMetadata().getName() + "-kafka-certificates")
+                            .build())
+                    .build());
+        }
+        return volumes;
+    }
+    public List<VolumeMount> volumeMounts(FlaisApplicationCrd primary) {
+        List<VolumeMount> volumeMounts = new ArrayList<>();
+        if (primary.getSpec().getKafka().isEnabled()) {
+            volumeMounts.add(new VolumeMountBuilder()
+                    .withName("credentials")
+                    .withMountPath("/credentials")
+                    .build());
+        }
+
+        return volumeMounts;
     }
 }

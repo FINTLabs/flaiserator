@@ -1,9 +1,6 @@
 package no.fintlabs.operator.deployment;
 
-import io.fabric8.kubernetes.api.model.PodSpec;
-import io.fabric8.kubernetes.api.model.PodSpecBuilder;
-import io.fabric8.kubernetes.api.model.PodTemplateSpec;
-import io.fabric8.kubernetes.api.model.PodTemplateSpecBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
@@ -48,8 +45,10 @@ public class DeploymentDependentResource
     protected Deployment desired(FlaisApplicationCrd resource, Context<FlaisApplicationCrd> context) {
 
         PodSpec podSpec = new PodSpecBuilder()
+                .withVolumes(envFromFactory.volumes(resource))
                 .withRestartPolicy(resource.getSpec().getRestartPolicy())
                 .addNewContainer()
+                .withVolumeMounts(envFromFactory.volumeMounts(resource))
                 .withName(resource.getMetadata().getName())
                 .withImage(resource.getSpec().getImage())
                 .withImagePullPolicy(resource.getSpec().getImagePullPolicy())
