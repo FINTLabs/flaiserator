@@ -44,7 +44,7 @@ public class ServiceDependentResource
                 .withPort(resource.getSpec().getPort())
                 .endPort()
                 .withType("ClusterIP")
-                .withSelector(LabelFactory.recommendedLabels(resource))
+                .withSelector(LabelFactory.matchingLabels(resource))
                 .endSpec()
                 .build();
 

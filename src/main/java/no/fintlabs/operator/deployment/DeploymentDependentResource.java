@@ -70,7 +70,7 @@ public class DeploymentDependentResource
                 .withReplicas(resource.getSpec().getReplicas())
                 .withStrategy(resource.getSpec().getStrategy())
                 .withNewSelector()
-                .withMatchLabels(LabelFactory.recommendedLabels(resource))
+                .withMatchLabels(LabelFactory.matchingLabels(resource))
                 .endSelector()
                 .withTemplate(podTemplateSpec)
                 .build();
