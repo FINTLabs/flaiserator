@@ -1,6 +1,5 @@
 package no.fintlabs.operator.ingress;
 
-import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.DesiredEqualsMatcher;
@@ -57,18 +56,18 @@ public class IngressDependentResource
         //return super.match(actualResource, primary, context);
     }
 
-    @Override
-    public boolean hasSecret() {
-        return true;
-    }
+//    @Override
+//    public boolean hasSecret() {
+//        return false;
+//    }
 
-    @Override
-    public String getSecretName(HasMetadata primary) {
-        return primary.getMetadata().getName() + "-kafka";
-    }
+//    @Override
+//    public String getSecretName(HasMetadata primary) {
+//        return primary.getMetadata().getName() + "-kafka";
+//    }
 
-    @Override
-    public boolean shouldBeIncluded(FlaisApplicationCrd primary) {
-        return primary.getSpec().getIngress().isEnabled();
-    }
+//    @Override
+//    public boolean shouldBeIncluded(FlaisApplicationCrd primary) {
+//        return primary.getSpec().getIngress().isEnabled();
+//    }
 }
