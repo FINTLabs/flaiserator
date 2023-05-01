@@ -32,7 +32,7 @@ public class IngressDependentResource
 
         IngressRouteCrd ingressRouteCrd = new IngressRouteCrd();
         ingressRouteCrd.getMetadata().setLabels(LabelFactory.recommendedLabels(primary));
-        ingressRouteCrd.getMetadata().setName(getSecretName(primary));
+        ingressRouteCrd.getMetadata().setName(primary.getMetadata().getName());
         ingressRouteCrd.getMetadata().setNamespace(primary.getMetadata().getNamespace());
         IngressRouteSpec.Route route = new IngressRouteSpec.Route();
         route.setKind("Rule");
