@@ -1,6 +1,7 @@
 package no.fintlabs.operator.ingress;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.getunleash.DefaultUnleash;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.DesiredEqualsMatcher;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
@@ -12,13 +13,17 @@ import no.fintlabs.operator.FlaisApplicationSpec;
 import no.fintlabs.operator.FlaisApplicationWorkflow;
 import no.fintlabs.operator.LabelFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
 public class IngressDependentResource
         extends FlaisKubernetesDependentResource<IngressRouteCrd, FlaisApplicationCrd, FlaisApplicationSpec> {
-    public IngressDependentResource(FlaisApplicationWorkflow workflow, KubernetesClient kubernetesClient) {
+
+    private final DefaultUnleash unleashClient;
+    public IngressDependentResource(FlaisApplicationWorkflow workflow, KubernetesClient kubernetesClient, DefaultUnleash unleashClient) {
         super(IngressRouteCrd.class, workflow, new IngressCondition(), kubernetesClient);
+        this.unleashClient = unleashClient;
         configureWith(
                 new KubernetesDependentResourceConfig<IngressRouteCrd>()
                         .setLabelSelector("app.kubernetes.io/managed-by=flaiserator")
@@ -37,7 +42,7 @@ public class IngressDependentResource
         IngressRouteSpec.Route route = new IngressRouteSpec.Route();
         route.setKind("Rule");
         route.setMatch(String.format("Host(`%s`) && PathPrefix(`%s`)",
-                primary.getSpec().getUrl().getHostname(), primary.getSpec().getUrl().getBasePath()));
+                primary.getSpec().getUrl().getHostname(), basePath(primary)));
         IngressRouteSpec.Service service = new IngressRouteSpec.Service();
         service.setPort(primary.getSpec().getPort());
         service.setName(primary.getMetadata().getName());
@@ -46,6 +51,18 @@ public class IngressDependentResource
         ingressRouteCrd.getSpec().getEntryPoints().add("web");
 
         return ingressRouteCrd;
+    }
+
+    private String basePath(FlaisApplicationCrd primary) {
+
+        if (unleashClient.isEnabled("flais.operators.flaiserator.ingress-path-override", false)) {
+            log.info("'ingress-path-override' feature is enabled");
+            if (StringUtils.hasText(primary.getSpec().getIngress().getBasePath())) {
+                return primary.getSpec().getIngress().getBasePath();
+            }
+        }
+
+        return primary.getSpec().getUrl().getBasePath();
     }
 
     @Override
