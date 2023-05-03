@@ -4,8 +4,8 @@ resources:
   - ../../base
 patches:
   - patch: |-
-      - op: replace
-        path: "/spec/template/spec/containers/0/env/1/name"
+      - op: add
+        path: "/spec/template/spec/containers/0/env/-"
         value:
           name: "fint.unleash.api"
           value: "https://unleash-beta.fintlabs.no/api/"

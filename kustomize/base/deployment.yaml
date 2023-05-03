@@ -38,8 +38,6 @@ spec:
           env:
             - name: logging.level.no.fintlabs
               value: DEBUG
-            - name: fint.unleash.api
-              value: dummy
           ports:
             - name: http
               containerPort: 8080
