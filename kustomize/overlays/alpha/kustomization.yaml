@@ -6,7 +6,9 @@ patches:
   - patch: |-
       - op: replace
         path: "/spec/template/spec/containers/0/env/1/name"
-        value: "https://unleash-alpha.fintlabs.no/api/"
+        value: 
+          name: "fint.unleash.api"
+          value: "https://unleash-alpha.fintlabs.no/api/"
     target:
       kind: Deployment
       name: flaiserator
