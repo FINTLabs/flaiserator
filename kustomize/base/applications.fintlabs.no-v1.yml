@@ -189,6 +189,10 @@ spec:
                     type: boolean
                   basePath:
                     type: string
+                  middlewares:
+                    items:
+                      type: string
+                    type: array
                 type: object
             type: object
           status:
