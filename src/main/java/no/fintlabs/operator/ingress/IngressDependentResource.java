@@ -21,6 +21,7 @@ public class IngressDependentResource
         extends FlaisKubernetesDependentResource<IngressRouteCrd, FlaisApplicationCrd, FlaisApplicationSpec> {
 
     private final DefaultUnleash unleashClient;
+
     public IngressDependentResource(FlaisApplicationWorkflow workflow, KubernetesClient kubernetesClient, DefaultUnleash unleashClient) {
         super(IngressRouteCrd.class, workflow, new IngressCondition(), kubernetesClient);
         this.unleashClient = unleashClient;
@@ -39,10 +40,14 @@ public class IngressDependentResource
         ingressRouteCrd.getMetadata().setLabels(LabelFactory.recommendedLabels(primary));
         ingressRouteCrd.getMetadata().setName(primary.getMetadata().getName());
         ingressRouteCrd.getMetadata().setNamespace(primary.getMetadata().getNamespace());
+
         IngressRouteSpec.Route route = new IngressRouteSpec.Route();
         route.setKind("Rule");
         route.setMatch(String.format("Host(`%s`) && PathPrefix(`%s`)",
                 primary.getSpec().getUrl().getHostname(), basePath(primary)));
+
+        applyMiddlewares(primary, route);
+
         IngressRouteSpec.Service service = new IngressRouteSpec.Service();
         service.setPort(primary.getSpec().getPort());
         service.setName(primary.getMetadata().getName());
@@ -51,6 +56,16 @@ public class IngressDependentResource
         ingressRouteCrd.getSpec().getEntryPoints().add("web");
 
         return ingressRouteCrd;
+    }
+
+    private void applyMiddlewares(FlaisApplicationCrd primary, IngressRouteSpec.Route route) {
+        if (unleashClient.isEnabled("flais.operators.flaiserator.ingress-middleware", false)) {
+            log.info("'ingress-middleware' feature is enabled");
+            route.setMiddlewares(primary.getSpec().getIngress().getMiddlewares()
+                    .stream()
+                    .map(IngressRouteSpec.Middleware::new)
+                    .toList());
+        }
     }
 
     private String basePath(FlaisApplicationCrd primary) {

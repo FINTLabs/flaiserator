@@ -1,6 +1,7 @@
 package no.fintlabs.operator.ingress;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class IngressRouteSpec {
     }
 
     @Data
+    @AllArgsConstructor
     public static class Middleware {
         private String name;
 
