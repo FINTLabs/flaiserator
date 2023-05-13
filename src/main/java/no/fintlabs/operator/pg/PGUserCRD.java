@@ -8,8 +8,12 @@ import no.fintlabs.FlaisCrd;
 
 @Group("fintlabs.no")
 @Version("v1alpha1")
-@Kind("PGDatabaseAndUser")
-public class PGDatabaseAndUserCRD extends FlaisCrd<PGDatabaseAndUserSpec> implements Namespaced {
+@Kind("PGUser")
+public class PGUserCRD extends FlaisCrd<PGUserSpec> implements Namespaced {
 
+    @Override
+    protected PGUserSpec initSpec() {
+        return new PGUserSpec();
+    }
 }
 

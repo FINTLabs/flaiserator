@@ -175,6 +175,8 @@ spec:
                 properties:
                   enabled:
                     type: boolean
+                  database:
+                    type: string
                 type: object
               url:
                 properties:

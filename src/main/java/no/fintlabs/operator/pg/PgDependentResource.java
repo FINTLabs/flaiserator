@@ -13,15 +13,16 @@ import no.fintlabs.operator.FlaisApplicationSpec;
 import no.fintlabs.operator.FlaisApplicationWorkflow;
 import no.fintlabs.operator.LabelFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
 public class PgDependentResource
-        extends FlaisKubernetesDependentResource<PGDatabaseAndUserCRD, FlaisApplicationCrd, FlaisApplicationSpec> {
+        extends FlaisKubernetesDependentResource<PGUserCRD, FlaisApplicationCrd, FlaisApplicationSpec> {
     public PgDependentResource(FlaisApplicationWorkflow workflow, KubernetesClient kubernetesClient) {
-        super(PGDatabaseAndUserCRD.class, workflow, new PgCondition(), kubernetesClient);
+        super(PGUserCRD.class, workflow, new PgCondition(), kubernetesClient);
         configureWith(
-                new KubernetesDependentResourceConfig<PGDatabaseAndUserCRD>()
+                new KubernetesDependentResourceConfig<PGUserCRD>()
                         .setLabelSelector("app.kubernetes.io/managed-by=flaiserator")
         );
 
@@ -29,22 +30,22 @@ public class PgDependentResource
 
 
     @Override
-    protected PGDatabaseAndUserCRD desired(FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
+    protected PGUserCRD desired(FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
 
-        PGDatabaseAndUserCRD pgDatabaseAndUserCRD = new PGDatabaseAndUserCRD();
-        pgDatabaseAndUserCRD.getMetadata().setLabels(LabelFactory.recommendedLabels(primary));
-        pgDatabaseAndUserCRD.getMetadata().setName(getSecretName(primary));
-        pgDatabaseAndUserCRD.getMetadata().setNamespace(primary.getMetadata().getNamespace());
+        PGUserCRD pgUserCRD = new PGUserCRD();
+        pgUserCRD.getMetadata().setLabels(LabelFactory.recommendedLabels(primary));
+        pgUserCRD.getMetadata().setName(getSecretName(primary));
+        pgUserCRD.getMetadata().setNamespace(primary.getMetadata().getNamespace());
+        pgUserCRD.getSpec().setDatabase(primary.getSpec().getDatabase().getDatabase());
 
-        return pgDatabaseAndUserCRD;
+        return pgUserCRD;
     }
 
     @Override
-    public Matcher.Result<PGDatabaseAndUserCRD> match(PGDatabaseAndUserCRD actualResource, FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
-        DesiredEqualsMatcher<PGDatabaseAndUserCRD, FlaisApplicationCrd> matcher = new DesiredEqualsMatcher<>(this);
+    public Matcher.Result<PGUserCRD> match(PGUserCRD actualResource, FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
+        DesiredEqualsMatcher<PGUserCRD, FlaisApplicationCrd> matcher = new DesiredEqualsMatcher<>(this);
 
         return matcher.match(actualResource, primary, context);
-        //return super.match(actualResource, primary, context);
     }
 
     @Override
@@ -59,6 +60,6 @@ public class PgDependentResource
 
     @Override
     public boolean shouldBeIncluded(FlaisApplicationCrd primary) {
-        return primary.getSpec().getDatabase().isEnabled();
+        return StringUtils.hasText(primary.getSpec().getDatabase().getDatabase());
     }
 }
