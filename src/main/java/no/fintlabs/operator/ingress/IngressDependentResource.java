@@ -69,11 +69,8 @@ public class IngressDependentResource
     }
 
     private String basePath(FlaisApplicationCrd primary) {
-        if (unleashClient.isEnabled("flais.operators.flaiserator.ingress-path-override", false)) {
-            log.info("'ingress-path-override' feature is enabled");
-            if (StringUtils.hasText(primary.getSpec().getIngress().getBasePath())) {
-                return primary.getSpec().getIngress().getBasePath();
-            }
+        if (StringUtils.hasText(primary.getSpec().getIngress().getBasePath())) {
+            return primary.getSpec().getIngress().getBasePath();
         }
 
         return primary.getSpec().getUrl().getBasePath();
