@@ -59,13 +59,13 @@ public class IngressDependentResource
     }
 
     private void applyMiddlewares(FlaisApplicationCrd primary, IngressRouteSpec.Route route) {
-        if (unleashClient.isEnabled("flais.operators.flaiserator.ingress-middleware", false)) {
-            log.info("'ingress-middleware' feature is enabled");
-            route.setMiddlewares(primary.getSpec().getIngress().getMiddlewares()
-                    .stream()
-                    .map(IngressRouteSpec.Middleware::new)
-                    .toList());
-        }
+//        if (unleashClient.isEnabled("flais.operators.flaiserator.ingress-middleware", false)) {
+        log.info("'ingress-middleware' feature is enabled");
+        route.setMiddlewares(primary.getSpec().getIngress().getMiddlewares()
+                .stream()
+                .map(IngressRouteSpec.Middleware::new)
+                .toList());
+//        }
     }
 
     private String basePath(FlaisApplicationCrd primary) {
