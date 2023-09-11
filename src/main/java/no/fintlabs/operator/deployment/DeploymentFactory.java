@@ -38,6 +38,12 @@ public class DeploymentFactory {
                             .withValue(primary.getSpec().getUrl().getBasePath())
                             .build()
             );
+            envVars.add(
+                    new EnvVarBuilder()
+                            .withName("spring.mvc.servlet.path")
+                            .withValue(primary.getSpec().getUrl().getBasePath())
+                            .build()
+            );
         }
         return envVars.stream().toList();
     }
