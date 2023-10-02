@@ -196,6 +196,21 @@ spec:
                       type: string
                     type: array
                 type: object
+              fint:
+                properties:
+                  adapter:
+                    properties:
+                      shortDescription:
+                        type: string
+                      components:
+                        items:
+                          properties:
+                            component:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                type: object
             type: object
           status:
             properties:

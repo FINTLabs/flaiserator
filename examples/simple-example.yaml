@@ -40,12 +40,18 @@ spec:
       - topic: '*.test2.topic'
         permission: admin
   database:
-    enabled: true
+    enabled: false
   url:
     hostname: test.flais.io
-    basePath: /alpha/fintlabs-no
+    basePath: /alpha/fintlabs-no/test
   ingress:
     enabled: true
+  fint:
+    adapter:
+      shortDescription: 'testadapter-rogfk'
+      components:
+        - component: 'administrasjon_kodeverk'
+        - component: 'administrasjon_personal'
   resources:
     limits:
       memory: "1024Mi"

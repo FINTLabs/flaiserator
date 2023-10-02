@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.fintlabs.FlaisSpec;
+import no.fintlabs.operator.fint.Fint;
 import no.fintlabs.operator.ingress.Ingress;
 import no.fintlabs.operator.kafka.Kafka;
 import no.fintlabs.operator.onepassword.OnePassword;
@@ -63,4 +64,6 @@ public class FlaisApplicationSpec implements FlaisSpec {
     private Url url = new Url();
 
     private Ingress ingress = new Ingress();
+
+    private Fint fint = new Fint();
 }
