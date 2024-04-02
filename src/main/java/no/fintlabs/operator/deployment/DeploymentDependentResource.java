@@ -59,6 +59,7 @@ public class DeploymentDependentResource
                 .withEnv(deploymentFactory.envs(resource))
                 .withEnvFrom(deploymentFactory.getEnvFrom(resource))
                 .endContainer()
+                .addNewImagePullSecret("ghcr-cred")
                 .build();
 
         PodTemplateSpec podTemplateSpec = new PodTemplateSpecBuilder()
