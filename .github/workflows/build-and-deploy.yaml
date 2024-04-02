@@ -56,6 +56,10 @@ jobs:
           kustomizationPath: 'kustomize/overlays/alpha'
         id: bake-alpha
 
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AKS_ALPHA_FINT_GITHUB }}
+
       - uses: azure/use-kubelogin@v1.1
         with:
           kubelogin-version: 'v0.0.26'
