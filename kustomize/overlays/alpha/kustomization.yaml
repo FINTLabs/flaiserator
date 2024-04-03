@@ -4,12 +4,10 @@ resources:
   - ../../base
 patches:
   - patch: |-
-      - op: add
-        path: "/spec/template/spec/containers/0/env/-"
-        value: 
-          name: "fint.unleash.api"
-          value: "https://unleash-alpha.fintlabs.no/api/"
+      - op: replace
+        path: "/spec/itemPath"
+        value: "vaults/aks-alpha-vault/items/flaiserator"
     target:
-      kind: Deployment
+      kind: OnePasswordItem
       name: flaiserator
 

@@ -33,7 +33,7 @@ dependencies {
     implementation 'no.fintlabs:flais-operator-starter:1.0.0-rc-11'
     //implementation 'no.fintlabs:flais-operator-starter:0-SNAPSHOT'
 
-    implementation 'io.getunleash:unleash-client-java:8.0.0'
+    implementation 'io.getunleash:unleash-client-java:9.2.0'
 
     compileOnly 'org.projectlombok:lombok'
 

@@ -12,18 +12,18 @@ public class FintUnleashConfig {
     @Value("${spring.application.name}")
     private String applicationName;
 
-    @Value("${fint.unleash.api:https://unleash-alpha.fintlabs.no/api/}")
+    @Value("${fint.unleash.api}")
     private String unleashApi;
 
-    @Value("${fint.unleash.instance-id:flaiserator-operator}")
-    private String instanceId;
+    @Value("${fint.unleash.apiKey}")
+    private String apiKey;
 
     @Bean
     public DefaultUnleash unleash() {
         UnleashConfig config = UnleashConfig.builder()
                 .appName(applicationName)
-                .instanceId(instanceId)
                 .unleashAPI(unleashApi)
+                .apiKey(apiKey)
                 .build();
 
         return new DefaultUnleash(config);
