@@ -5,6 +5,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.DesiredEqualsMatcher;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.GenericKubernetesResourceMatcher;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResourceConfig;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.FlaisKubernetesDependentResource;
@@ -43,9 +44,7 @@ public class PgDependentResource
 
     @Override
     public Matcher.Result<PGUserCRD> match(PGUserCRD actualResource, FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
-        DesiredEqualsMatcher<PGUserCRD, FlaisApplicationCrd> matcher = new DesiredEqualsMatcher<>(this);
-
-        return matcher.match(actualResource, primary, context);
+        return GenericKubernetesResourceMatcher.match(this, actualResource, primary, context, false, true);
     }
 
     @Override

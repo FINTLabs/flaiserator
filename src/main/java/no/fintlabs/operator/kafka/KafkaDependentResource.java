@@ -5,6 +5,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.DesiredEqualsMatcher;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.GenericKubernetesResourceMatcher;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResourceConfig;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.FlaisKubernetesDependentResource;
@@ -42,10 +43,7 @@ public class KafkaDependentResource
 
     @Override
     public Matcher.Result<KafkaUserAndAclCrd> match(KafkaUserAndAclCrd actualResource, FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
-        DesiredEqualsMatcher<KafkaUserAndAclCrd, FlaisApplicationCrd> matcher = new DesiredEqualsMatcher<>(this);
-
-        return matcher.match(actualResource, primary, context);
-        //return super.match(actualResource, primary, context);
+        return GenericKubernetesResourceMatcher.match(this, actualResource, primary, context, false, true);
     }
 
     @Override

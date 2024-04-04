@@ -5,6 +5,8 @@ import io.getunleash.DefaultUnleash;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.DesiredEqualsMatcher;
 import io.javaoperatorsdk.operator.processing.dependent.Matcher;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.GenericKubernetesResourceMatcher;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResourceConfig;
 import lombok.extern.slf4j.Slf4j;
 import no.fintlabs.FlaisKubernetesDependentResource;
@@ -78,10 +80,7 @@ public class IngressDependentResource
 
     @Override
     public Matcher.Result<IngressRouteCrd> match(IngressRouteCrd actualResource, FlaisApplicationCrd primary, Context<FlaisApplicationCrd> context) {
-        DesiredEqualsMatcher<IngressRouteCrd, FlaisApplicationCrd> matcher = new DesiredEqualsMatcher<>(this);
-
-        return matcher.match(actualResource, primary, context);
-        //return super.match(actualResource, primary, context);
+        return GenericKubernetesResourceMatcher.match(this, actualResource, primary, context, false, true);
     }
 
 //    @Override
