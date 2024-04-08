@@ -15,7 +15,7 @@ public class FintUnleashConfig {
     @Value("${fint.unleash.api}")
     private String unleashApi;
 
-    @Value("${fint.unleash.apiKey#{null}}")
+    @Value("${fint.unleash.apiKey:#{null}}")
     private String apiKey;
 
     @Bean
