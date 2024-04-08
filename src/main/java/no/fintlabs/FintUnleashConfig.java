@@ -15,16 +15,18 @@ public class FintUnleashConfig {
     @Value("${fint.unleash.api}")
     private String unleashApi;
 
-    @Value("${fint.unleash.apiKey}")
+    @Value("${fint.unleash.apiKey#{null}}")
     private String apiKey;
 
     @Bean
     public DefaultUnleash unleash() {
-        UnleashConfig config = UnleashConfig.builder()
+        var builder = UnleashConfig.builder()
                 .appName(applicationName)
-                .unleashAPI(unleashApi)
-                .apiKey(apiKey)
-                .build();
+                .unleashAPI(unleashApi);
+        if (apiKey != null) {
+            builder.apiKey(apiKey);
+        }
+        var config = builder.build();
 
         return new DefaultUnleash(config);
     }
