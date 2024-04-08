@@ -6,6 +6,15 @@ resources:
 
 patches:
   - patch: |-
+      - op: add
+        path: "/spec/template/spec/containers/0/envFrom/-"
+        value:
+          secretRef:
+            name: flaiserator
+    target:
+      kind: Deployment
+      name: flaiserator
+  - patch: |-
       - op: replace
         path: "/spec/itemPath"
         value: "vaults/aks-alpha-vault/items/flaiserator"
