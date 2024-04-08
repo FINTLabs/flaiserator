@@ -95,17 +95,22 @@ spec:
                 type: string
               imagePullPolicy:
                 type: string
+              imagePullSecrets:
+                items:
+                  properties:
+                    name:
+                      description: The name of the image pull secret.
+                      type: string
+                    managed:
+                      description: Indicates if the operator should manage the creation
+                        of the image pull secret.
+                      type: boolean
+                  type: object
+                type: array
               replicas:
                 type: integer
               resources:
                 properties:
-                  claims:
-                    items:
-                      properties:
-                        name:
-                          type: string
-                      type: object
-                    type: array
                   limits:
                     additionalProperties:
                       anyOf:

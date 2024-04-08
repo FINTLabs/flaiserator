@@ -6,6 +6,7 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpecBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.openshift.api.model.monitoring.v1.AlertmanagerSpecFluent;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent;
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResourceConfig;
@@ -59,7 +60,11 @@ public class DeploymentDependentResource
                 .withEnv(deploymentFactory.envs(resource))
                 .withEnvFrom(deploymentFactory.getEnvFrom(resource))
                 .endContainer()
-                .addNewImagePullSecret("ghcr-cred")
+                .addToImagePullSecrets(
+                        resource.getSpec().getImagePullSecrets().stream()
+                                .map(ImagePullSecret::getName)
+                                .map(LocalObjectReference::new)
+                                .toArray(LocalObjectReference[]::new))
                 .build();
 
         PodTemplateSpec podTemplateSpec = new PodTemplateSpecBuilder()

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import no.fintlabs.FlaisSpec;
+import no.fintlabs.operator.application.deployment.ImagePullSecret;
 import no.fintlabs.operator.application.ingress.Ingress;
 import no.fintlabs.operator.application.kafka.Kafka;
 import no.fintlabs.operator.application.onepassword.OnePassword;
@@ -32,7 +33,7 @@ public class FlaisApplicationSpec implements FlaisSpec {
 
     private String image;
     private String imagePullPolicy = "IfNotPresent";
-
+    private List<ImagePullSecret> imagePullSecrets = new ArrayList<>();
     private Integer replicas = 1;
 
     private ResourceRequirements resources = new ResourceRequirementsBuilder()
