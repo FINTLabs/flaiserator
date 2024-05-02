@@ -4,13 +4,16 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.config.ConfigurationService
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
+import no.fintlabs.operator.application.applicationModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform.getKoin
 
 fun main() {
     startKoin {
-        modules(baseModule)
+        modules(
+            applicationModule(),
+            baseModule)
     }
     startOperator()
 }
