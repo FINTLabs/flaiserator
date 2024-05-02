@@ -8,7 +8,7 @@ import io.fabric8.kubernetes.model.annotation.Version
 
 @Group("fintlabs.no")
 @Version("v1alpha1")
-@Kind("FlaisApplication")
+@Kind("Application")
 class FlaisApplicationCrd : CustomResource<FlaisApplicationSpec, FlaisApplicationStatus>(), Namespaced {
     override fun initSpec(): FlaisApplicationSpec {
         return FlaisApplicationSpec()
