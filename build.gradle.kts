@@ -5,6 +5,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 val kotlin_version: String by project
 val mockk_version: String by project
 val fabric8_version: String by project
+val koin_version: String by project
 
 plugins {
     kotlin("jvm")
@@ -41,6 +42,7 @@ dependencies {
     implementation("io.fabric8:crd-generator-apt:${fabric8_version}")
     kapt("io.fabric8:crd-generator-apt:${fabric8_version}")
     implementation("io.javaoperatorsdk:operator-framework-core:4.8.3")
+    implementation("io.insert-koin:koin-core:$koin_version")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:$mockk_version")
