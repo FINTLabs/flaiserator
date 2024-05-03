@@ -1,6 +1,8 @@
 package no.fintlabs.operator.application.api
 
-class FlaisApplicationStatus {
+import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus
+
+class FlaisApplicationStatus : ObservedGenerationAwareStatus() {
+    var state: FlaisApplicationState = FlaisApplicationState.PENDING
     var dependentResourceStatus: List<String> = emptyList()
-    var observedGeneration: Int = 0
 }
