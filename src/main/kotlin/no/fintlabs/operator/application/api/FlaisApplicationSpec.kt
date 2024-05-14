@@ -23,10 +23,10 @@ class FlaisApplicationSpec {
         message = "Invalid imagePullPolicy, must be one of IfNotPresent, Always, Never"
     )
     var imagePullPolicy: String? = null
-    val imagePullSecrets = ArrayList<ImagePullSecret>()
+    val imagePullSecrets = emptyList<ImagePullSecret>()
 
-    val env = ArrayList<EnvVar>()
-    val envFrom = ArrayList<EnvFromSource>()
+    val env = emptyList<EnvVar>()
+    val envFrom = emptyList<EnvFromSource>()
 
     val resources = ResourceRequirementsBuilder()
         .addToRequests("cpu", Quantity("250m"))

@@ -1,11 +1,24 @@
 package no.fintlabs.operator.application
 
 import io.javaoperatorsdk.operator.api.reconciler.*
+import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent
+import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.FlaisApplicationState
+
+@ControllerConfiguration(
+    dependents = [
+        Dependent(
+            name = DeploymentDependentResource.COMPONENT,
+            type = DeploymentDependentResource::class
+        ),
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 import no.fintlabs.operator.application.api.FlaisApplicationState
 import java.time.Duration
 
 @ControllerConfiguration
+    ],
+    labelSelector = "fintlabs.no/team,fintlabs.no/org-id"
+)
 class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd> {
     override fun reconcile(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): UpdateControl<FlaisApplicationCrd> {
         val workflowResult = context.managedDependentResourceContext().workflowReconcileResult.get()
@@ -23,7 +36,7 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
         if (resource.status.state == newState) {
             return UpdateControl.noUpdate()
         }
-        return UpdateControl.updateStatus(resource.apply { status.state = newState }).apply { if (newState == FlaisApplicationState.PENDING) rescheduleAfter(Duration.ofSeconds(5)) }
+        return UpdateControl.updateStatus(resource.apply { status.state = newState })
     }
 
     override fun cleanup(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): DeleteControl {

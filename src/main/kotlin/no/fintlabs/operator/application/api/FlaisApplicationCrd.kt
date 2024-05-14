@@ -13,4 +13,7 @@ class FlaisApplicationCrd : CustomResource<FlaisApplicationSpec, FlaisApplicatio
     override fun initSpec(): FlaisApplicationSpec {
         return FlaisApplicationSpec()
     }
+    override fun initStatus(): FlaisApplicationStatus {
+        return FlaisApplicationStatus()
+    }
 }
