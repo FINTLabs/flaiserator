@@ -11,11 +11,11 @@ import no.fintlabs.operator.application.api.FlaisApplicationState
             name = DeploymentDependentResource.COMPONENT,
             type = DeploymentDependentResource::class
         ),
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
-import no.fintlabs.operator.application.api.FlaisApplicationState
-import java.time.Duration
-
-@ControllerConfiguration
+        Dependent(
+            name = OnePasswordDependentResource.COMPONENT,
+            type = OnePasswordDependentResource::class,
+            reconcilePrecondition = CreateOnePasswordCondition::class
+        )
     ],
     labelSelector = "fintlabs.no/team,fintlabs.no/org-id"
 )
