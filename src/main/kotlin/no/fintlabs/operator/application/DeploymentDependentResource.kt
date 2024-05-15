@@ -35,7 +35,7 @@ class DeploymentDependentResource : CRUDKubernetesDependentResource<Deployment, 
     private fun createPodSpec(primary: FlaisApplicationCrd) = PodSpec().apply {
         volumes = createPodVolumes(primary)
         containers = listOf(createContainer(primary))
-        imagePullSecrets = primary.spec.imagePullSecrets
+        imagePullSecrets = primary.spec.imagePullSecrets.map { LocalObjectReference(it.name) }
     }
 
     private fun createContainer(primary: FlaisApplicationCrd) = Container().apply {
