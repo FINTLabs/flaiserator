@@ -47,6 +47,10 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:$mockk_version")
     testImplementation("io.fabric8:kubernetes-server-mock:${fabric8_version}")
+    testImplementation("io.fabric8:kube-api-test:${fabric8_version}")
+    testImplementation("io.javaoperatorsdk:operator-framework-junit-5:4.8.3")
+    testImplementation("io.insert-koin:koin-test:$koin_version")
+    testImplementation("io.insert-koin:koin-test-junit5:$koin_version")
 }
 
 val copyResourceDefinition = tasks.register<Copy>("copyResourceDefinition") {
