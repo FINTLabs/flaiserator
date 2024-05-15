@@ -7,9 +7,7 @@ import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
-import no.fintlabs.operator.application.api.FlaisApplicationSpec
-import no.fintlabs.operator.application.api.OnePassword
+import no.fintlabs.operator.application.api.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -85,15 +83,14 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct deploymentStrategy`() {
         val origFlaisApplication = createAndApplyFlaisApplication(
-            FlaisApplicationSpec().apply {
-                deploymentStrategy = DeploymentStrategy().apply {
-                    type = "Recreate"
-                    rollingUpdate = RollingUpdateDeployment().apply {
-                        maxSurge = IntOrString("25%")
-                        maxUnavailable = IntOrString("25%")
-                    }
+            FlaisApplicationSpec(deploymentStrategy = DeploymentStrategy().apply {
+                type = "Recreate"
+                rollingUpdate = RollingUpdateDeployment().apply {
+                    maxSurge = IntOrString("25%")
+                    maxUnavailable = IntOrString("25%")
                 }
             }
+            )
         )
         val resFlaisApplication = getFlaisApplication()
         assertThat(origFlaisApplication.spec.deploymentStrategy, isEqualTo(resFlaisApplication.spec.deploymentStrategy))
@@ -102,13 +99,13 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct prometheus`() {
         createAndApplyFlaisApplication(
-            FlaisApplicationSpec().apply {
-                prometheus.apply {
-                    enabled = true
-                    path = "/metrics/nono"
+            FlaisApplicationSpec(
+                prometheus = Prometheus(
+                    enabled = true,
+                    path = "/metrics/nono",
                     port = "8081"
-                }
-            }
+                )
+            )
         )
         val resFlaisApplication = getFlaisApplication()
         assertEquals(true, resFlaisApplication.spec.prometheus.enabled)
@@ -119,11 +116,9 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct onePassword`() {
         createAndApplyFlaisApplication(
-            FlaisApplicationSpec().apply {
-                onePassword = OnePassword().apply {
-                    itemPath = "test-itemPath"
-                }
-            }
+            FlaisApplicationSpec(onePassword = OnePassword().apply {
+                itemPath = "test-itemPath"
+            })
         )
         val resFlaisApplication = getFlaisApplication()
         assertNotNull(resFlaisApplication.spec.onePassword)
@@ -133,15 +128,15 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct kafka`() {
         createAndApplyFlaisApplication(
-            FlaisApplicationSpec().apply {
-                kafka.apply {
-                    enabled = true
+            FlaisApplicationSpec(
+                kafka = Kafka(
+                    enabled = true,
                     acls = listOf(Acls().apply {
                         topic = "test-resource"
                         permission = "test-permission"
                     })
-                }
-            }
+                )
+            )
         )
         val resFlaisApplication = getFlaisApplication()
         assertEquals(true, resFlaisApplication.spec.kafka.enabled)
@@ -153,12 +148,12 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct database`() {
         createAndApplyFlaisApplication(
-            FlaisApplicationSpec().apply {
-                database.apply {
-                    enabled = true
+            FlaisApplicationSpec(
+                database = Database(
+                    enabled = true,
                     database = "test-database"
-                }
-            }
+                )
+            )
         )
         val resFlaisApplication = getFlaisApplication()
         assertEquals(true, resFlaisApplication.spec.database.enabled)
@@ -168,12 +163,12 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct url`() {
         createAndApplyFlaisApplication(
-            FlaisApplicationSpec().apply {
-                url.apply {
-                    basePath = "/test-path"
+            FlaisApplicationSpec(
+                url = Url(
+                    basePath = "/test-path",
                     hostname = "test-hostname"
-                }
-            }
+                )
+            )
         )
         val resFlaisApplication = getFlaisApplication()
         assertEquals("/test-path", resFlaisApplication.spec.url.basePath)
@@ -183,13 +178,13 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct ingress`() {
         createAndApplyFlaisApplication(
-            FlaisApplicationSpec().apply {
-                ingress.apply {
-                    enabled = true
-                    basePath = "/test-path"
+            FlaisApplicationSpec(
+                ingress = Ingress(
+                    enabled = true,
+                    basePath = "/test-path",
                     middlewares = listOf("test-middleware")
-                }
-            }
+                )
+            )
         )
         val resFlaisApplication = getFlaisApplication()
         assertEquals(true, resFlaisApplication.spec.ingress.enabled)
@@ -199,15 +194,14 @@ class FlaisApplicationCrdTest {
     }
 
 
-
     private fun createAndApplyFlaisApplication(spec: FlaisApplicationSpec = FlaisApplicationSpec()): FlaisApplicationCrd {
         val application = FlaisApplicationCrd().apply {
             metadata.name = "test-application"
             metadata.namespace = "default"
-            this.spec = spec.apply {
-                orgId = "default-orgId"
+            this.spec = spec.copy(
+                orgId = "default-orgId",
                 image = "default-image"
-            }
+            )
         }
         client.resource(application).create()
         return application

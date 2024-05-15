@@ -1,9 +1,9 @@
 package no.fintlabs.operator.application.api
 
 data class Prometheus(
-    var enabled: Boolean = true,
-    var path: String = "/actuator/prometheus",
-    var port: String = "8080"
+    val enabled: Boolean = true,
+    val path: String = "/actuator/prometheus",
+    val port: String = "8080"
 ) {
 
     fun getPrometheusAnnotations(): Map<String, String> {

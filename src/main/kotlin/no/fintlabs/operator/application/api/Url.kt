@@ -7,11 +7,11 @@ data class Url(
         "self.matches('^[a-zA-Z0-9]([a-zA-Z0-9-]{0,251}[a-zA-Z0-9])?$')",
         message = "Invalid hostname"
     )
-    var hostname: String? = null,
+    val hostname: String? = null,
 
     @ValidationRule(
         "self.matches('^/[A-Za-z0-9/_-]*$')",
         message = "Invalid path"
     )
-    var basePath: String? = null,
+    val basePath: String? = null,
 )
