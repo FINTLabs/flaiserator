@@ -58,16 +58,20 @@ class DeploymentDependentResource : CRUDKubernetesDependentResource<Deployment, 
         }
     )
 
-    private fun createContainerEnv(primary: FlaisApplicationCrd) = emptyList<EnvVar>().apply {
-        primary.spec.url.basePath?.let {
-            plus(EnvVar("spring.webflux.base-path", it, null))
-            plus(EnvVar("spring.mvc.servlet.path", it, null))
+    private fun createContainerEnv(primary: FlaisApplicationCrd): MutableList<EnvVar> {
+        val envVars = mutableListOf(
+            EnvVar("fint.org-id", primary.metadata.labels["fintlabs.no/org-id"], null),
+            EnvVar("TZ", "Europe/Oslo", null)
+        )
+
+        primary.spec.url.basePath?.let { basePath ->
+            envVars.add(EnvVar("spring.webflux.base-path", basePath, null))
+            envVars.add(EnvVar("spring.mvc.servlet.path", basePath, null))
         }
 
-        plus(EnvVar("fint.org-id", primary.metadata.labels["fintlabs.no/org-id"], null))
-        plus(EnvVar("TZ", "Europe/Oslo", null))
+        envVars.addAll(primary.spec.env)
 
-        plus(primary.spec.env)
+        return envVars
     }
 
     private fun createContainerEnvFrom(primary: FlaisApplicationCrd) = listOfNotNull(
