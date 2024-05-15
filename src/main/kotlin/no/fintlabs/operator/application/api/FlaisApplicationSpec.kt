@@ -24,7 +24,7 @@ data class FlaisApplicationSpec(
     val imagePullSecrets: List<ImagePullSecret> = emptyList(),
 
     val env: List<EnvVar> = emptyList(),
-    val envFrom: ArrayList<EnvFromSource> = arrayListOf<EnvFromSource>(),
+    val envFrom: List<EnvFromSource> = emptyList(),
 
     val resources: ResourceRequirements = ResourceRequirementsBuilder()
         .addToRequests("cpu", Quantity("250m"))
