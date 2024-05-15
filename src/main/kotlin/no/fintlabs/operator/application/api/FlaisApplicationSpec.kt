@@ -34,6 +34,8 @@ data class FlaisApplicationSpec(
         .build(),
 
     val port: Int = 8080,
+
+    @Deprecated("Does not exist on when applied on DeploymentSpec")
     @ValidationRule(
         "self in ['Always', 'OnFailure', 'Never']",
         message = "Invalid restartPolicy, must be one of Always, OnFailure, Never")
