@@ -51,6 +51,7 @@ dependencies {
     testImplementation("io.javaoperatorsdk:operator-framework-junit-5:4.8.3")
     testImplementation("io.insert-koin:koin-test:$koin_version")
     testImplementation("io.insert-koin:koin-test-junit5:$koin_version")
+    testImplementation("org.awaitility:awaitility-kotlin:4.2.1")
 }
 
 val copyResourceDefinition = tasks.register<Copy>("copyResourceDefinition") {
