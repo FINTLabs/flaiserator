@@ -4,7 +4,7 @@ import io.fabric8.generator.annotation.ValidationRule
 
 data class Url(
     @ValidationRule(
-        "self.matches('^[a-zA-Z0-9]([a-zA-Z0-9-]{0,251}[a-zA-Z0-9])?$')",
+        "self.matches('^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\\\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*\$')",
         message = "Invalid hostname"
     )
     val hostname: String? = null,
