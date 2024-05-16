@@ -15,6 +15,11 @@ import no.fintlabs.operator.application.api.FlaisApplicationState
             name = OnePasswordDependentResource.COMPONENT,
             type = OnePasswordDependentResource::class,
             reconcilePrecondition = CreateOnePasswordCondition::class
+        ),
+        Dependent(
+            name = IngressDependentResource.COMPONENT,
+            type = IngressDependentResource::class,
+            reconcilePrecondition = CreateIngressCondition::class
         )
     ],
     labelSelector = "fintlabs.no/team,fintlabs.no/org-id"
