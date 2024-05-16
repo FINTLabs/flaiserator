@@ -5,18 +5,15 @@ import io.fabric8.kubernetes.api.model.ObjectMeta
 import io.fabric8.kubernetes.api.model.Quantity
 import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder
 import io.fabric8.kubernetes.api.model.Secret
-import io.fabric8.kubernetes.api.model.SecretBuilder
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import no.fintlabs.baseModule
 import no.fintlabs.operator.KubernetesOperatorContext
 import no.fintlabs.operator.KubernetesOperatorExtension
+import no.fintlabs.operator.application.Utils.createAndGetResource
+import no.fintlabs.operator.application.Utils.createTestFlaisApplication
 import no.fintlabs.operator.application.api.*
-import org.awaitility.kotlin.atMost
-import org.awaitility.kotlin.await
-import org.awaitility.kotlin.until
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.test.junit5.KoinTestExtension
-import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -262,26 +259,6 @@ class DeploymentDependentResourceTest {
     //endregion
 
 
-    private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplicationCrd): Deployment {
-        create(app)
-        await atMost Duration.ofMinutes(10) until {
-            get<FlaisApplicationCrd>(app.metadata.name)?.status?.state == FlaisApplicationState.DEPLOYED
-        }
-        return get<Deployment>(app.metadata.name) ?: error("Deployment not found")
-    }
-
-    private fun createTestFlaisApplication() = FlaisApplicationCrd().apply {
-        metadata = ObjectMeta().apply {
-            name = "test"
-
-            labels = mapOf(
-                "fintlabs.no/team" to "test",
-                "fintlabs.no/org-id" to "test.org",
-            )
-        }
-        spec = FlaisApplicationSpec(
-            orgId = "test.org",
-            image = "test-image"
-        )
-    }
+    private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplicationCrd) =
+        createAndGetResource<Deployment>(app)
 }
