@@ -1,21 +1,32 @@
 package no.fintlabs.operator
 
+import io.fabric8.crd.generator.CRDGenerator
+import io.fabric8.crd.generator.CRDGenerator.AbstractCRDOutput
 import io.fabric8.kubeapitest.KubeAPIServer
 import io.fabric8.kubernetes.api.model.Namespace
+import io.fabric8.kubernetes.client.CustomResource
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
+import org.awaitility.kotlin.atMost
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.until
 import org.junit.jupiter.api.extension.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.time.Duration
 
-class KubernetesOperatorExtension private constructor() : BeforeEachCallback, BeforeAllCallback, AfterAllCallback, AfterEachCallback, ParameterResolver, KoinComponent {
+class KubernetesOperatorExtension
+    private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>) : BeforeEachCallback, BeforeAllCallback, AfterAllCallback, AfterEachCallback, ParameterResolver, KoinComponent {
     private val kubernetesApi = KubeAPIServer()
     private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
     override fun beforeAll(context: ExtensionContext) {
         kubernetesApi.start()
+        ensureCRDs()
     }
 
     override fun afterAll(context: ExtensionContext) {
@@ -42,6 +53,34 @@ class KubernetesOperatorExtension private constructor() : BeforeEachCallback, Be
         get<Operator>().stop()
     }
 
+    override fun supportsParameter(pContext: ParameterContext, eContext: ExtensionContext): Boolean =
+        pContext.parameter.type == KubernetesOperatorContext::class.java
+
+    override fun resolveParameter(pContext: ParameterContext, eContext: ExtensionContext): Any =
+        eContext.store().get(KubernetesOperatorContext::class.simpleName)
+
+
+    private fun ensureCRDs() {
+        val crds = prepareCRDs()
+        val kubernetesClient = KubernetesClientBuilder().withConfig(kubernetesApi.kubeConfigYaml).build()
+        crds.forEach { crd ->
+            kubernetesClient.load(ByteArrayInputStream(crd.toByteArray())).serverSideApply()
+        }
+        await atMost Duration.ofSeconds(30) until { crds.all { kubernetesClient.resource(it).get() != null } }
+
+        kubernetesClient.close()
+    }
+
+    private fun prepareCRDs(): List<String> {
+        val output = InMemoryCRDOutput()
+        val crdGenerator = CRDGenerator()
+            .customResourceClasses(*crdClass.toTypedArray())
+            .withOutput(output)
+            .forCRDVersions("v1")
+        crdGenerator.generate()
+        return output.getCRDs().also { output.close() }
+    }
+
     private fun prepareKoin(kubernetesClient: KubernetesClient) {
         getKoin().declare(kubernetesClient)
     }
@@ -59,20 +98,27 @@ class KubernetesOperatorExtension private constructor() : BeforeEachCallback, Be
         kubernetesClient.namespaces().withName(namespace).delete()
     }
 
-    override fun supportsParameter(pContext: ParameterContext, eContext: ExtensionContext): Boolean =
-        pContext.parameter.type == KubernetesOperatorContext::class.java
-
-    override fun resolveParameter(pContext: ParameterContext, eContext: ExtensionContext): Any =
-        eContext.store().get(KubernetesOperatorContext::class.simpleName)
-
-
     private fun ExtensionContext.store(): ExtensionContext.Store {
         return this.getStore(KUBERNETES_OPERATOR_STORE)
     }
 
     companion object {
-        fun create() = KubernetesOperatorExtension()
+        fun create(crdClass: List<Class<out CustomResource<*,*>>> = emptyList()) = KubernetesOperatorExtension(crdClass)
 
         private val KUBERNETES_OPERATOR_STORE: ExtensionContext.Namespace = ExtensionContext.Namespace.create("KUBERNETES_OPERATOR_STORE")
+    }
+}
+
+class InMemoryCRDOutput : AbstractCRDOutput<ByteArrayOutputStream>() {
+    private val streams = mutableListOf<ByteArrayOutputStream>()
+
+    override fun createStreamFor(crdName: String): ByteArrayOutputStream {
+        return ByteArrayOutputStream().also {
+            streams.add(it)
+        }
+    }
+
+    fun getCRDs(): List<String> {
+        return streams.map { it.toString() }
     }
 }
