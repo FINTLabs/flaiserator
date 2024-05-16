@@ -33,6 +33,7 @@ data class FlaisApplicationSpec(
         .addToLimits("memory", Quantity("512Mi"))
         .build(),
 
+    @Min(1.0)
     val port: Int = 8080,
 
     @Deprecated("Does not exist on when applied on DeploymentSpec")
