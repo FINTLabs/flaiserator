@@ -13,12 +13,12 @@ import java.time.Duration
 
 
 object Utils {
-    inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(app: FlaisApplicationCrd): T {
+    inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(app: FlaisApplicationCrd): T? {
         create(app)
         await atMost Duration.ofSeconds(10) until {
             get<FlaisApplicationCrd>(app.metadata.name)?.status?.state == FlaisApplicationState.DEPLOYED
         }
-        return get<T>(app.metadata.name) ?: error("${T::class.simpleName} not found")
+        return get<T>(app.metadata.name)
     }
 
     fun createTestFlaisApplication(): FlaisApplicationCrd {
