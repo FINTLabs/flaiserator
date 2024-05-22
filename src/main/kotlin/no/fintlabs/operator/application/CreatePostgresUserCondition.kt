@@ -11,5 +11,5 @@ class CreatePostgresUserCondition : Condition<PGUser, FlaisApplicationCrd> {
         dependentResource: DependentResource<PGUser, FlaisApplicationCrd>,
         primary: FlaisApplicationCrd,
         context: Context<FlaisApplicationCrd>
-    ) = !primary.spec.database.database.isNullOrEmpty() && primary.spec.database.enabled
+    ) = primary.spec.database.database.isNotEmpty() && primary.spec.database.enabled
 }
