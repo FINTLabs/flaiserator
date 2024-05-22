@@ -29,6 +29,11 @@ import no.fintlabs.operator.application.api.FlaisApplicationState
             name = PostgresUserDR.COMPONENT,
             type = PostgresUserDR::class,
             reconcilePrecondition = CreatePostgresUserCondition::class
+        ),
+        Dependent(
+            name = KafkaDR.COMPONENT,
+            type = KafkaDR::class,
+            reconcilePrecondition = CreateKafkaCondition::class
         )
     ],
     labelSelector = "fintlabs.no/team,fintlabs.no/org-id"
