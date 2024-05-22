@@ -116,9 +116,7 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct onePassword`() {
         createAndApplyFlaisApplication(
-            FlaisApplicationSpec(onePassword = OnePassword().apply {
-                itemPath = "test-itemPath"
-            })
+            FlaisApplicationSpec(onePassword = OnePassword("test-itemPath"))
         )
         val resFlaisApplication = getFlaisApplication()
         assertNotNull(resFlaisApplication.spec.onePassword)

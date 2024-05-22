@@ -11,5 +11,5 @@ class CreateOnePasswordCondition : Condition<OnePasswordItem, FlaisApplicationCr
         dependentResource: DependentResource<OnePasswordItem, FlaisApplicationCrd>,
         primary: FlaisApplicationCrd,
         context: Context<FlaisApplicationCrd>
-    ) = primary.spec.onePassword != null
+    ) = primary.spec.onePassword != null && primary.spec.onePassword!!.itemPath.isNotEmpty()
 }
