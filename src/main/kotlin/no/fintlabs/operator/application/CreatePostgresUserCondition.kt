@@ -8,7 +8,7 @@ import no.fintlabs.v1alpha1.PGUser
 
 class CreatePostgresUserCondition : Condition<PGUser, FlaisApplicationCrd> {
     override fun isMet(
-        dependentResource: DependentResource<PGUser, FlaisApplicationCrd>,
+        dependentResource: DependentResource<PGUser, FlaisApplicationCrd>?,
         primary: FlaisApplicationCrd,
         context: Context<FlaisApplicationCrd>
     ) = primary.spec.database.database.isNotEmpty() && primary.spec.database.enabled

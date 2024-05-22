@@ -17,7 +17,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
             selector = LabelSelector(null, mapOf("app" to primary.metadata.name))
             template = PodTemplateSpec().apply {
                 metadata = cretePodMetadata(primary)
-                spec = createPodSpec(primary)
+                spec = createPodSpec(primary, context)
             }
         }
     }
@@ -32,22 +32,22 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         }
     }
 
-    private fun createPodSpec(primary: FlaisApplicationCrd) = PodSpec().apply {
-        volumes = createPodVolumes(primary)
-        containers = listOf(createContainer(primary))
+    private fun createPodSpec(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = PodSpec().apply {
+        volumes = createPodVolumes(primary, context)
+        containers = listOf(createContainer(primary, context))
         imagePullSecrets = primary.spec.imagePullSecrets.map { LocalObjectReference(it.name) }
     }
 
-    private fun createContainer(primary: FlaisApplicationCrd) = Container().apply {
+    private fun createContainer(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Container().apply {
         name = primary.metadata.name
         image = primary.spec.image
         imagePullPolicy = primary.spec.imagePullPolicy
         resources = primary.spec.resources
         ports = createContainerPorts(primary)
         env = createContainerEnv(primary)
-        envFrom = createContainerEnvFrom(primary)
+        envFrom = createContainerEnvFrom(primary, context)
         ports = createContainerPorts(primary)
-        volumeMounts = createContainerVolumeMounts(primary)
+        volumeMounts = createContainerVolumeMounts(primary, context)
     }
 
     private fun createContainerPorts(primary: FlaisApplicationCrd) = listOf(
@@ -74,44 +74,48 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         return envVars
     }
 
-    private fun createContainerEnvFrom(primary: FlaisApplicationCrd) = listOfNotNull(
+    private fun createContainerEnvFrom(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = listOfNotNull(
         EnvFromSource().apply {
             secretRef = SecretEnvSource().apply {
                 name = "${primary.metadata.name}-op"
             }
-        }.takeIf { primary.spec.onePassword != null },
+        }.takeIf { createOnePasswordCondition.isMet(null, primary, context) },
         EnvFromSource().apply {
             secretRef = SecretEnvSource().apply {
                 name = "${primary.metadata.name}-db"
             }
-        }.takeIf { primary.spec.database.enabled },
+        }.takeIf { createPostgresUserCondition.isMet(null, primary, context) },
         EnvFromSource().apply {
             secretRef = SecretEnvSource().apply {
                 name = "${primary.metadata.name}-kafka"
             }
-        }.takeIf { primary.spec.kafka.enabled }
+        }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
     ).plus(primary.spec.envFrom)
 
 
     // Volumes and volume mounts
-    private fun createPodVolumes(primary: FlaisApplicationCrd) = listOfNotNull(
+    private fun createPodVolumes(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = listOfNotNull(
         Volume().apply {
             name = "credentials"
             secret = SecretVolumeSource().apply {
                 secretName = "${primary.metadata.name}-karafka-certificates"
             }
-        }.takeIf { primary.spec.kafka.enabled }
+        }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
     )
 
-    private fun createContainerVolumeMounts(primary: FlaisApplicationCrd) = listOfNotNull(
+    private fun createContainerVolumeMounts(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = listOfNotNull(
         VolumeMount().apply {
             name = "credentials"
             mountPath = "/credentials"
             readOnly = true
-        }.takeIf { primary.spec.kafka.enabled }
+        }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
     )
 
     companion object {
         const val COMPONENT = "deployment"
+
+        val creteKafkaCondition = CreateKafkaCondition()
+        val createPostgresUserCondition = CreatePostgresUserCondition()
+        val createOnePasswordCondition = CreateOnePasswordCondition()
     }
 }
