@@ -14,7 +14,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class PostgresDRTest {
+
+class PostgresUserDRTest {
     //region General
     @Test
     fun `should create PGUser`(context: KubernetesOperatorContext) {
@@ -51,7 +52,7 @@ class PostgresDRTest {
     //endregion
 
     private fun KubernetesOperatorContext.createAndGetPGUser(app: FlaisApplicationCrd) =
-        createAndGetResource<PGUser>(app)
+        createAndGetResource<PGUser>(app) { "${it.metadata.name}-db" }
 
     companion object {
         @RegisterExtension

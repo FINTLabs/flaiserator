@@ -20,12 +20,12 @@ import java.time.Duration
 
 
 object Utils {
-    inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(app: FlaisApplicationCrd): T? {
+    inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(app: FlaisApplicationCrd, nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name }): T? {
         create(app)
         await atMost Duration.ofSeconds(10) until {
             get<FlaisApplicationCrd>(app.metadata.name)?.status?.state == FlaisApplicationState.DEPLOYED
         }
-        return get<T>(app.metadata.name)
+        return get<T>(nameSelector(app))
     }
 
     fun createTestFlaisApplication(): FlaisApplicationCrd {

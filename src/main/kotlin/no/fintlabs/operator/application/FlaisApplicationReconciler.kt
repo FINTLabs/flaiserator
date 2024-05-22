@@ -20,6 +20,11 @@ import no.fintlabs.operator.application.api.FlaisApplicationState
             name = IngressDR.COMPONENT,
             type = IngressDR::class,
             reconcilePrecondition = CreateIngressCondition::class
+        ),
+        Dependent(
+            name = PostgresUserDR.COMPONENT,
+            type = PostgresUserDR::class,
+            reconcilePrecondition = CreatePostgresUserCondition::class
         )
     ],
     labelSelector = "fintlabs.no/team,fintlabs.no/org-id"
