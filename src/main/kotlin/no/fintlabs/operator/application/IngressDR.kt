@@ -10,7 +10,7 @@ import us.containo.traefik.v1alpha1.ingressroutespec.Routes
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Middlewares
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 
-class IngressDependentResource : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java)  {
+class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java)  {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = IngressRoute().apply {
         metadata = createObjectMeta(primary)
         spec = IngressRouteSpec().apply {

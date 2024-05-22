@@ -14,7 +14,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class DeploymentDependentResourceTest {
+class DeploymentDRTest {
     companion object {
         @JvmField
         @RegisterExtension

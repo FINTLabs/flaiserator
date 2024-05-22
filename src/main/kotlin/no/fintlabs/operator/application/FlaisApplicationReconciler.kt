@@ -8,17 +8,17 @@ import no.fintlabs.operator.application.api.FlaisApplicationState
 @ControllerConfiguration(
     dependents = [
         Dependent(
-            name = DeploymentDependentResource.COMPONENT,
-            type = DeploymentDependentResource::class
+            name = DeploymentDR.COMPONENT,
+            type = DeploymentDR::class
         ),
         Dependent(
-            name = OnePasswordDependentResource.COMPONENT,
-            type = OnePasswordDependentResource::class,
+            name = OnePasswordDR.COMPONENT,
+            type = OnePasswordDR::class,
             reconcilePrecondition = CreateOnePasswordCondition::class
         ),
         Dependent(
-            name = IngressDependentResource.COMPONENT,
-            type = IngressDependentResource::class,
+            name = IngressDR.COMPONENT,
+            type = IngressDR::class,
             reconcilePrecondition = CreateIngressCondition::class
         )
     ],

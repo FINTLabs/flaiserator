@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class IngressDependentResourceTest{
+class IngressDRTest{
     companion object {
         @JvmField
         @RegisterExtension

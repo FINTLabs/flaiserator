@@ -7,7 +7,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDep
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 
 @KubernetesDependent
-class OnePasswordDependentResource : CRUDKubernetesDependentResource<OnePasswordItem, FlaisApplicationCrd>(OnePasswordItem::class.java) {
+class OnePasswordDR : CRUDKubernetesDependentResource<OnePasswordItem, FlaisApplicationCrd>(OnePasswordItem::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = OnePasswordItem().apply {
         metadata = createObjectMeta(primary)
         spec = primary.spec.onePassword

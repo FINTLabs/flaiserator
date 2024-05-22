@@ -9,7 +9,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDep
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 
 @KubernetesDependent
-class DeploymentDependentResource : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java) {
+class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Deployment().apply {
         metadata = createObjectMeta(primary)
         spec = DeploymentSpec().apply {
