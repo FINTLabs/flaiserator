@@ -28,7 +28,7 @@ class KafkaDRTest {
 
         val kafkaUserAndAcl = context.createAndKafkaUserAndAcl(flaisApplication)
         assertNotNull(kafkaUserAndAcl)
-        assertEquals("${flaisApplication.metadata.name}-kafka", kafkaUserAndAcl.metadata.name)
+        assertEquals(flaisApplication.metadata.name, kafkaUserAndAcl.metadata.name)
         assertEquals("test-topic", kafkaUserAndAcl.spec.acls[0].topic)
         assertEquals("write", kafkaUserAndAcl.spec.acls[0].permission)
     }
@@ -80,7 +80,7 @@ class KafkaDRTest {
     //endregion
 
     private fun KubernetesOperatorContext.createAndKafkaUserAndAcl(app: FlaisApplicationCrd) =
-        createAndGetResource<KafkaUserAndAcl>(app) { "${it.metadata.name}-kafka" }
+        createAndGetResource<KafkaUserAndAcl>(app)
 
     companion object {
         @RegisterExtension
