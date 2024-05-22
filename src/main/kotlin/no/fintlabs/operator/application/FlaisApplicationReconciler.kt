@@ -12,6 +12,10 @@ import no.fintlabs.operator.application.api.FlaisApplicationState
             type = DeploymentDR::class
         ),
         Dependent(
+            name = ServiceDR.COMPONENT,
+            type = ServiceDR::class
+        ),
+        Dependent(
             name = OnePasswordDR.COMPONENT,
             type = OnePasswordDR::class,
             reconcilePrecondition = CreateOnePasswordCondition::class
