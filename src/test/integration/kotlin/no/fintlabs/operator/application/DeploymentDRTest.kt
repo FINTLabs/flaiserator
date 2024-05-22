@@ -2,31 +2,18 @@ package no.fintlabs.operator.application
 
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
-import no.fintlabs.baseModule
 import no.fintlabs.operator.KubernetesOperatorContext
-import no.fintlabs.operator.KubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createAndGetResource
+import no.fintlabs.operator.application.Utils.createKoinTestExtension
+import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
 import no.fintlabs.operator.application.api.*
 import org.junit.jupiter.api.extension.RegisterExtension
-import org.koin.test.junit5.KoinTestExtension
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class DeploymentDRTest {
-    companion object {
-        @JvmField
-        @RegisterExtension
-        val koinTestExtension = KoinTestExtension.create {
-            modules(baseModule, applicationReconcilerModule())
-        }
-
-        @JvmField
-        @RegisterExtension
-        val extension = KubernetesOperatorExtension.create()
-    }
-
     //region General
     @Test
     fun `should create deployment`(context: KubernetesOperatorContext) {
@@ -259,4 +246,12 @@ class DeploymentDRTest {
 
     private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplicationCrd) =
         createAndGetResource<Deployment>(app)
+
+    companion object {
+        @RegisterExtension
+        val koinTestExtension = createKoinTestExtension()
+
+        @RegisterExtension
+        val kubernetesOperatorExtension = createKubernetesOperatorExtension()
+    }
 }

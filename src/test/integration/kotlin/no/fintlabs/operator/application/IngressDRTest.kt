@@ -1,16 +1,15 @@
 package no.fintlabs.operator.application
 
 import io.fabric8.kubernetes.client.KubernetesClientException
-import no.fintlabs.baseModule
 import no.fintlabs.operator.KubernetesOperatorContext
-import no.fintlabs.operator.KubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createAndGetResource
+import no.fintlabs.operator.application.Utils.createKoinTestExtension
+import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 import no.fintlabs.operator.application.api.Ingress
 import no.fintlabs.operator.application.api.Url
 import org.junit.jupiter.api.extension.RegisterExtension
-import org.koin.test.junit5.KoinTestExtension
 import us.containo.traefik.v1alpha1.IngressRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,20 +17,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class IngressDRTest{
-    companion object {
-        @JvmField
-        @RegisterExtension
-        val koinTestExtension = KoinTestExtension.create {
-            modules(baseModule, applicationReconcilerModule())
-        }
-
-        @JvmField
-        @RegisterExtension
-        val kubernetesOperatorExtension = KubernetesOperatorExtension.create(
-            listOf(IngressRoute::class.java)
-        )
-    }
-
     //region General
     @Test
     fun `should creaet IngressRoute`(context: KubernetesOperatorContext) {
@@ -128,4 +113,13 @@ class IngressDRTest{
 
     private fun KubernetesOperatorContext.createAndGetIngressRoute(app: FlaisApplicationCrd) =
         createAndGetResource<IngressRoute>(app)
+
+
+    companion object {
+        @RegisterExtension
+        val koinTestExtension = createKoinTestExtension()
+
+        @RegisterExtension
+        val kubernetesOperatorExtension = createKubernetesOperatorExtension()
+    }
 }
