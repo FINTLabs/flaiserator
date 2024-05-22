@@ -4,6 +4,7 @@ import io.fabric8.crd.generator.CRDGenerator
 import io.fabric8.crd.generator.CRDGenerator.AbstractCRDOutput
 import io.fabric8.kubeapitest.KubeAPIServer
 import io.fabric8.kubernetes.api.model.Namespace
+import io.fabric8.kubernetes.client.Config
 import io.fabric8.kubernetes.client.CustomResource
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
@@ -34,7 +35,7 @@ class KubernetesOperatorExtension
     }
 
     override fun beforeEach(context: ExtensionContext) {
-        val kubernetesClient = KubernetesClientBuilder().withConfig(kubernetesApi.kubeConfigYaml).build()
+        val kubernetesClient = createKubernetesClient()
         val namespace = namespaceSupplier.apply(context)
 
         prepareKoin(kubernetesClient)
@@ -62,7 +63,7 @@ class KubernetesOperatorExtension
 
     private fun ensureCRDs() {
         val crds = prepareCRDs()
-        val kubernetesClient = KubernetesClientBuilder().withConfig(kubernetesApi.kubeConfigYaml).build()
+        val kubernetesClient = createKubernetesClient()
         crds.forEach { crd ->
             kubernetesClient.load(ByteArrayInputStream(crd.toByteArray())).serverSideApply()
         }
@@ -100,6 +101,10 @@ class KubernetesOperatorExtension
 
     private fun ExtensionContext.store(): ExtensionContext.Store {
         return this.getStore(KUBERNETES_OPERATOR_STORE)
+    }
+
+    private fun createKubernetesClient(): KubernetesClient {
+        return KubernetesClientBuilder().withConfig(Config.fromKubeconfig(kubernetesApi.kubeConfigYaml)).build()
     }
 
     companion object {
