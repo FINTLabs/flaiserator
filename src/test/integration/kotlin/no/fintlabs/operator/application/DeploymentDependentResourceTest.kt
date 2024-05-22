@@ -1,10 +1,6 @@
 package no.fintlabs.operator.application
 
-import io.fabric8.kubernetes.api.model.EnvVar
-import io.fabric8.kubernetes.api.model.ObjectMeta
-import io.fabric8.kubernetes.api.model.Quantity
-import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder
-import io.fabric8.kubernetes.api.model.Secret
+import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import no.fintlabs.baseModule
 import no.fintlabs.operator.KubernetesOperatorContext
@@ -19,15 +15,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class DeploymentDependentResourceTest {
-    @JvmField
-    @RegisterExtension
-    val koinTestExtension = KoinTestExtension.create {
-        modules(baseModule, applicationModule())
-    }
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val koinTestExtension = KoinTestExtension.create {
+            modules(baseModule, applicationModule())
+        }
 
-    @JvmField
-    @RegisterExtension
-    val extension = KubernetesOperatorExtension.create()
+        @JvmField
+        @RegisterExtension
+        val extension = KubernetesOperatorExtension.create()
+    }
 
     //region General
     @Test

@@ -18,6 +18,20 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class IngressDependentResourceTest{
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val koinTestExtension = KoinTestExtension.create {
+            modules(baseModule, applicationModule())
+        }
+
+        @JvmField
+        @RegisterExtension
+        val kubernetesOperatorExtension = KubernetesOperatorExtension.create(
+            listOf(IngressRoute::class.java)
+        )
+    }
+
     //region General
     @Test
     fun `should creaet IngressRoute`(context: KubernetesOperatorContext) {
@@ -114,18 +128,4 @@ class IngressDependentResourceTest{
 
     private fun KubernetesOperatorContext.createAndGetIngressRoute(app: FlaisApplicationCrd) =
         createAndGetResource<IngressRoute>(app)
-
-    companion object {
-        @JvmField
-        @RegisterExtension
-        val koinTestExtension = KoinTestExtension.create {
-            modules(baseModule, applicationModule())
-        }
-
-        @JvmField
-        @RegisterExtension
-        val kubernetesOperatorExtension = KubernetesOperatorExtension.create(
-            listOf(IngressRoute::class.java)
-        )
-    }
 }
