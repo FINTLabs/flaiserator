@@ -22,7 +22,7 @@ class IngressDRTest{
         @JvmField
         @RegisterExtension
         val koinTestExtension = KoinTestExtension.create {
-            modules(baseModule, applicationModule())
+            modules(baseModule, applicationReconcilerModule())
         }
 
         @JvmField
