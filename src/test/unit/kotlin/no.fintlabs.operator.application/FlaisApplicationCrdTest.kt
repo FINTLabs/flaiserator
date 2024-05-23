@@ -11,18 +11,16 @@ import no.fintlabs.operator.application.api.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.TestInstance
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.hamcrest.CoreMatchers.`is` as isEqualTo
 
 @EnableKubernetesMockClient(crud = true)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FlaisApplicationCrdTest {
 
-    lateinit var client: KubernetesClient
-    lateinit var crd: CustomResourceDefinition
+    private lateinit var client: KubernetesClient
+    private lateinit var crd: CustomResourceDefinition
 
     @BeforeEach
     fun beforeEach() {
@@ -37,11 +35,14 @@ class FlaisApplicationCrdTest {
     }
 
     @Test
-    fun `FlaisApplicationCrd should exist in the kluster`() {
+    fun `FlaisApplicationCrd should exist in the cluster`() {
         val crdList = client.apiextensions().v1().customResourceDefinitions().list();
         assert(crdList.items.size == 1)
-        assert(crdList.items.first().spec.names.kind == "FlaisApplication")
-        assert(crdList.items.first().spec.group == "fintlabs.no")
+
+        val crd = crdList.items.first()
+        assertEquals("Application", crd.spec.names.kind)
+        assertEquals("fintlabs.no", crd.spec.group)
+        assertEquals("v1alpha1", crd.spec.versions.first().name)
     }
 
     @Test
@@ -192,17 +193,15 @@ class FlaisApplicationCrdTest {
     }
 
 
-    private fun createAndApplyFlaisApplication(spec: FlaisApplicationSpec = FlaisApplicationSpec()): FlaisApplicationCrd {
-        val application = FlaisApplicationCrd().apply {
-            metadata.name = "test-application"
-            metadata.namespace = "default"
-            this.spec = spec.copy(
-                orgId = "default-orgId",
-                image = "default-image"
-            )
-        }
-        client.resource(application).create()
-        return application
+    private fun createAndApplyFlaisApplication(spec: FlaisApplicationSpec = FlaisApplicationSpec()) = FlaisApplicationCrd().apply {
+        metadata.name = "test-application"
+        metadata.namespace = "default"
+        this.spec = spec.copy(
+            orgId = "default-orgId",
+            image = "default-image"
+        )
+    }.also {
+        client.resource(it).create()
     }
 
     private fun getFlaisApplication(): FlaisApplicationCrd {
