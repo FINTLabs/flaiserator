@@ -1,5 +1,6 @@
 package no.fintlabs.operator.application
 
+import com.sksamuel.hoplite.PropertySource
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import no.fintlabs.extensions.KubernetesOperatorContext
@@ -270,7 +271,7 @@ class DeploymentDRTest {
         @RegisterExtension
         val koinTestExtension = createKoinTestExtension(module {
             single {
-                loadConfig("/deployment/application.yaml")
+                loadConfig(PropertySource.resource("/deployment/application.yaml", optional = false))
             }
         })
 

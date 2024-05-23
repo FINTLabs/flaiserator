@@ -2,18 +2,22 @@ package no.fintlabs
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.PropertySource
+import org.slf4j.LoggerFactory
 
 data class Config (
-    val imagePullSecrets: List<String>
+    val imagePullSecrets: List<String> = emptyList()
 )
+private val logger = LoggerFactory.getLogger("Config")
 
-fun loadConfig(vararg resources: String): Config {
-    val environmentPropertySource = PropertySource.environment()
-    val resourcePropertySources = resources.map { PropertySource.resource(it) }
-
+fun loadConfig(vararg resources: PropertySource): Config {
+    logger.trace("Loading config...")
     val configLoader = ConfigLoaderBuilder.default()
-        .addPropertySources(listOf(environmentPropertySource) + resourcePropertySources)
+        .addPropertySources(listOf(PropertySource.environment()) + resources)
         .build()
-
-    return configLoader.loadConfigOrThrow<Config>()
+    return configLoader.loadConfigOrThrow<Config>().also {
+        logger.trace("Loaded config: {}", it)
+    }
 }
+
+fun defaultConfig() = loadConfig(PropertySource.resource("/application.yaml", optional = true))
+

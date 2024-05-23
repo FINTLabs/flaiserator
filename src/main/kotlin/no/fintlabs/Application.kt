@@ -13,13 +13,14 @@ fun main() {
     startKoin {
         modules(
             applicationReconcilerModule(),
-            baseModule)
+            baseModule
+        )
     }
     startOperator()
 }
 
 val baseModule = module {
-    single { loadConfig() }
+    single(createdAtStart = true) { defaultConfig() }
     single { KubernetesClientBuilder().build() }
     single {
         Operator(ConfigurationService.newOverriddenConfigurationService { it.withKubernetesClient(get()) }).apply {

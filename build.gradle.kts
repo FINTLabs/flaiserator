@@ -45,6 +45,7 @@ dependencies {
     implementation("io.insert-koin:koin-core:$koin_version")
     implementation("com.sksamuel.hoplite:hoplite-core:2.7.5")
     implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.5")
+    implementation("ch.qos.logback:logback-classic:1.5.6")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:$mockk_version")
@@ -70,6 +71,9 @@ testing {
             sources {
                 kotlin {
                     srcDirs(layout.projectDirectory.dir("src/test/unit/kotlin"))
+                }
+                resources {
+                    setSrcDirs(listOf("src/test/unit/resources"))
                 }
             }
 
