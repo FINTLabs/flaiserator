@@ -198,7 +198,8 @@ class FlaisApplicationCrdTest {
         metadata.namespace = "default"
         this.spec = spec.copy(
             orgId = "default-orgId",
-            image = "default-image"
+            image = "default-image",
+            imagePullSecrets = listOf("default-imagePullSecrets"),
         )
     }.also {
         client.resource(it).create()

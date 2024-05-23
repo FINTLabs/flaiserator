@@ -21,7 +21,7 @@ data class FlaisApplicationSpec(
     message = "Invalid imagePullPolicy, must be one of IfNotPresent, Always, Never"
     )
     val imagePullPolicy: String? = null,
-    val imagePullSecrets: List<ImagePullSecret> = emptyList(),
+    val imagePullSecrets: List<String> = emptyList(),
 
     val env: List<EnvVar> = emptyList(),
     val envFrom: List<EnvFromSource> = emptyList(),

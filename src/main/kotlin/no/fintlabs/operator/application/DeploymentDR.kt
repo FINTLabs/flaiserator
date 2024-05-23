@@ -6,10 +6,15 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentSpec
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
+import no.fintlabs.Config
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 @KubernetesDependent
-class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java) {
+class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java), KoinComponent {
+    val config: Config by inject()
+
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Deployment().apply {
         metadata = createObjectMeta(primary)
         spec = DeploymentSpec().apply {
@@ -35,8 +40,13 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
     private fun createPodSpec(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = PodSpec().apply {
         volumes = createPodVolumes(primary, context)
         containers = listOf(createContainer(primary, context))
-        imagePullSecrets = primary.spec.imagePullSecrets.map { LocalObjectReference(it.name) }
+        imagePullSecrets = createImagePullSecrets(primary)
     }
+
+    private fun createImagePullSecrets(primary: FlaisApplicationCrd) = mutableSetOf<String>()
+        .plus(config.imagePullSecrets)
+        .plus(primary.spec.imagePullSecrets)
+        .map { LocalObjectReference(it) }
 
     private fun createContainer(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Container().apply {
         name = primary.metadata.name
