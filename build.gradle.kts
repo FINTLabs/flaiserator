@@ -43,6 +43,8 @@ dependencies {
     kapt("io.fabric8:crd-generator-apt:${fabric8_version}")
     implementation("io.javaoperatorsdk:operator-framework-core:4.8.3")
     implementation("io.insert-koin:koin-core:$koin_version")
+    implementation("com.sksamuel.hoplite:hoplite-core:2.7.5")
+    implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.5")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:$mockk_version")

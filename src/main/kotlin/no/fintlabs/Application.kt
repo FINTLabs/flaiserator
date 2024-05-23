@@ -19,6 +19,7 @@ fun main() {
 }
 
 val baseModule = module {
+    single { loadConfig() }
     single { KubernetesClientBuilder().build() }
     single {
         Operator(ConfigurationService.newOverriddenConfigurationService { it.withKubernetesClient(get()) }).apply {
