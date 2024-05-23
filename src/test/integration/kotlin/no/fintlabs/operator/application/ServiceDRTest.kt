@@ -1,7 +1,7 @@
 package no.fintlabs.operator.application
 
 import io.fabric8.kubernetes.api.model.Service
-import no.fintlabs.operator.KubernetesOperatorContext
+import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension

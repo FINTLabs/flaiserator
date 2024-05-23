@@ -2,7 +2,7 @@ package no.fintlabs.operator.application
 
 import com.onepassword.v1.OnePasswordItem
 import junit.framework.TestCase.assertNull
-import no.fintlabs.operator.KubernetesOperatorContext
+import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension

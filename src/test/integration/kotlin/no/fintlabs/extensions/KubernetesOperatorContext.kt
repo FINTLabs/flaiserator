@@ -1,4 +1,4 @@
-package no.fintlabs.operator
+package no.fintlabs.extensions
 
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.client.KubernetesClient

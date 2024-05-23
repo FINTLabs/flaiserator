@@ -4,8 +4,8 @@ import com.onepassword.v1.OnePasswordItem
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import no.fintlabs.baseModule
-import no.fintlabs.operator.KubernetesOperatorContext
-import no.fintlabs.operator.KubernetesOperatorExtension
+import no.fintlabs.extensions.KubernetesOperatorContext
+import no.fintlabs.extensions.KubernetesOperatorExtension
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 import no.fintlabs.operator.application.api.FlaisApplicationSpec
 import no.fintlabs.operator.application.api.FlaisApplicationState

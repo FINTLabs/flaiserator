@@ -1,4 +1,4 @@
-package no.fintlabs.operator
+package no.fintlabs.extensions
 
 import io.fabric8.crd.generator.CRDGenerator
 import io.fabric8.crd.generator.CRDGenerator.AbstractCRDOutput
@@ -25,9 +25,13 @@ class KubernetesOperatorExtension
     private val kubernetesApi = KubeAPIServer()
     private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
+    private var additionalResources = emptyList<KubernetesResourceSource>()
+
     override fun beforeAll(context: ExtensionContext) {
+        prepareAdditionalResources(context)
         kubernetesApi.start()
         ensureCRDs()
+
     }
 
     override fun afterAll(context: ExtensionContext) {
@@ -40,6 +44,7 @@ class KubernetesOperatorExtension
 
         prepareKoin(kubernetesClient)
         prepareKubernetes(kubernetesClient, namespace)
+        applyAdditionalResources(kubernetesClient, namespace)
         context.store().put(KubernetesOperatorContext::class.simpleName, KubernetesOperatorContext(namespace, kubernetesClient))
 
         get<Operator>().start()
@@ -105,6 +110,22 @@ class KubernetesOperatorExtension
 
     private fun createKubernetesClient(): KubernetesClient {
         return KubernetesClientBuilder().withConfig(Config.fromKubeconfig(kubernetesApi.kubeConfigYaml)).build()
+    }
+
+    private fun prepareAdditionalResources(context: ExtensionContext) {
+        context.element.ifPresent {
+            it.getAnnotation(KubernetesResources::class.java)?.let { kubernetesResource ->
+                additionalResources = KubernetesResourceSource.fromResources(kubernetesResource.paths.toList())
+            }
+        }
+    }
+
+    private fun applyAdditionalResources(kubernetesClient: KubernetesClient, namespace: String) {
+        additionalResources.forEach { resource ->
+            resource.open()?.use { inputStream ->
+                kubernetesClient.load(inputStream).inNamespace(namespace).serverSideApply()
+            }
+        }
     }
 
     companion object {
