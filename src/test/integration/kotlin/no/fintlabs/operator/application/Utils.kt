@@ -14,6 +14,7 @@ import no.fintlabs.v1alpha1.PGUser
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
+import org.koin.core.module.Module
 import org.koin.test.junit5.KoinTestExtension
 import us.containo.traefik.v1alpha1.IngressRoute
 import java.time.Duration
@@ -49,7 +50,9 @@ object Utils {
         listOf(FlaisApplicationCrd::class.java, IngressRoute::class.java, PGUser::class.java, KafkaUserAndAcl::class.java, OnePasswordItem::class.java)
     )
 
-    fun createKoinTestExtension() = KoinTestExtension.create {
+    fun createKoinTestExtension(additionalModule: Module? = null) = KoinTestExtension.create {
+        allowOverride(true)
         modules(baseModule, applicationReconcilerModule())
+        additionalModule?.let { modules(it) }
     }
 }

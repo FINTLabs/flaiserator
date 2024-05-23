@@ -1,0 +1,3 @@
+imagePullSecrets:
+  - reg-key-1
+  - reg-key-2

@@ -3,6 +3,8 @@ package no.fintlabs.operator.application
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import no.fintlabs.extensions.KubernetesOperatorContext
+import no.fintlabs.extensions.KubernetesResources
+import no.fintlabs.loadConfig
 import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
@@ -10,10 +12,12 @@ import no.fintlabs.operator.application.Utils.createTestFlaisApplication
 import no.fintlabs.operator.application.api.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.extension.RegisterExtension
+import org.koin.dsl.module
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+@KubernetesResources("deployment/kubernetes")
 class DeploymentDRTest {
     //region General
     @Test
@@ -32,6 +36,12 @@ class DeploymentDRTest {
         assertEquals("test", deployment.spec.selector.matchLabels["app"])
 
         assertEquals(1, deployment.spec.replicas)
+
+        assertEquals(2, deployment.spec.template.spec.imagePullSecrets.size)
+        assertEquals("reg-key-1", deployment.spec.template.spec.imagePullSecrets[0].name)
+        assertEquals("reg-key-2", deployment.spec.template.spec.imagePullSecrets[1].name)
+
+
         assertEquals(1, deployment.spec.template.spec.containers.size)
 
         assertEquals("test-image", deployment.spec.template.spec.containers[0].image)
@@ -74,15 +84,15 @@ class DeploymentDRTest {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(
                 imagePullSecrets = listOf(
-                    ImagePullSecret(name = "test-secret")
+                    "test-secret"
                 )
             )
         }
 
         val deployment = context.createAndGetDeployment(flaisApplication)
         assertNotNull(deployment)
-        assertEquals(1, deployment.spec.template.spec.imagePullSecrets.size)
-        assertEquals("test-secret", deployment.spec.template.spec.imagePullSecrets[0].name)
+        assertEquals(3, deployment.spec.template.spec.imagePullSecrets.size)
+        assertEquals("test-secret", deployment.spec.template.spec.imagePullSecrets[2].name)
     }
 
     //endregion
@@ -258,7 +268,11 @@ class DeploymentDRTest {
 
     companion object {
         @RegisterExtension
-        val koinTestExtension = createKoinTestExtension()
+        val koinTestExtension = createKoinTestExtension(module {
+            single {
+                loadConfig("/deployment/application.yaml")
+            }
+        })
 
         @RegisterExtension
         val kubernetesOperatorExtension = createKubernetesOperatorExtension()
