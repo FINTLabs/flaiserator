@@ -14,7 +14,7 @@ import org.koin.core.component.inject
 
 @KubernetesDependent
 class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java), KoinComponent {
-    val config: Config by inject()
+    private val config: Config by inject()
 
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Deployment().apply {
         metadata = createObjectMeta(primary)
