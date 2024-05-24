@@ -1,18 +1,21 @@
 
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val kotlin_version: String by project
-val mockk_version: String by project
-val fabric8_version: String by project
-val koin_version: String by project
+val kotlinVersion: String by project
+val mockkVersion: String by project
+val fabric8Version: String by project
+val koinVersion: String by project
+val operatorSdkVersion: String by project
+val awaitilityVersion: String by project
+val hopliteVersion: String by project
+val logbackVersion: String by project
+
 
 plugins {
+    application
     kotlin("jvm")
     kotlin("kapt")
-    application
 
-    id("java")
     id("io.fabric8.java-generator")
 }
 
@@ -34,64 +37,41 @@ application {
 repositories {
     mavenCentral()
     mavenLocal()
-    maven("https://repo.fintlabs.no/releases")
 }
 
 dependencies {
-    implementation("io.fabric8:kubernetes-client:${fabric8_version}")
-    implementation("io.fabric8:crd-generator-apt:${fabric8_version}")
-    kapt("io.fabric8:crd-generator-apt:${fabric8_version}")
-    implementation("io.javaoperatorsdk:operator-framework-core:4.8.3")
-    implementation("io.insert-koin:koin-core:$koin_version")
-    implementation("com.sksamuel.hoplite:hoplite-core:2.7.5")
-    implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.5")
-    implementation("ch.qos.logback:logback-classic:1.5.6")
+    implementation("io.fabric8:kubernetes-client:$fabric8Version")
+    implementation("io.fabric8:crd-generator-apt:$fabric8Version")
+    implementation("io.javaoperatorsdk:operator-framework-core:$operatorSdkVersion")
+    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
+    implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
+
 
     testImplementation(kotlin("test"))
-    testImplementation("io.mockk:mockk:$mockk_version")
-    testImplementation("io.fabric8:kubernetes-server-mock:${fabric8_version}")
-    testImplementation("io.fabric8:kube-api-test:${fabric8_version}")
-    testImplementation("io.javaoperatorsdk:operator-framework-junit-5:4.8.3")
-    testImplementation("io.insert-koin:koin-test:$koin_version")
-    testImplementation("io.insert-koin:koin-test-junit5:$koin_version")
-    testImplementation("org.awaitility:awaitility-kotlin:4.2.1")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("io.fabric8:kubernetes-server-mock:${fabric8Version}")
+    testImplementation("io.fabric8:kube-api-test:${fabric8Version}")
+    testImplementation("io.javaoperatorsdk:operator-framework-junit-5:$operatorSdkVersion")
+    testImplementation("io.insert-koin:koin-test:$koinVersion")
+    testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
+    testImplementation("org.awaitility:awaitility-kotlin:$awaitilityVersion")
 }
 
-val copyResourceDefinition = tasks.register<Copy>("copyResourceDefinition") {
-    from("${layout.buildDirectory}/classes/java/main/META-INF/fabric8/applications.fintlabs.no-v1.yml")
-    into("$projectDir/kustomize/base")
-}
+
 
 
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
             testType.set(TestSuiteType.UNIT_TEST)
-
             sources {
                 kotlin {
                     srcDirs(layout.projectDirectory.dir("src/test/unit/kotlin"))
                 }
                 resources {
                     setSrcDirs(listOf("src/test/unit/resources"))
-                }
-            }
-
-            targets {
-                all {
-                    testTask.configure {
-                        useJUnitPlatform()
-                        filter {
-                            isFailOnNoMatchingTests = false
-                        }
-                        testLogging {
-                            events = setOf(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-                            exceptionFormat = TestExceptionFormat.FULL
-                            showCauses = true
-                            showExceptions = true
-                            showStackTraces = true
-                        }
-                    }
                 }
             }
         }
@@ -117,17 +97,6 @@ testing {
             targets {
                 all {
                     testTask.configure {
-                        useJUnitPlatform ()
-                        filter {
-                            isFailOnNoMatchingTests = false
-                        }
-                        testLogging {
-                            events = setOf(TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-                            exceptionFormat = TestExceptionFormat.FULL
-                            showCauses = true
-                            showExceptions = true
-                            showStackTraces = true
-                        }
                         shouldRunAfter(test)
                     }
                 }
@@ -136,21 +105,45 @@ testing {
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
+tasks {
+    withType<Wrapper> {
+        gradleVersion = "8.7"
+    }
 
-tasks.named("build") {
-    finalizedBy(copyResourceDefinition)
-}
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_21.toString()
+    }
 
-tasks.named("clean") {
-    doLast {
-        delete("$projectDir/kustomize/base/applications.fintlabs.no-v1.yml")
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    compileKotlin {
+        dependsOn(crd2java)
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
+    }
+
+    register("generateCrd") {
+        project.dependencies {
+            kapt("io.fabric8:crd-generator-apt:$fabric8Version")
+        }
+
+        getByName("kaptKotlin").doLast {
+            copy {
+                from(layout.buildDirectory.dir("tmp/kapt3/classes/main/META-INF/fabric8"))
+                into(layout.buildDirectory.dir("generated/kubernetes"))
+            }
+        }
+
+        finalizedBy("kaptKotlin")
     }
 }
 
 javaGen {
-    source = file("src/main/resources/kubernetes")
+    source = file(layout.projectDirectory.dir("src/main/resources/kubernetes"))
     target = file(layout.buildDirectory.dir("generated/source/kubernetes/main"))
 }
