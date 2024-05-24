@@ -37,7 +37,7 @@ import kotlin.jvm.optionals.getOrDefault
             reconcilePrecondition = CreateKafkaCondition::class
         )
     ],
-    labelSelector = "fintlabs.no/team,fintlabs.no/org-id"
+    labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
 )
 class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, ContextInitializer<FlaisApplicationCrd> {
     override fun reconcile(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): UpdateControl<FlaisApplicationCrd> {

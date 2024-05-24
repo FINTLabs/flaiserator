@@ -8,6 +8,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernete
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.Config
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.ORG_ID_LABEL
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -70,7 +71,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
 
     private fun createContainerEnv(primary: FlaisApplicationCrd): MutableList<EnvVar> {
         val envVars = mutableListOf(
-            EnvVar("fint.org-id", primary.metadata.labels["fintlabs.no/org-id"], null),
+            EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null),
             EnvVar("TZ", "Europe/Oslo", null)
         )
 
