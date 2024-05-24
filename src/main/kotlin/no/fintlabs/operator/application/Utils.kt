@@ -2,6 +2,7 @@ package no.fintlabs.operator.application
 
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import io.fabric8.kubernetes.api.model.OwnerReference
+import no.fintlabs.operator.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 
 fun createObjectMeta(source: FlaisApplicationCrd) = ObjectMeta().apply {
@@ -11,7 +12,9 @@ fun createObjectMeta(source: FlaisApplicationCrd) = ObjectMeta().apply {
     labels = source.metadata.labels.toMutableMap()
         .plus("app" to source.metadata.name)
         .plus("app.kubernetes.io/managed-by" to "flaiserator")
-    annotations = mutableMapOf()
+    annotations = mutableMapOf(
+        DEPLOYMENT_CORRELATION_ID_ANNOTATION to source.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+    )
     ownerReferences = listOf(createOwnerReference(source))
 }
 
