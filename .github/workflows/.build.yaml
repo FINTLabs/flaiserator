@@ -27,19 +27,19 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
       - name: Gradle test and build
         run: ./gradlew build
 
+      - id: commit-hash
+        uses: prompt/actions-commit-hash@v3
+
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -47,8 +47,8 @@ jobs:
         id: docker-meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ env.IMAGE_NAME }}
-          tags: ${{ env.GITHUB_REF_SLUG }}
+          images: ghcr.io/${{ github.event.repository.name }}
+          tags: ${{ steps.commit-hash.outputs.short }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
