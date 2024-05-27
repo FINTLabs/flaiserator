@@ -1,0 +1,64 @@
+name: .build-publish.yaml
+
+on:
+  workflow_call:
+    outputs:
+      image:
+        description: "Docker image url"
+        value: ${{ jobs.build-and-publish.outputs.image }}
+
+jobs:
+  build-and-publish:
+    name: Build & Publish Docker
+    runs-on: ubuntu-latest-8-cores
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Gradle test and build
+        run: ./gradlew build
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: docker-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ env.IMAGE_NAME }}
+          tags: ${{ env.GITHUB_REF_SLUG }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        id: docker-build-push
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.docker-meta.outputs.tags }}
+          labels: ${{ steps.docker-meta.outputs.labels }}
+
+
+      - name: Print docker tag
+        run: echo 'Docker-tag er ${{ steps.docker-build-push.outputs.image }} ' >> $GITHUB_STEP_SUMMARY

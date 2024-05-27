@@ -35,6 +35,7 @@ spec:
             {}
           image: "ghcr.io/fintlabs/flaiserator:sha-0000000"
           imagePullPolicy: IfNotPresent
+          envFrom: []
           env:
             - name: logging.level.no.fintlabs
               value: DEBUG
