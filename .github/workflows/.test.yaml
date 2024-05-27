@@ -1,17 +1,19 @@
+name: .test.yaml
+
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
+
 
 permissions:
   contents: read
 
 jobs:
   test:
-    if: github.event_name == 'pull_request'
     name: Verify pull request
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,8 +26,3 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
       - name: Gradle test and build
         run: ./gradlew :test :integrationTest --stacktrace
-
-  build:
-    if: github.event_name != 'pull_request'
-    uses: ./.github/workflows/.build.yaml
-    secrets: inherit
