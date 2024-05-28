@@ -1,0 +1,68 @@
+environmentKinds:
+  - tenant
+  - legacy
+
+values:
+  image.pullPolicy:
+    config:
+      type: string
+  image.repository:
+    config:
+      type: string
+  image.tag:
+    config:
+      type: string
+
+  imagePullSecrets:
+    config:
+      type: array
+  nameOverride:
+    config:
+      type: string
+  fullnameOverride:
+    config:
+      type: string
+
+  serviceAccount.create:
+    config:
+      type: boolean
+  serviceAccount.automount:
+    config:
+      type: boolean
+  serviceAccount.annotations:
+    config:
+      type: object
+  serviceAccount.name:
+    config:
+      type: string
+
+  podAnnotations:
+    config:
+      type: object
+  podLabels:
+    config:
+      type: object
+
+  podSecurityContext:
+    config:
+      type: object
+  securityContext:
+    config:
+      type: object
+
+  resources.limits.memory:
+    config:
+      type: string
+  resources.requests.cpu:
+    config:
+      type: string
+  resources.requests.memory:
+    config:
+      type: string
+
+  volumes:
+    config:
+      type: array
+  volumeMounts:
+    config:
+      type: array
