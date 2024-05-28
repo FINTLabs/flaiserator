@@ -20,7 +20,6 @@ plugins {
 }
 
 group = "no.fintlabs"
-version = "0.0.1-SNAPSHOT"
 
 sourceSets {
     main {
@@ -43,7 +42,8 @@ dependencies {
     implementation("io.fabric8:kubernetes-client:$fabric8Version")
     implementation("io.fabric8:crd-generator-apt:$fabric8Version")
     implementation("io.javaoperatorsdk:operator-framework-core:$operatorSdkVersion")
-    implementation("io.insert-koin:koin-core:$koinVersion")
+    implementation(platform("io.insert-koin:koin-bom:$koinVersion"))
+    implementation("io.insert-koin:koin-core")
     implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
@@ -106,6 +106,26 @@ testing {
 }
 
 tasks {
+    jar {
+        archiveBaseName = "app"
+        manifest {
+            attributes["Main-Class"] = "no.fintlabs.ApplicationKt"
+            attributes["Class-Path"] =
+                configurations.runtimeClasspath.get().joinToString(separator = " ") {
+                    it.name
+                }
+        }
+
+        doLast {
+            configurations.runtimeClasspath.get().forEach {
+                val file = layout.buildDirectory.file("libs/${it.name}").get().asFile
+                if (!file.exists()) {
+                    it.copyTo(file)
+                }
+            }
+        }
+    }
+
     withType<Wrapper> {
         gradleVersion = "8.7"
     }
@@ -117,6 +137,11 @@ tasks {
     java {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    javaGen {
+        source = file(layout.projectDirectory.dir("src/main/resources/kubernetes"))
+        target = file(layout.buildDirectory.dir("generated/source/kubernetes/main"))
     }
 
     compileKotlin {
@@ -141,9 +166,4 @@ tasks {
 
         finalizedBy("kaptKotlin")
     }
-}
-
-javaGen {
-    source = file(layout.projectDirectory.dir("src/main/resources/kubernetes"))
-    target = file(layout.buildDirectory.dir("generated/source/kubernetes/main"))
 }
