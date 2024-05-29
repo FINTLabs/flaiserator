@@ -196,6 +196,14 @@ spec:
                     type: boolean
                   basePath:
                     type: string
+                  basePaths:
+                    type: array
+                    items:
+                      type: string
+                  headers:
+                    type: object
+                    additionalProperties:
+                      type: string
                   middlewares:
                     items:
                       type: string
