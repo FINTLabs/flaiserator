@@ -1,5 +1,3 @@
-package no.fintlabs.operator.application
-
 import io.fabric8.kubernetes.api.model.IntOrString
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
@@ -10,7 +8,7 @@ import us.containo.traefik.v1alpha1.ingressroutespec.Routes
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Middlewares
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 
-class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java)  {
+class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = IngressRoute().apply {
         metadata = createObjectMeta(primary)
         spec = IngressRouteSpec().apply {
@@ -32,10 +30,21 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
         middlewares = createMiddlewares(primary)
     }
 
-    private fun createMatch(primary: FlaisApplicationCrd) = listOfNotNull(
-        "Host(`${primary.spec.url.hostname}`)",
-        basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" }
-    ).joinToString(" && ")
+    private fun createMatch(primary: FlaisApplicationCrd): String {
+        val paths = primary.spec.ingress.basePaths.takeUnless { it.isNullOrEmpty() } ?: listOf(
+            primary.spec.ingress.basePath ?: primary.spec.url.basePath.orEmpty()
+        )
+        val pathConditions = paths.filterNot { it.isEmpty() }.joinToString(" || ") { "PathPrefix(`$it`)" }
+        val headerConditions = primary.spec.ingress.headers.entries.joinToString(" && ") {
+            "Headers(`${it.key}`, `${it.value}`)"
+        }
+
+        return listOfNotNull(
+            "Host(`${primary.spec.url.hostname}`)",
+            pathConditions.takeUnless { it.isEmpty() },
+            headerConditions.takeUnless { it.isEmpty() }
+        ).joinToString(" && ")
+    }
 
     private fun createMiddlewares(primary: FlaisApplicationCrd) = primary.spec.ingress.middlewares.map {
         Middlewares().apply {
@@ -43,9 +52,6 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
             namespace = primary.metadata.namespace
         }
     }
-
-    private fun basePath(primary: FlaisApplicationCrd) =
-        primary.spec.ingress.basePath.takeUnless { it.isNullOrEmpty() } ?: primary.spec.url.basePath.orEmpty()
 
     companion object {
         const val COMPONENT = "ingress"
