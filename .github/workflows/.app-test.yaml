@@ -1,4 +1,4 @@
-name: .test.yaml
+name: .app-test.yaml
 
 on:
   workflow_call:

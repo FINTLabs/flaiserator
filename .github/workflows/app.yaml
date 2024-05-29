@@ -1,0 +1,43 @@
+on:
+  workflow_dispatch:  # Allow manual triggering of the workflow
+  pull_request:
+    paths:
+      - src/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - gradle.properties
+      - Dockerfile
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    paths:
+      - src/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - gradle.properties
+      - Dockerfile
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/.app-test.yaml
+    secrets: inherit
+
+  build:
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/.app-build.yaml
+    secrets: inherit
+
+  charts:
+    if: github.event_name != 'pull_request'
+    needs: build
+    uses: ./.github/workflows/charts.yaml
+    with:
+      app-version: ${{ needs.build.outputs.version }}
+    secrets: inherit
