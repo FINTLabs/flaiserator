@@ -1,0 +1,96 @@
+  on:
+    workflow_call:
+      inputs:
+        app-version:
+          description: "The version of the application"
+          type: string
+          required: true
+    push:
+      branches:
+        - main
+      paths:
+        - charts/**
+
+  jobs:
+    cache:
+      runs-on: ubuntu-latest
+      outputs:
+        app-version: ${{ steps.set-output.outputs.app-version }}
+      steps:
+        - name: App version cache
+          uses: actions/cache@v4
+          with:
+            path: app-version
+            key: app-version
+            save-always: true
+
+        - name: App version cache update
+          if: inputs.app-version != ''
+          run: echo ${{ inputs.app-version }} > app-version
+
+        - name: Set app-version output
+          id: set-output
+          run: echo "app-version=$(cat app-version)" >> $GITHUB_OUTPUT
+
+    meta:
+        runs-on: ubuntu-latest
+        permissions:
+          contents: read
+        needs: cache
+        steps:
+          - name: Checkout code
+            uses: actions/checkout@v4
+            with:
+              fetch-depth: 0
+
+          - id: commit-hash
+            uses: prompt/actions-commit-hash@v3
+
+          - id: version
+            run: echo "version=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> ${GITHUB_OUTPUT}
+
+          - name: Update Chart.yaml
+            uses: mikefarah/yq@v4
+            with:
+              cmd: |
+                yq e -i '.version = "${{ steps.version.outputs.version }}"' ./charts/flaiserator/Chart.yaml
+                yq e -i '.appVersion = "${{ needs.cache.outputs.app-version }}"' ./charts/flaiserator/Chart.yaml
+
+          - name: Save Chart Values
+            uses: actions/upload-artifact@v4
+            with:
+              name: chart-metadata
+              path: |
+                ./charts/flaiserator/Chart.yaml
+
+    push:
+      permissions:
+        contents: read
+        id-token: write
+      name: Build and push Charts
+      runs-on: ubuntu-latest
+      needs: meta
+      steps:
+        - uses: actions/checkout@v4
+          with:
+            fetch-depth: 0
+
+        - name: Restore Chart Metadata
+          uses: actions/download-artifact@v4.1.5
+          with:
+            name: chart-metadata
+            path: ./charts/flaiserator
+
+        - uses: azure/setup-helm@v4
+          name: Setup Helm
+
+        - name: Login to Flais Helm Repository
+          run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm login ${{ vars.FLAIS_HELM_ENDPOINT }} --username ${{ vars.FLAIS_HELM_USERNAME }} --password-stdin
+
+        - name: Build Charts
+          run: |
+            helm package ./charts/flaiserator -d ./charts/flaiserator
+
+        - name: Push Charts
+          run: |
+            helm push ./charts/flaiserator/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
