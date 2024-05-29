@@ -1,11 +1,11 @@
-name: .build-publish.yaml
+name: .app-build.yaml
 
 on:
   workflow_call:
     outputs:
-      image:
-        description: "Docker image url"
-        value: ${{ jobs.build-and-publish.outputs.image }}
+      image-tag:
+        description: "Docker image tag"
+        value: ${{ jobs.build-and-publish.outputs.image-tag }}
 
 jobs:
   build-and-publish:
@@ -16,7 +16,7 @@ jobs:
       contents: read
       packages: write
     outputs:
-      image: ${{ steps.docker-build-push.outputs.image }}
+      image-tag: ${{ steps.commit-hash.outputs.short  }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,4 +61,4 @@ jobs:
 
 
       - name: Print docker tag
-        run: echo 'Docker-tag er ${{ steps.docker-build-push.outputs.image }} ' >> $GITHUB_STEP_SUMMARY
+        run: echo 'Docker-tag er ${{ steps.commit-hash.outputs.short }} ' >> $GITHUB_STEP_SUMMARY
