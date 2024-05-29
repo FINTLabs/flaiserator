@@ -12,26 +12,6 @@
         - charts/**
 
   jobs:
-    cache:
-      runs-on: ubuntu-latest
-      outputs:
-        app-version: ${{ steps.set-output.outputs.app-version }}
-      steps:
-        - name: App version cache
-          uses: actions/cache@v4
-          with:
-            path: app-version
-            key: app-version
-            save-always: true
-
-        - name: App version cache update
-          if: inputs.app-version != ''
-          run: echo ${{ inputs.app-version }} > app-version
-
-        - name: Set app-version output
-          id: set-output
-          run: echo "app-version=$(cat app-version)" >> $GITHUB_OUTPUT
-
     meta:
         runs-on: ubuntu-latest
         permissions:
@@ -43,18 +23,45 @@
             with:
               fetch-depth: 0
 
+          - name: Get latest app tag
+            if: github.event_name == 'push'
+            id: app-tag
+            uses: actions/github-script@v6
+            with:
+              script: |
+                const tag_pattern = /^\d{8}-[a-f0-9]{7}$/;
+
+                const response = await github.request('GET /orgs/{owner}/packages/container/{package}/versions', {
+                  owner: github.context.repo.owner,
+                  package: github.context.repo.repo
+                });
+
+                const latestTag = response.data
+                  .filter(v => v.metadata.container.tags.some(tag => pattern.test(tag)))
+                  .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+                  .flatMap(v => v.metadata.container.tags.filter(tag => tag_pattern.test(tag)))[0];
+                
+                core.setOutput('latest_tag', latestTag);
+
           - id: commit-hash
             uses: prompt/actions-commit-hash@v3
 
-          - id: version
-            run: echo "version=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> ${GITHUB_OUTPUT}
+          - id: versions
+            run: |
+              echo "chart=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> ${GITHUB_OUTPUT}
+
+              if [ "${{ github.event_name }}" != "push" ]; then
+                echo "app=${{ inputs.app-version }}" >> ${GITHUB_OUTPUT}
+              else
+                echo "app=${{ steps.app-tag.outputs.latest_tag }}" >> ${GITHUB_OUTPUT}
+              fi
 
           - name: Update Chart.yaml
             uses: mikefarah/yq@v4
             with:
               cmd: |
-                yq e -i '.version = "${{ steps.version.outputs.version }}"' ./charts/flaiserator/Chart.yaml
-                yq e -i '.appVersion = "${{ needs.cache.outputs.app-version }}"' ./charts/flaiserator/Chart.yaml
+                yq e -i '.version = "${{ steps.versions.outputs.chart }}"' ./charts/flaiserator/Chart.yaml
+                yq e -i '.appVersion = "${{ needs.versions.outputs.app }}"' ./charts/flaiserator/Chart.yaml
 
           - name: Save Chart Values
             uses: actions/upload-artifact@v4
@@ -89,8 +96,8 @@
 
         - name: Build Charts
           run: |
-            helm package ./charts/flaiserator -d ./charts/flaiserator
+            helm package ./charts/${{ github.event.repository.name }} -d ./charts/${{ github.event.repository.name }}
 
         - name: Push Charts
           run: |
-            helm push ./charts/flaiserator/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
+            helm push ./charts/${{ github.event.repository.name }}/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
