@@ -3,20 +3,30 @@ name: .app-build.yaml
 on:
   workflow_call:
     outputs:
-      image-tag:
-        description: "Docker image tag"
-        value: ${{ jobs.build-and-publish.outputs.image-tag }}
+      version:
+        description: "Docker image tag version"
+        value: ${{ jobs.meta.outputs.version }}
 
 jobs:
+  meta:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - id: commit-hash
+        uses: prompt/actions-commit-hash@v3
+
+      - id: version
+        run: echo "version=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> $GITHUB_OUTPUT
+
   build-and-publish:
     name: Build & Publish Docker
+    needs: meta
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
       packages: write
-    outputs:
-      image-tag: ${{ steps.commit-hash.outputs.short  }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,9 +43,6 @@ jobs:
       - name: Gradle test and build
         run: ./gradlew build
 
-      - id: commit-hash
-        uses: prompt/actions-commit-hash@v3
-
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
@@ -48,7 +55,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}
-          tags: ${{ steps.commit-hash.outputs.short }}
+          tags: |
+            type=sha
+            type=raw,value=${{ needs.meta.outputs.version }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -61,4 +70,4 @@ jobs:
 
 
       - name: Print docker tag
-        run: echo 'Docker-tag er ${{ steps.commit-hash.outputs.short }} ' >> $GITHUB_STEP_SUMMARY
+        run: echo 'Docker-tag er ${{ steps.docker-meta.outputs.tags }} ' >> $GITHUB_STEP_SUMMARY
