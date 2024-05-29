@@ -1,103 +1,100 @@
-  on:
-    workflow_call:
-      inputs:
-        app-version:
-          description: "The version of the application"
-          type: string
-          required: true
-    push:
-      branches:
-        - main
-      paths:
-        - charts/**
+on:
+  workflow_call:
+    inputs:
+      app-version:
+        description: "The version of the application"
+        type: string
+        required: true
+  push:
+    branches:
+      - main
+      - feature/helm
+    paths:
+      - charts/**
 
-  jobs:
-    meta:
-        runs-on: ubuntu-latest
-        permissions:
-          contents: read
-        needs: cache
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v4
-            with:
-              fetch-depth: 0
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-          - name: Get latest app tag
-            if: github.event_name == 'push'
-            id: app-tag
-            uses: actions/github-script@v6
-            with:
-              script: |
-                const tag_pattern = /^\d{8}-[a-f0-9]{7}$/;
+      - name: Get latest app tag
+        if: github.event_name == 'push'
+        id: app-tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tag_pattern = /^\d{8}-[a-f0-9]{7}$/;
+            const response = await github.request('GET /orgs/{owner}/packages/container/{package}/versions', {
+              owner: github.context.repo.owner,
+              package: github.context.repo.repo
+            });
+            const latestTag = response.data
+              .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+              .flatMap(v => v.metadata.container.tags)
+              .find(tag => tag_pattern.test(tag));
+            core.setOutput('latest_tag', latestTag);
 
-                const response = await github.request('GET /orgs/{owner}/packages/container/{package}/versions', {
-                  owner: github.context.repo.owner,
-                  package: github.context.repo.repo
-                });
+      - id: commit-hash
+        uses: prompt/actions-commit-hash@v3
 
-                const latestTag = response.data
-                  .filter(v => v.metadata.container.tags.some(tag => pattern.test(tag)))
-                  .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
-                  .flatMap(v => v.metadata.container.tags.filter(tag => tag_pattern.test(tag)))[0];
-                
-                core.setOutput('latest_tag', latestTag);
+      - id: versions
+        run: |
+          echo "chart=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> ${GITHUB_OUTPUT}
 
-          - id: commit-hash
-            uses: prompt/actions-commit-hash@v3
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "app=${{ inputs.app-version }}" >> ${GITHUB_OUTPUT}
+          else
+            echo "app=${{ steps.app-tag.outputs.latest_tag }}" >> ${GITHUB_OUTPUT}
+          fi
 
-          - id: versions
-            run: |
-              echo "chart=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> ${GITHUB_OUTPUT}
+      - name: Update Chart.yaml
+        uses: mikefarah/yq@v4
+        with:
+          cmd: |
+            yq e -i '.version = "${{ steps.versions.outputs.chart }}"' ./charts/flaiserator/Chart.yaml
+            yq e -i '.appVersion = "${{ needs.versions.outputs.app }}"' ./charts/flaiserator/Chart.yaml
 
-              if [ "${{ github.event_name }}" != "push" ]; then
-                echo "app=${{ inputs.app-version }}" >> ${GITHUB_OUTPUT}
-              else
-                echo "app=${{ steps.app-tag.outputs.latest_tag }}" >> ${GITHUB_OUTPUT}
-              fi
+      - name: Save Chart Values
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-metadata
+          path: |
+            ./charts/flaiserator/Chart.yaml
 
-          - name: Update Chart.yaml
-            uses: mikefarah/yq@v4
-            with:
-              cmd: |
-                yq e -i '.version = "${{ steps.versions.outputs.chart }}"' ./charts/flaiserator/Chart.yaml
-                yq e -i '.appVersion = "${{ needs.versions.outputs.app }}"' ./charts/flaiserator/Chart.yaml
+  push:
+    permissions:
+      contents: read
+      id-token: write
+    name: Build and push Charts
+    runs-on: ubuntu-latest
+    needs: meta
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-          - name: Save Chart Values
-            uses: actions/upload-artifact@v4
-            with:
-              name: chart-metadata
-              path: |
-                ./charts/flaiserator/Chart.yaml
+      - name: Restore Chart Metadata
+        uses: actions/download-artifact@v4.1.5
+        with:
+          name: chart-metadata
+          path: ./charts/flaiserator
 
-    push:
-      permissions:
-        contents: read
-        id-token: write
-      name: Build and push Charts
-      runs-on: ubuntu-latest
-      needs: meta
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            fetch-depth: 0
+      - uses: azure/setup-helm@v4
+        name: Setup Helm
 
-        - name: Restore Chart Metadata
-          uses: actions/download-artifact@v4.1.5
-          with:
-            name: chart-metadata
-            path: ./charts/flaiserator
+      - name: Login to Flais Helm Repository
+        run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm login ${{ vars.FLAIS_HELM_ENDPOINT }} --username ${{ vars.FLAIS_HELM_USERNAME }} --password-stdin
 
-        - uses: azure/setup-helm@v4
-          name: Setup Helm
+      - name: Build Charts
+        run: |
+          helm package ./charts/${{ github.event.repository.name }} -d ./charts/${{ github.event.repository.name }}
 
-        - name: Login to Flais Helm Repository
-          run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm login ${{ vars.FLAIS_HELM_ENDPOINT }} --username ${{ vars.FLAIS_HELM_USERNAME }} --password-stdin
-
-        - name: Build Charts
-          run: |
-            helm package ./charts/${{ github.event.repository.name }} -d ./charts/${{ github.event.repository.name }}
-
-        - name: Push Charts
-          run: |
-            helm push ./charts/${{ github.event.repository.name }}/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
+      - name: Push Charts
+        run: |
+          helm push ./charts/${{ github.event.repository.name }}/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
