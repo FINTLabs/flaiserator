@@ -9,5 +9,7 @@ data class Ingress(
         message = "Invalid path"
     )
     val basePath: String? = null,
-    val middlewares: List<String> = emptyList()
+    val basePaths: List<String> = emptyList(),
+    val middlewares: List<String> = emptyList(),
+    val headers: Map<String, String> = emptyMap()
 )
