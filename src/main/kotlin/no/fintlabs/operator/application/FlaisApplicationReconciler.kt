@@ -1,5 +1,6 @@
 package no.fintlabs.operator.application
 
+import IngressDR
 import io.javaoperatorsdk.operator.api.reconciler.*
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent
 import no.fintlabs.operator.application.api.*
@@ -39,12 +40,20 @@ import kotlin.jvm.optionals.getOrDefault
     ],
     labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
 )
-class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, ContextInitializer<FlaisApplicationCrd> {
-    override fun reconcile(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): UpdateControl<FlaisApplicationCrd> {
+class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>,
+    ContextInitializer<FlaisApplicationCrd> {
+    override fun reconcile(
+        resource: FlaisApplicationCrd,
+        context: Context<FlaisApplicationCrd>
+    ): UpdateControl<FlaisApplicationCrd> {
         return determineUpdateControl(resource, updateStatus(resource, context), updateResource(context))
     }
 
-    private fun determineUpdateControl(resource: FlaisApplicationCrd, statusUpdated: Boolean, resourceUpdated: Boolean) = when {
+    private fun determineUpdateControl(
+        resource: FlaisApplicationCrd,
+        statusUpdated: Boolean,
+        resourceUpdated: Boolean
+    ) = when {
         statusUpdated && resourceUpdated -> UpdateControl.updateResourceAndStatus(resource)
         resourceUpdated -> UpdateControl.updateResource(resource)
         statusUpdated -> UpdateControl.updateStatus(resource)
@@ -73,7 +82,10 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
         } else false
     }
 
-    private fun determineNewStatus(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): FlaisApplicationStatus {
+    private fun determineNewStatus(
+        primary: FlaisApplicationCrd,
+        context: Context<FlaisApplicationCrd>
+    ): FlaisApplicationStatus {
         val workflowResult = context.managedDependentResourceContext().workflowReconcileResult.get()
         val ready = workflowResult.allDependentResourcesReady()
         val failed = workflowResult.erroredDependentsExist()
