@@ -2,6 +2,7 @@ import io.fabric8.kubernetes.api.model.IntOrString
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.createObjectMeta
 import us.containo.traefik.v1alpha1.IngressRoute
 import us.containo.traefik.v1alpha1.IngressRouteSpec
 import us.containo.traefik.v1alpha1.ingressroutespec.Routes
