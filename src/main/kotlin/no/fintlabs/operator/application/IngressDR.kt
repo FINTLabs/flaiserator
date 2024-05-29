@@ -31,19 +31,29 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
     }
 
     private fun createMatch(primary: FlaisApplicationCrd): String {
-        val paths = primary.spec.ingress.basePaths.takeUnless { it.isNullOrEmpty() } ?: listOf(
-            primary.spec.ingress.basePath ?: primary.spec.url.basePath.orEmpty()
-        )
-        val pathConditions = paths.filterNot { it.isEmpty() }.joinToString(" || ") { "PathPrefix(`$it`)" }
-        val headerConditions = primary.spec.ingress.headers.entries.joinToString(" && ") {
-            "Headers(`${it.key}`, `${it.value}`)"
-        }
-
+        val pathConditions = getPathConditions(primary)
+        val headerConditions = getHeaderConditions(primary)
         return listOfNotNull(
-            "Host(`${primary.spec.url.hostname}`)",
+            getHostCondition(primary),
             pathConditions.takeUnless { it.isEmpty() },
             headerConditions.takeUnless { it.isEmpty() }
         ).joinToString(" && ")
+    }
+
+    private fun getPathConditions(primary: FlaisApplicationCrd): String {
+        val paths = primary.spec.ingress.basePaths.takeUnless { it.isNullOrEmpty() }
+            ?: listOf(primary.spec.ingress.basePath ?: primary.spec.url.basePath.orEmpty())
+        return paths.filterNot { it.isEmpty() }.joinToString(" || ") { "PathPrefix(`$it`)" }
+    }
+
+    private fun getHeaderConditions(primary: FlaisApplicationCrd): String {
+        return primary.spec.ingress.headers.entries.joinToString(" && ") {
+            "Headers(`${it.key}`, `${it.value}`)"
+        }
+    }
+
+    private fun getHostCondition(primary: FlaisApplicationCrd): String {
+        return "Host(`${primary.spec.url.hostname}`)"
     }
 
     private fun createMiddlewares(primary: FlaisApplicationCrd) = primary.spec.ingress.middlewares.map {
