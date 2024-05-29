@@ -1,6 +1,5 @@
 package no.fintlabs.operator.application
 
-import IngressDR
 import io.javaoperatorsdk.operator.api.reconciler.*
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent
 import no.fintlabs.operator.application.api.*
