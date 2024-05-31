@@ -1,0 +1,250 @@
+---
+apiVersion: "apiextensions.k8s.io/v1"
+kind: "CustomResourceDefinition"
+metadata:
+  name: "applications.fintlabs.no"
+  annotations:
+{{- with .Values.annotations }}
+{{- toYaml . | nindent 4 }}
+{{- end }}
+spec:
+  group: "fintlabs.no"
+  names:
+    kind: "Application"
+    plural: "applications"
+    singular: "application"
+  scope: "Namespaced"
+  versions:
+  - name: "v1alpha1"
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              database:
+                properties:
+                  database:
+                    type: "string"
+                  enabled:
+                    type: "boolean"
+                type: "object"
+              deploymentStrategy:
+                properties:
+                  rollingUpdate:
+                    properties:
+                      maxSurge:
+                        anyOf:
+                        - type: "integer"
+                        - type: "string"
+                        x-kubernetes-int-or-string: true
+                      maxUnavailable:
+                        anyOf:
+                        - type: "integer"
+                        - type: "string"
+                        x-kubernetes-int-or-string: true
+                    type: "object"
+                  type:
+                    type: "string"
+                type: "object"
+              env:
+                items:
+                  properties:
+                    name:
+                      type: "string"
+                    value:
+                      type: "string"
+                    valueFrom:
+                      properties:
+                        configMapKeyRef:
+                          properties:
+                            key:
+                              type: "string"
+                            name:
+                              type: "string"
+                            optional:
+                              type: "boolean"
+                          type: "object"
+                        fieldRef:
+                          properties:
+                            apiVersion:
+                              type: "string"
+                            fieldPath:
+                              type: "string"
+                          type: "object"
+                        resourceFieldRef:
+                          properties:
+                            containerName:
+                              type: "string"
+                            divisor:
+                              anyOf:
+                              - type: "integer"
+                              - type: "string"
+                              x-kubernetes-int-or-string: true
+                            resource:
+                              type: "string"
+                          type: "object"
+                        secretKeyRef:
+                          properties:
+                            key:
+                              type: "string"
+                            name:
+                              type: "string"
+                            optional:
+                              type: "boolean"
+                          type: "object"
+                      type: "object"
+                  type: "object"
+                type: "array"
+              envFrom:
+                items:
+                  properties:
+                    configMapRef:
+                      properties:
+                        name:
+                          type: "string"
+                        optional:
+                          type: "boolean"
+                      type: "object"
+                    prefix:
+                      type: "string"
+                    secretRef:
+                      properties:
+                        name:
+                          type: "string"
+                        optional:
+                          type: "boolean"
+                      type: "object"
+                  type: "object"
+                type: "array"
+              image:
+                type: "string"
+              imagePullPolicy:
+                type: "string"
+                x-kubernetes-validations:
+                - message: "Invalid imagePullPolicy, must be one of IfNotPresent,\
+                    \ Always, Never"
+                  rule: "self in ['IfNotPresent', 'Always', 'Never']"
+              imagePullSecrets:
+                items:
+                  type: "string"
+                type: "array"
+              ingress:
+                properties:
+                  basePath:
+                    type: "string"
+                    x-kubernetes-validations:
+                    - message: "Invalid path"
+                      rule: "self.matches('^/[A-Za-z0-9/_-]*$')"
+                  enabled:
+                    type: "boolean"
+                  middlewares:
+                    items:
+                      type: "string"
+                    type: "array"
+                type: "object"
+              kafka:
+                properties:
+                  acls:
+                    items:
+                      properties:
+                        permission:
+                          type: "string"
+                        topic:
+                          type: "string"
+                      type: "object"
+                    type: "array"
+                  enabled:
+                    type: "boolean"
+                type: "object"
+              onePassword:
+                properties:
+                  itemPath:
+                    type: "string"
+                type: "object"
+              orgId:
+                type: "string"
+              port:
+                minimum: 1.0
+                type: "integer"
+              prometheus:
+                properties:
+                  enabled:
+                    type: "boolean"
+                  path:
+                    type: "string"
+                  port:
+                    type: "string"
+                type: "object"
+              replicas:
+                minimum: 1.0
+                type: "integer"
+              resources:
+                properties:
+                  claims:
+                    items:
+                      properties:
+                        name:
+                          type: "string"
+                      type: "object"
+                    type: "array"
+                  limits:
+                    additionalProperties:
+                      anyOf:
+                      - type: "integer"
+                      - type: "string"
+                      x-kubernetes-int-or-string: true
+                    type: "object"
+                  requests:
+                    additionalProperties:
+                      anyOf:
+                      - type: "integer"
+                      - type: "string"
+                      x-kubernetes-int-or-string: true
+                    type: "object"
+                type: "object"
+              restartPolicy:
+                type: "string"
+                x-kubernetes-validations:
+                - message: "Invalid restartPolicy, must be one of Always, OnFailure,\
+                    \ Never"
+                  rule: "self in ['Always', 'OnFailure', 'Never']"
+              url:
+                properties:
+                  basePath:
+                    type: "string"
+                    x-kubernetes-validations:
+                    - message: "Invalid path"
+                      rule: "self.matches('^/[A-Za-z0-9/_-]*$')"
+                  hostname:
+                    type: "string"
+                    x-kubernetes-validations:
+                    - message: "Invalid hostname"
+                      rule: "self.matches('^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\\
+                        \\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*$')"
+                type: "object"
+            required:
+            - "orgId"
+            - "image"
+            type: "object"
+          status:
+            properties:
+              correlationId:
+                type: "string"
+              dependentResourceStatus:
+                items:
+                  type: "string"
+                type: "array"
+              observedGeneration:
+                type: "integer"
+              state:
+                enum:
+                - "DEPLOYED"
+                - "FAILED"
+                - "PENDING"
+                type: "string"
+            type: "object"
+        type: "object"
+    served: true
+    storage: true
+    subresources:
+      status: {}
