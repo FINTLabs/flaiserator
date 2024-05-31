@@ -1,5 +1,11 @@
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.nio.file.Files
+import kotlin.io.path.exists
+import kotlin.io.path.writeText
 
 val kotlinVersion: String by project
 val mockkVersion: String by project
@@ -158,12 +164,37 @@ tasks {
         }
 
         getByName("kaptKotlin").doLast {
-            copy {
-                from(layout.buildDirectory.dir("tmp/kapt3/classes/main/META-INF/fabric8"))
-                into(layout.buildDirectory.dir("generated/kubernetes"))
+            val objectMapper = ObjectMapper(YAMLFactory())
+            val sourceDir = layout.buildDirectory.dir("tmp/kapt3/classes/main/META-INF/fabric8").get().asFile.toPath()
+            val targetDir = layout.projectDirectory.dir("charts/flaiserator-crd/charts/crds/templates").asFile.toPath()
+
+            if (targetDir.exists()) targetDir.toFile().deleteRecursively()
+
+            Files.createDirectories(targetDir)
+            Files.list(sourceDir).forEach { filePath ->
+                if (filePath.toString().endsWith("-v1.yml")) {
+                    val crdNode = objectMapper.readTree(filePath.toFile()) as ObjectNode
+                    val metadataObject = crdNode.withObject("metadata")
+
+                    // Ensure the annotations node exists
+                    metadataObject.putNull("annotations")
+
+                    var crdContent = objectMapper.writeValueAsString(crdNode)
+                    crdContent = crdContent.replace(
+                        "annotations: null",
+                        """annotations:
+                    |{{- with .Values.annotations }}
+                    |{{- toYaml . | nindent 4 }}
+                    |{{- end }}""".trimMargin()
+                    )
+
+                    val targetPath = targetDir.resolve(filePath.fileName)
+                    Files.createFile(targetPath).writeText(crdContent, Charsets.UTF_8)
+                }
             }
         }
 
         finalizedBy("kaptKotlin")
     }
 }
+

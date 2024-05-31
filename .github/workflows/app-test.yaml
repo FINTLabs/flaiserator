@@ -1,8 +1,15 @@
-name: .app-test.yaml
+name: app-test.yaml
 
 on:
-  workflow_call:
-
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - gradle.properties
+      - Dockerfile
 
 permissions:
   contents: read
