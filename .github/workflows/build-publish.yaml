@@ -1,0 +1,57 @@
+on:
+  workflow_dispatch:  # Allow manual triggering of the workflow
+  push:
+    branches:
+      - main
+    paths:
+      - charts/**
+      - src/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - gradle.properties
+      - Dockerfile
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      charts: ${{ steps.filter.outputs.charts }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            app:
+              - 'src/**'
+              - 'build.gradle.kts'
+              - 'settings.gradle.kts'
+              - 'gradle.properties'
+              - 'Dockerfile'
+            charts:
+              - 'charts/**'
+
+
+  build:
+    name: Build app
+    needs: changes
+    if: needs.changes.outputs.app
+    uses: ./.github/workflows/.app-build.yaml
+    secrets: inherit
+
+  charts:
+    name: Build and release charts
+    needs: [build]
+    if: always()
+    uses: ./.github/workflows/.charts.yaml
+    with:
+      app-version: ${{ needs.build.outputs.version }}
+    secrets: inherit

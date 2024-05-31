@@ -1,0 +1,74 @@
+on:
+  workflow_call:
+    inputs:
+      app-version:
+        description: "The version of the application"
+        type: string
+        required: false
+
+jobs:
+  versions:
+    name: Get latest app and chart versions
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      chart: ${{ steps.versions.outputs.chart }}
+      app: ${{ steps.versions.outputs.app }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest app tag
+        if: github.event_name == 'push'
+        id: app-tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const tag_pattern = /^\d{8}-[a-f0-9]{7}$/;
+            const response = await github.request('GET /orgs/{owner}/packages/container/{package}/versions', {
+              owner: context.repo.owner,
+              package: context.repo.repo
+            });
+            const latestTag = response.data
+              .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+              .flatMap(v => v.metadata.container.tags)
+              .find(tag => tag_pattern.test(tag));
+            core.setOutput('latest_tag', latestTag);
+
+      - id: commit-hash
+        uses: prompt/actions-commit-hash@v3
+
+      - id: versions
+        run: |
+          echo "chart=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> ${GITHUB_OUTPUT}
+
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "app=${{ inputs.app-version }}" >> ${GITHUB_OUTPUT}
+          else
+            echo "app=${{ steps.app-tag.outputs.latest_tag }}" >> ${GITHUB_OUTPUT}
+          fi
+
+  publish-crd:
+    name: Publish Helm Chart ${{ github.event.repository.name }}-crd
+    needs: versions
+    uses: ./.github/workflows/.chart-publish.yaml
+    with:
+      app-version: ${{ needs.versions.outputs.app }}
+      chart-version: ${{ needs.versions.outputs.chart }}
+      chart-name: ${{ github.event.repository.name }}-crd
+    secrets: inherit
+
+  publish:
+    name: Publish Helm Chart ${{ github.event.repository.name }}
+    needs: versions
+    uses: ./.github/workflows/.chart-publish.yaml
+    with:
+      app-version: ${{ needs.versions.outputs.app }}
+      chart-version: ${{ needs.versions.outputs.chart }}
+      chart-name: ${{ github.event.repository.name }}
+    secrets: inherit
+
+
