@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Get latest app tag
-        if: github.event_name == 'push'
+        if: inputs.app-version == ''
         id: app-tag
         uses: actions/github-script@v6
         with:
@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "chart=$(date +'%Y%m%d')-${{ steps.commit-hash.outputs.short }}" >> ${GITHUB_OUTPUT}
 
-          if [ "${{ github.event_name }}" != "push" ]; then
+          if [ "${{ inputs.app-version }}" != "" ]; then
             echo "app=${{ inputs.app-version }}" >> ${GITHUB_OUTPUT}
           else
             echo "app=${{ steps.app-tag.outputs.latest_tag }}" >> ${GITHUB_OUTPUT}
