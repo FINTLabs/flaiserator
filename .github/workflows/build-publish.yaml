@@ -24,11 +24,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Filter paths
         id: filter
         uses: dorny/paths-filter@v3
         with:
+          base: main
           filters: |
             app:
               - 'src/**'
@@ -43,7 +46,7 @@ jobs:
   build:
     name: Build app
     needs: changes
-    if: needs.changes.outputs.app
+    if: needs.changes.outputs.app || github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/.app-build.yaml
     secrets: inherit
 
