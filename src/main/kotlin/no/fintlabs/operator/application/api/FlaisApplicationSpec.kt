@@ -42,7 +42,7 @@ data class FlaisApplicationSpec(
         message = "Invalid restartPolicy, must be one of Always, OnFailure, Never")
     val restartPolicy: String = "Always",
 
-    val deploymentStrategy: DeploymentStrategy? = null,
+    val strategy: DeploymentStrategy? = null,
     val prometheus: Prometheus = Prometheus(),
     val onePassword: OnePassword? = null,
     val kafka: Kafka = Kafka(),
