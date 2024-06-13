@@ -3,6 +3,9 @@ package no.fintlabs.operator.application
 import com.sksamuel.hoplite.PropertySource
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
+import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
+import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
+import io.fabric8.kubernetes.client.KubernetesClientException
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesResources
 import no.fintlabs.loadConfig
@@ -12,6 +15,7 @@ import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
 import no.fintlabs.operator.application.api.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
 import kotlin.test.Test
@@ -55,7 +59,63 @@ class DeploymentDRTest {
 
         assertEquals(2, deployment.spec.template.spec.containers[0].env.size)
     }
+    //endregion
 
+    //region Deployment
+    @Test
+    fun `should create deployment with correct replicas`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(replicas = 3)
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals(3, deployment.spec.replicas)
+    }
+
+    @Test
+    fun `should throw error on invalid replicas`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(replicas = -1)
+        }
+
+        val exception = assertThrows<KubernetesClientException> {
+            context.createAndGetDeployment(flaisApplication)
+        }
+        assert("spec.replicas: Invalid value: -1" in exception.status.message)
+    }
+
+    @Test
+    fun `should create deployment with rolling update strategy`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(strategy = DeploymentStrategy().apply {
+                type = "RollingUpdate"
+                rollingUpdate = RollingUpdateDeployment().apply {
+                    maxSurge = IntOrString("25%")
+                    maxUnavailable = IntOrString("25%")
+                }
+            })
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("RollingUpdate", deployment.spec.strategy.type)
+        assertEquals("25%", deployment.spec.strategy.rollingUpdate.maxSurge.strVal)
+        assertEquals("25%", deployment.spec.strategy.rollingUpdate.maxUnavailable.strVal)
+    }
+
+    @Test
+    fun `should create deployment with recreate strategy`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(strategy = DeploymentStrategy().apply {
+                type = "Recreate"
+            })
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("Recreate", deployment.spec.strategy.type)
+    }
     //endregion
 
     //region Image
