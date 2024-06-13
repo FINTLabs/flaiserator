@@ -16,7 +16,7 @@ class PostgresUserDR : CRUDKubernetesDependentResource<PGUser, FlaisApplicationC
             name = "${primary.metadata.name}-db"
         }
         spec = PGUserSpec().apply {
-            database = primary.spec.database.database
+            database = primary.spec.database.database!!
         }
     }
 }

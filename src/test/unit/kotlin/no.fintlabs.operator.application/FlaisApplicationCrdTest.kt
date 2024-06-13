@@ -148,13 +148,11 @@ class FlaisApplicationCrdTest {
     fun `FlaisApplicationCrd should have correct database`() {
         createAndApplyFlaisApplication(
             FlaisApplicationSpec(
-                database = Database(
-                    enabled = true,
-                    database = "test-database"
-                )
+                database = Database("test-database")
             )
         )
         val resFlaisApplication = getFlaisApplication()
+        @Suppress("DEPRECATION")
         assertEquals(true, resFlaisApplication.spec.database.enabled)
         assertEquals("test-database", resFlaisApplication.spec.database.database)
     }

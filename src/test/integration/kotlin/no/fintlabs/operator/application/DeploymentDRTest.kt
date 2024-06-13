@@ -236,10 +236,7 @@ class DeploymentDRTest {
     fun `should have additional envFrom variable from database`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(
-                database = Database(
-                    enabled = true,
-                    database = "test-db"
-                )
+                database = Database("test-db")
             )
         }
 
