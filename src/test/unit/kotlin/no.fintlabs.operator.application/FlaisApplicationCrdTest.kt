@@ -72,7 +72,7 @@ class FlaisApplicationCrdTest {
         assertThat(origFlaisApplication.spec.resources.limits, isEqualTo(resFlaisApplication.spec.resources.limits))
         assertThat(origFlaisApplication.spec.resources.requests, isEqualTo(resFlaisApplication.spec.resources.requests))
 
-        assertThat(origFlaisApplication.spec.deploymentStrategy, isEqualTo(resFlaisApplication.spec.deploymentStrategy))
+        assertThat(origFlaisApplication.spec.strategy, isEqualTo(resFlaisApplication.spec.strategy))
         assertThat(origFlaisApplication.spec.prometheus, isEqualTo(resFlaisApplication.spec.prometheus))
         assertThat(origFlaisApplication.spec.onePassword, isEqualTo(resFlaisApplication.spec.onePassword))
         assertThat(origFlaisApplication.spec.kafka, isEqualTo(resFlaisApplication.spec.kafka))
@@ -84,7 +84,7 @@ class FlaisApplicationCrdTest {
     @Test
     fun `FlaisApplicationCrd should have correct deploymentStrategy`() {
         val origFlaisApplication = createAndApplyFlaisApplication(
-            FlaisApplicationSpec(deploymentStrategy = DeploymentStrategy().apply {
+            FlaisApplicationSpec(strategy = DeploymentStrategy().apply {
                 type = "Recreate"
                 rollingUpdate = RollingUpdateDeployment().apply {
                     maxSurge = IntOrString("25%")
@@ -94,7 +94,7 @@ class FlaisApplicationCrdTest {
             )
         )
         val resFlaisApplication = getFlaisApplication()
-        assertThat(origFlaisApplication.spec.deploymentStrategy, isEqualTo(resFlaisApplication.spec.deploymentStrategy))
+        assertThat(origFlaisApplication.spec.strategy, isEqualTo(resFlaisApplication.spec.strategy))
     }
 
     @Test

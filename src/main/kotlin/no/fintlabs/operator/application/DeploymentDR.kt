@@ -25,6 +25,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
                 metadata = cretePodMetadata(primary)
                 spec = createPodSpec(primary, context)
             }
+            strategy = primary.spec.strategy
         }
     }
 
