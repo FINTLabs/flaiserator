@@ -20,7 +20,7 @@ class PostgresUserDRTest {
     @Test
     fun `should create PGUser`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(database = Database(true, "test-db"))
+            spec = spec.copy(database = Database("test-db"))
         }
 
         val pgUser = context.createAndGetPGUser(flaisApplication)
@@ -31,19 +31,9 @@ class PostgresUserDRTest {
     }
 
     @Test
-    fun `should not create PGUser since enabled is false`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(database = Database(false, "test-db"))
-        }
-
-        val pgUser = context.createAndGetPGUser(flaisApplication)
-        assertNull(pgUser)
-    }
-
-    @Test
     fun `should not create PGUser since database is not set`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(database = Database(true))
+            spec = spec.copy(database = Database(null))
         }
 
         val pgUser = context.createAndGetPGUser(flaisApplication)
