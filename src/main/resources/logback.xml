@@ -1,0 +1,26 @@
+<configuration>
+    <conversionRule conversionWord="msg" converterClass="no.nav.etterlatte.libs.common.person.FnrCoverConverter"/>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <version>version</version>
+                <level>level</level>
+                <thread>thread</thread>
+                <logger>class</logger>
+                <message>message</message>
+                <context>context</context>
+            </fieldNames>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="${LOGBACK_APPENDER:-STDOUT_JSON}"/>
+    </root>
+</configuration>

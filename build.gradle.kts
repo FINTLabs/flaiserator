@@ -15,6 +15,7 @@ val operatorSdkVersion: String by project
 val awaitilityVersion: String by project
 val hopliteVersion: String by project
 val logbackVersion: String by project
+val logbackLogstashEncoderVersion: String by project
 
 
 plugins {
@@ -53,6 +54,8 @@ dependencies {
     implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
+    implementation("net.logstash.logback:logstash-logback-encoder:$logbackLogstashEncoderVersion")
+
 
 
     testImplementation(kotlin("test"))
