@@ -30,12 +30,12 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
     }
 
     private fun cretePodMetadata(primary: FlaisApplicationCrd) = createObjectMeta(primary).apply {
-        annotations.plus("kubectl.kubernetes.io/default-container" to primary.metadata.name)
+        annotations["kubectl.kubernetes.io/default-container"] = primary.metadata.name
 
         if (primary.spec.prometheus.enabled) {
-            annotations.plus("prometheus.io/scrape" to "true")
-            annotations.plus("prometheus.io/port" to primary.spec.prometheus.port)
-            annotations.plus("prometheus.io/path" to primary.spec.prometheus.path)
+            annotations["prometheus.io/scrape"] = "true"
+            annotations["prometheus.io/port"] = primary.spec.prometheus.port
+            annotations["prometheus.io/path"] = primary.spec.prometheus.path
         }
     }
 
