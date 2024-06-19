@@ -153,7 +153,7 @@ class DeploymentDRTest {
         val deployment = context.createAndGetDeployment(flaisApplication)
         assertNotNull(deployment)
         assertEquals(3, deployment.spec.template.spec.imagePullSecrets.size)
-        assertEquals("test-secret", deployment.spec.template.spec.imagePullSecrets[2].name)
+        assertEquals("test-secret", deployment.spec.template.spec.imagePullSecrets[0].name)
     }
 
     //endregion
@@ -203,14 +203,40 @@ class DeploymentDRTest {
         val deployment = context.createAndGetDeployment(flaisApplication)
         assertNotNull(deployment)
         assertEquals(4, deployment.spec.template.spec.containers[0].env.size)
+        assertEquals("key1", deployment.spec.template.spec.containers[0].env[0].name)
+        assertEquals("value1", deployment.spec.template.spec.containers[0].env[0].value)
+        assertEquals("key2", deployment.spec.template.spec.containers[0].env[1].name)
+        assertEquals("value2", deployment.spec.template.spec.containers[0].env[1].value)
+        assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[2].name)
+        assertEquals("test.org", deployment.spec.template.spec.containers[0].env[2].value)
+        assertEquals("TZ", deployment.spec.template.spec.containers[0].env[3].name)
+        assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[3].value)
+    }
+
+    @Test
+    fun `should not have overlapping env variables`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(env = listOf(
+                EnvVar().apply {
+                    name = "fint.org-id"
+                    value = "value1"
+                },
+                EnvVar().apply {
+                    name = "key2"
+                    value = "value2"
+                }
+            ))
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals(3, deployment.spec.template.spec.containers[0].env.size)
         assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[0].name)
-        assertEquals("test.org", deployment.spec.template.spec.containers[0].env[0].value)
-        assertEquals("TZ", deployment.spec.template.spec.containers[0].env[1].name)
-        assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[1].value)
-        assertEquals("key1", deployment.spec.template.spec.containers[0].env[2].name)
-        assertEquals("value1", deployment.spec.template.spec.containers[0].env[2].value)
-        assertEquals("key2", deployment.spec.template.spec.containers[0].env[3].name)
-        assertEquals("value2", deployment.spec.template.spec.containers[0].env[3].value)
+        assertEquals("value1", deployment.spec.template.spec.containers[0].env[0].value)
+        assertEquals("key2", deployment.spec.template.spec.containers[0].env[1].name)
+        assertEquals("value2", deployment.spec.template.spec.containers[0].env[1].value)
+        assertEquals("TZ", deployment.spec.template.spec.containers[0].env[2].name)
+        assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[2].value)
     }
 
     @Test
