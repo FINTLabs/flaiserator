@@ -113,7 +113,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         Volume().apply {
             name = "credentials"
             secret = SecretVolumeSource().apply {
-                secretName = "${primary.metadata.name}-karafka-certificates"
+                secretName = "${primary.metadata.name}-kafka-certificates"
             }
         }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
     )
