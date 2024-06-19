@@ -46,8 +46,8 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
     }
 
     private fun createImagePullSecrets(primary: FlaisApplicationCrd) = mutableSetOf<String>()
-        .plus(config.imagePullSecrets)
         .plus(primary.spec.imagePullSecrets)
+        .plus(config.imagePullSecrets)
         .map { LocalObjectReference(it) }
 
     private fun createContainer(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Container().apply {
@@ -70,40 +70,43 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         }
     )
 
-    private fun createContainerEnv(primary: FlaisApplicationCrd): MutableList<EnvVar> {
-        val envVars = mutableListOf(
-            EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null),
-            EnvVar("TZ", "Europe/Oslo", null)
-        )
+    private fun createContainerEnv(primary: FlaisApplicationCrd): List<EnvVar> {
+        val envVars = primary.spec.env.toMutableList()
+
+        envVars.add(EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null))
+        envVars.add(EnvVar("TZ", "Europe/Oslo", null))
 
         primary.spec.url.basePath?.let { basePath ->
             envVars.add(EnvVar("spring.webflux.base-path", basePath, null))
             envVars.add(EnvVar("spring.mvc.servlet.path", basePath, null))
         }
 
-        envVars.addAll(primary.spec.env)
-
-        return envVars
+        return envVars.distinctBy { it.name }
     }
 
-    private fun createContainerEnvFrom(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = listOfNotNull(
-        EnvFromSource().apply {
-            secretRef = SecretEnvSource().apply {
-                name = "${primary.metadata.name}-op"
-            }
-        }.takeIf { createOnePasswordCondition.isMet(null, primary, context) },
-        EnvFromSource().apply {
-            secretRef = SecretEnvSource().apply {
-                name = "${primary.metadata.name}-db"
-            }
-        }.takeIf { createPostgresUserCondition.isMet(null, primary, context) },
-        EnvFromSource().apply {
-            secretRef = SecretEnvSource().apply {
-                name = "${primary.metadata.name}-kafka"
-            }
-        }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
-    ).plus(primary.spec.envFrom)
+    private fun createContainerEnvFrom(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): List<EnvFromSource> {
+        val envFromSources = listOfNotNull(
+            EnvFromSource().apply {
+                secretRef = SecretEnvSource().apply {
+                    name = "${primary.metadata.name}-op"
+                }
+            }.takeIf { createOnePasswordCondition.isMet(null, primary, context) },
+            EnvFromSource().apply {
+                secretRef = SecretEnvSource().apply {
+                    name = "${primary.metadata.name}-db"
+                }
+            }.takeIf { createPostgresUserCondition.isMet(null, primary, context) },
+            EnvFromSource().apply {
+                secretRef = SecretEnvSource().apply {
+                    name = "${primary.metadata.name}-kafka"
+                }
+            }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
+        )
 
+        return primary.spec.envFrom.toMutableSet()
+            .plus(envFromSources)
+            .toList()
+    }
 
     // Volumes and volume mounts
     private fun createPodVolumes(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = listOfNotNull(
