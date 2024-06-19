@@ -321,6 +321,28 @@ class DeploymentDRTest {
 
     //region Volumes and volume mounts
     @Test
+    fun `should have volume for Kafka`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                kafka = Kafka(
+                    acls = listOf(
+                        Acls().apply {
+                            topic = "test-topic"
+                            permission = "write"
+                        }
+                    )
+                )
+            )
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals(1, deployment.spec.template.spec.volumes.size)
+        assertEquals("credentials", deployment.spec.template.spec.volumes[0].name)
+        assertEquals("test-kafka-certificates", deployment.spec.template.spec.volumes[0].secret.secretName)
+    }
+
+    @Test
     fun `should have volume mounts for Kafka`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(
