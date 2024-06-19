@@ -37,6 +37,8 @@ class DeploymentDRTest {
         assertEquals("test.org", deployment.metadata.labels["fintlabs.no/org-id"])
         assertEquals("test", deployment.metadata.labels["fintlabs.no/team"])
 
+        assertEquals("test", deployment.spec.template.metadata.annotations["kubectl.kubernetes.io/default-container"])
+
         assert(deployment.spec.selector.matchLabels.containsKey("app"))
         assertEquals("test", deployment.spec.selector.matchLabels["app"])
 
@@ -115,6 +117,51 @@ class DeploymentDRTest {
         val deployment = context.createAndGetDeployment(flaisApplication)
         assertNotNull(deployment)
         assertEquals("Recreate", deployment.spec.strategy.type)
+    }
+    //endregion
+
+    //region Metadata
+    @Test
+    fun `should create deployment with correct labels`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            metadata = metadata.apply {
+                labels = labels.plus(
+                    "test" to "test"
+                )
+            }
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("test", deployment.metadata.labels["test"])
+    }
+
+    @Test
+    fun `should add managed by label`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication()
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("flaiserator", deployment.metadata.labels["app.kubernetes.io/managed-by"])
+    }
+
+    @Test
+    fun `should add prometheus annotations`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                prometheus = Prometheus(
+                    enabled = true,
+                    port = "8081",
+                    path = "/metrics"
+                )
+            )
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("true", deployment.spec.template.metadata.annotations["prometheus.io/scrape"])
+        assertEquals("8081", deployment.spec.template.metadata.annotations["prometheus.io/port"])
+        assertEquals("/metrics", deployment.spec.template.metadata.annotations["prometheus.io/path"])
     }
     //endregion
 

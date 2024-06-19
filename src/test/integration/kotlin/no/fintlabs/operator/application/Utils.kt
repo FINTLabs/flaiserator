@@ -34,7 +34,7 @@ object Utils {
             metadata = ObjectMeta().apply {
                 name = "test"
 
-                labels = mapOf(
+                labels = mutableMapOf(
                     "fintlabs.no/team" to "test",
                     "fintlabs.no/org-id" to "test.org",
                 )
