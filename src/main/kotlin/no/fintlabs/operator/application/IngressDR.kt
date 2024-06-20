@@ -3,6 +3,7 @@ package no.fintlabs.operator.application
 import io.fabric8.kubernetes.api.model.IntOrString
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 import us.containo.traefik.v1alpha1.IngressRoute
 import us.containo.traefik.v1alpha1.IngressRouteSpec
@@ -10,6 +11,7 @@ import us.containo.traefik.v1alpha1.ingressroutespec.Routes
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Middlewares
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 
+@KubernetesDependent
 class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java)  {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = IngressRoute().apply {
         metadata = createObjectMeta(primary)
