@@ -2,10 +2,12 @@ package no.fintlabs.operator.application
 
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
 import no.fintlabs.v1alpha1.PGUser
 import no.fintlabs.v1alpha1.PGUserSpec
 
+@KubernetesDependent
 class PostgresUserDR : CRUDKubernetesDependentResource<PGUser, FlaisApplicationCrd>(PGUser::class.java) {
     companion object {
         const val COMPONENT = "postgres-user"
