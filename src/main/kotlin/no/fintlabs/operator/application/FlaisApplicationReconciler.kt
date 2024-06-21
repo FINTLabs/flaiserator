@@ -3,6 +3,7 @@ package no.fintlabs.operator.application
 import io.javaoperatorsdk.operator.api.reconciler.*
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent
 import no.fintlabs.operator.application.api.*
+import org.slf4j.MDC
 import java.util.*
 import kotlin.jvm.optionals.getOrDefault
 
@@ -41,8 +42,14 @@ import kotlin.jvm.optionals.getOrDefault
     labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
 )
 class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, ContextInitializer<FlaisApplicationCrd> {
+    private val logger = getLogger()
+
     override fun reconcile(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): UpdateControl<FlaisApplicationCrd> {
-        return determineUpdateControl(resource, updateStatus(resource, context), updateResource(context))
+        setMDC(resource)
+        logger.info("Reconciling FlaisApplication ${resource.metadata.name}")
+        val updateControl = determineUpdateControl(resource, updateStatus(resource, context), updateResource(context))
+        removeMDC()
+        return updateControl
     }
 
     private fun determineUpdateControl(resource: FlaisApplicationCrd, statusUpdated: Boolean, resourceUpdated: Boolean) = when {
@@ -79,6 +86,10 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
         val ready = workflowResult.allDependentResourcesReady()
         val failed = workflowResult.erroredDependentsExist()
 
+        for ((dep, res) in workflowResult.reconcileResults) {
+            logger.info("Reconcile result for ${dep.javaClass.simpleName} - ${res.singleOperation}")
+        }
+
         return primary.status.copy(
             state = when {
                 failed -> FlaisApplicationState.FAILED
@@ -91,9 +102,19 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
 
     private fun ensureCorrelationId(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) {
         primary.metadata.annotations.computeIfAbsent(DEPLOYMENT_CORRELATION_ID_ANNOTATION) {
+            val uuid = UUID.randomUUID().toString()
+            logger.debug("Generating correlation ID $uuid for ${primary.metadata.name}")
             context.managedDependentResourceContext().put(DEPLOYMENT_CORRELATION_ID_GENERATED, true)
-            UUID.randomUUID().toString()
+            uuid
         }
+    }
+
+    private fun setMDC(resource: FlaisApplicationCrd) {
+        MDC.put("correlationId", resource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] ?: "")
+    }
+
+    private fun removeMDC() {
+        MDC.remove("correlationId")
     }
 
     companion object {
