@@ -7,8 +7,11 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 
-@KubernetesDependent
+@KubernetesDependent(
+    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
+)
 class ServiceDR : CRUDKubernetesDependentResource<Service, FlaisApplicationCrd>(Service::class.java) {
     companion object {
         const val COMPONENT = "service"

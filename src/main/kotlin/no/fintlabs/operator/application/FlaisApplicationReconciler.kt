@@ -6,6 +6,7 @@ import no.fintlabs.operator.application.api.*
 import java.util.*
 import kotlin.jvm.optionals.getOrDefault
 
+
 @ControllerConfiguration(
     dependents = [
         Dependent(

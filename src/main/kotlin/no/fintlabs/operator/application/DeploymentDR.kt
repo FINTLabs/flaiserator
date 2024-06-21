@@ -4,18 +4,17 @@ import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec
 import io.javaoperatorsdk.operator.api.reconciler.Context
-import io.javaoperatorsdk.operator.processing.dependent.kubernetes.BooleanWithUndefined
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.Config
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.operator.application.api.ORG_ID_LABEL
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @KubernetesDependent(
-    createResourceOnlyIfNotExistingWithSSA = false,
-    useSSA = BooleanWithUndefined.TRUE
+    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
 )
 class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java), KoinComponent {
     private val config: Config by inject()
