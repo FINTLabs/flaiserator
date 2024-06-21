@@ -6,8 +6,11 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 
-@KubernetesDependent
+@KubernetesDependent(
+    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
+)
 class OnePasswordDR : CRUDKubernetesDependentResource<OnePasswordItem, FlaisApplicationCrd>(OnePasswordItem::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = OnePasswordItem().apply {
         metadata = createObjectMeta(primary).apply {

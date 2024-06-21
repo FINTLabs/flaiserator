@@ -14,6 +14,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @KubernetesDependent(
+    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
 )
 class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java), KoinComponent {
     private val config: Config by inject()
