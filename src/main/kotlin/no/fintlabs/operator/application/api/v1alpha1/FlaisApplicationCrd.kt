@@ -1,4 +1,4 @@
-package no.fintlabs.operator.application.api
+package no.fintlabs.operator.application.api.v1alpha1
 
 import io.fabric8.kubernetes.api.model.Namespaced
 import io.fabric8.kubernetes.client.CustomResource

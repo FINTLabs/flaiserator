@@ -3,7 +3,7 @@ package no.fintlabs.operator.application
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
 import us.containo.traefik.v1alpha1.IngressRoute
 
 class CreateIngressCondition : Condition<IngressRoute, FlaisApplicationCrd>{

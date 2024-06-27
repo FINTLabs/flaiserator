@@ -6,9 +6,9 @@ import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
-import no.fintlabs.operator.application.api.Ingress
-import no.fintlabs.operator.application.api.Url
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.Ingress
+import no.fintlabs.operator.application.api.v1alpha1.Url
 import org.junit.jupiter.api.extension.RegisterExtension
 import us.containo.traefik.v1alpha1.IngressRoute
 import kotlin.test.Test

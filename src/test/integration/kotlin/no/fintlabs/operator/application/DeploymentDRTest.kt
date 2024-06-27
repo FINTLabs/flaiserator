@@ -14,6 +14,7 @@ import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
 import no.fintlabs.operator.application.api.*
+import no.fintlabs.operator.application.api.v1alpha1.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension

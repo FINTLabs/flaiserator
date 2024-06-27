@@ -5,8 +5,8 @@ import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
-import no.fintlabs.operator.application.api.Database
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.Database
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.v1alpha1.PGUser
 import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.test.Test

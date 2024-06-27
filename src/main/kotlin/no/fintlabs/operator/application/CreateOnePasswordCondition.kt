@@ -4,7 +4,7 @@ import com.onepassword.v1.OnePasswordItem
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
 
 class CreateOnePasswordCondition : Condition<OnePasswordItem, FlaisApplicationCrd> {
     override fun isMet(

@@ -2,9 +2,9 @@ package no.fintlabs.operator.application
 
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import io.fabric8.kubernetes.api.model.OwnerReference
-import no.fintlabs.operator.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
-import no.fintlabs.operator.application.api.MANAGED_BY_FLAISERATOR_LABEL
+import no.fintlabs.operator.application.api.v1alpha1.DEPLOYMENT_CORRELATION_ID_ANNOTATION
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.MANAGED_BY_FLAISERATOR_LABEL
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

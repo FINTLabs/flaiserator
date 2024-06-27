@@ -1,4 +1,4 @@
-package no.fintlabs.operator.application.api
+package no.fintlabs.operator.application.api.v1alpha1
 
 import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus
 

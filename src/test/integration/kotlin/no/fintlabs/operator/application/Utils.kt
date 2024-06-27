@@ -6,9 +6,9 @@ import io.fabric8.kubernetes.api.model.ObjectMeta
 import no.fintlabs.baseModule
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesOperatorExtension
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
-import no.fintlabs.operator.application.api.FlaisApplicationSpec
-import no.fintlabs.operator.application.api.FlaisApplicationState
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationSpec
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationState
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.PGUser
 import org.awaitility.kotlin.atMost

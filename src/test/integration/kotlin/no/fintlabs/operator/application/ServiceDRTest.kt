@@ -6,7 +6,7 @@ import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
 import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.test.Test
 import kotlin.test.assertEquals

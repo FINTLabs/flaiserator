@@ -5,8 +5,8 @@ import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
-import no.fintlabs.operator.application.api.Kafka
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.Kafka
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.extension.RegisterExtension

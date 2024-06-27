@@ -7,9 +7,9 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.Config
-import no.fintlabs.operator.application.api.FlaisApplicationCrd
 import no.fintlabs.operator.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.operator.application.api.ORG_ID_LABEL
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

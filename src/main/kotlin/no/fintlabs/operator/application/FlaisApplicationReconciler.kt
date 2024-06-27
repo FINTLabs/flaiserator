@@ -2,7 +2,12 @@ package no.fintlabs.operator.application
 
 import io.javaoperatorsdk.operator.api.reconciler.*
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent
-import no.fintlabs.operator.application.api.*
+import no.fintlabs.operator.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
+import no.fintlabs.operator.application.api.ORG_ID_LABEL
+import no.fintlabs.operator.application.api.TEAM_LABEL
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationState
+import no.fintlabs.operator.application.api.v1alpha1.FlaisApplicationStatus
 import org.slf4j.MDC
 import java.util.*
 import kotlin.jvm.optionals.getOrDefault
