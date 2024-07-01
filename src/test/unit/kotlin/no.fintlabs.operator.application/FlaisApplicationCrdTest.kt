@@ -7,7 +7,6 @@ import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient
-import no.fintlabs.operator.application.api.*
 import no.fintlabs.operator.application.api.v1alpha1.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.hamcrest.MatcherAssert.assertThat
@@ -102,7 +101,7 @@ class FlaisApplicationCrdTest {
     fun `FlaisApplicationCrd should have correct prometheus`() {
         createAndApplyFlaisApplication(
             FlaisApplicationSpec(
-                prometheus = Prometheus(
+                prometheus = Metrics(
                     enabled = true,
                     path = "/metrics/nono",
                     port = "8081"

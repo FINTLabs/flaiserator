@@ -13,7 +13,6 @@ import no.fintlabs.operator.application.Utils.createAndGetResource
 import no.fintlabs.operator.application.Utils.createKoinTestExtension
 import no.fintlabs.operator.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.application.Utils.createTestFlaisApplication
-import no.fintlabs.operator.application.api.*
 import no.fintlabs.operator.application.api.v1alpha1.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
@@ -150,7 +149,7 @@ class DeploymentDRTest {
     fun `should add prometheus annotations`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(
-                prometheus = Prometheus(
+                prometheus = Metrics(
                     enabled = true,
                     port = "8081",
                     path = "/metrics"

@@ -43,10 +43,13 @@ data class FlaisApplicationSpec(
     val restartPolicy: String = "Always",
 
     val strategy: DeploymentStrategy? = null,
-    val prometheus: Prometheus = Prometheus(),
+
+    @Deprecated("Use metrics in observability instead. Will be removed in future versions.")
+    val prometheus: Metrics = Metrics(),
     val onePassword: OnePassword? = null,
     val kafka: Kafka = Kafka(),
     val database: Database = Database(),
     val url: Url = Url(),
     val ingress: Ingress = Ingress(),
+    val observability: Observability? = null
 )
