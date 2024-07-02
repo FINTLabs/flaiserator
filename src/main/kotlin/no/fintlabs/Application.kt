@@ -7,7 +7,7 @@ import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.config.ConfigurationService
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
-import no.fintlabs.operator.application.applicationReconcilerModule
+import no.fintlabs.operator.applicationReconcilerModule
 import no.fintlabs.serialization.QuantityMixIn
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
