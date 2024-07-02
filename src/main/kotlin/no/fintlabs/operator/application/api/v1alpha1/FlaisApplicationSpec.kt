@@ -10,7 +10,7 @@ data class FlaisApplicationSpec(
     @Required
     val orgId: String = "",
 
-    @Min(1.0)
+    @Min(0.0)
     val replicas: Int = 1,
 
     @Required

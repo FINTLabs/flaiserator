@@ -158,7 +158,7 @@ spec:
                     type: "string"
                 type: "object"
               replicas:
-                minimum: 1.0
+                minimum: 0.0
                 type: "integer"
               resources:
                 properties:
@@ -223,8 +223,8 @@ spec:
                         \\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*$')"
                 type: "object"
             required:
-            - "orgId"
             - "image"
+            - "orgId"
             type: "object"
           status:
             properties:
