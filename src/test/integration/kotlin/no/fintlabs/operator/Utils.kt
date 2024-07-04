@@ -1,5 +1,6 @@
 package no.fintlabs.operator
 
+import com.coreos.monitoring.v1.PodMonitor
 import com.onepassword.v1.OnePasswordItem
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
@@ -47,12 +48,12 @@ object Utils {
     }
 
     fun createKubernetesOperatorExtension() = KubernetesOperatorExtension.create(
-        listOf(FlaisApplicationCrd::class.java, IngressRoute::class.java, PGUser::class.java, KafkaUserAndAcl::class.java, OnePasswordItem::class.java)
+        listOf(FlaisApplicationCrd::class.java, IngressRoute::class.java, PGUser::class.java, KafkaUserAndAcl::class.java, OnePasswordItem::class.java, PodMonitor::class.java)
     )
 
     fun createKoinTestExtension(additionalModule: Module? = null) = KoinTestExtension.create {
         allowOverride(true)
-        modules(baseModule, no.fintlabs.operator.applicationReconcilerModule())
+        modules(baseModule, applicationReconcilerModule())
         additionalModule?.let { modules(it) }
     }
 }

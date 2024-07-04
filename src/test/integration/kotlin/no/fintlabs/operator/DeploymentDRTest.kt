@@ -145,25 +145,6 @@ class DeploymentDRTest {
         assertNotNull(deployment)
         assertEquals("flaiserator", deployment.metadata.labels["app.kubernetes.io/managed-by"])
     }
-
-    @Test
-    fun `should add prometheus annotations`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(
-                prometheus = Metrics(
-                    enabled = true,
-                    port = "8081",
-                    path = "/metrics"
-                )
-            )
-        }
-
-        val deployment = context.createAndGetDeployment(flaisApplication)
-        assertNotNull(deployment)
-        assertEquals("true", deployment.spec.template.metadata.annotations["prometheus.io/scrape"])
-        assertEquals("8081", deployment.spec.template.metadata.annotations["prometheus.io/port"])
-        assertEquals("/metrics", deployment.spec.template.metadata.annotations["prometheus.io/path"])
-    }
     //endregion
 
     //region Image
@@ -458,6 +439,29 @@ class DeploymentDRTest {
         val deployment = context.createAndGetDeployment(flaisApplication)
         assertNotNull(deployment)
         assertEquals("false", deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
+    }
+
+    @Test
+    fun `should have metric port open when metrics are enabled and app and metric port differ`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                observability = Observability(
+                    metrics = Metrics(
+                        enabled = true,
+                        port = "8081",
+                        path = "/metrics"
+                    )
+                )
+            )
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals(2, deployment.spec.template.spec.containers[0].ports.size)
+        assertEquals("http", deployment.spec.template.spec.containers[0].ports[0].name)
+        assertEquals(8080, deployment.spec.template.spec.containers[0].ports[0].containerPort)
+        assertEquals("metrics", deployment.spec.template.spec.containers[0].ports[1].name)
+        assertEquals(8081, deployment.spec.template.spec.containers[0].ports[1].containerPort)
     }
     //endregion
 
