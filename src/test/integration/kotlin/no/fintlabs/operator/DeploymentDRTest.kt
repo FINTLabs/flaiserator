@@ -13,6 +13,7 @@ import no.fintlabs.operator.Utils.createAndGetResource
 import no.fintlabs.operator.Utils.createKoinTestExtension
 import no.fintlabs.operator.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.Utils.createTestFlaisApplication
+import no.fintlabs.operator.api.LOKI_LOGGING_LABEL
 import no.fintlabs.operator.api.v1alpha1.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
@@ -412,6 +413,51 @@ class DeploymentDRTest {
         assertEquals("credentials", deployment.spec.template.spec.containers[0].volumeMounts[0].name)
         assertEquals("/credentials", deployment.spec.template.spec.containers[0].volumeMounts[0].mountPath)
         assertEquals(true, deployment.spec.template.spec.containers[0].volumeMounts[0].readOnly)
+    }
+    //endregion
+
+    //region observability
+    @Test
+    fun `should have loki logging enabled by default`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication()
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("true", deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
+    }
+
+    @Test
+    fun `should have loki logging enabled`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                observability = Observability(
+                    logging = Logging(
+                        loki = true
+                    )
+                )
+            )
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("true", deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
+    }
+
+    @Test
+    fun `should have loki logging disabled`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                observability = Observability(
+                    logging = Logging(
+                        loki = false
+                    )
+                )
+            )
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("false", deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
     }
     //endregion
 

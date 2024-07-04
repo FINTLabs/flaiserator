@@ -7,3 +7,5 @@ const val MANAGED_BY_FLAISERATOR_SELECTOR = "app.kubernetes.io/managed-by=flaise
 
 const val ORG_ID_LABEL = "fintlabs.no/org-id"
 const val TEAM_LABEL = "fintlabs.no/team"
+
+const val LOKI_LOGGING_LABEL = "observability.fintlabs.no/loki"
