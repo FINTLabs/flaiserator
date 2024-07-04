@@ -30,16 +30,26 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
             }
             strategy = primary.spec.strategy
         }
+    }.also { deployment ->
+        configureObservability(primary, deployment)
     }
 
     private fun cretePodMetadata(primary: FlaisApplicationCrd) = createObjectMeta(primary).apply {
         annotations["kubectl.kubernetes.io/default-container"] = primary.metadata.name
+    }
 
-        if (primary.spec.prometheus.enabled) {
-            annotations["prometheus.io/scrape"] = "true"
-            annotations["prometheus.io/port"] = primary.spec.prometheus.port
-            annotations["prometheus.io/path"] = primary.spec.prometheus.path
+    private fun configureObservability(primary: FlaisApplicationCrd, deployment: Deployment) {
+        val observability = primary.spec.observability
+        val metadata = deployment.spec.template.metadata
+
+        val metrics = observability?.metrics ?: primary.spec.prometheus
+        if (metrics.enabled) {
+            metadata.annotations["prometheus.io/scrape"] = "true"
+            metadata.annotations["prometheus.io/port"] = metrics.port
+            metadata.annotations["prometheus.io/path"] = metrics.path
         }
+
+        metadata.labels["observability.fintlabs.no/loki"] = observability?.logging?.loki?.toString() ?: "true"
     }
 
     private fun createPodSpec(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = PodSpec().apply {
