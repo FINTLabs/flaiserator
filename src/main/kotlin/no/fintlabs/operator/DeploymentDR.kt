@@ -30,31 +30,16 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
             }
             strategy = primary.spec.strategy
         }
-    }.also { deployment ->
-        configureObservability(primary, deployment)
     }
 
     private fun cretePodMetadata(primary: FlaisApplicationCrd) = createObjectMeta(primary).apply {
         annotations["kubectl.kubernetes.io/default-container"] = primary.metadata.name
-    }
-
-    private fun configureObservability(primary: FlaisApplicationCrd, deployment: Deployment) {
-        val observability = primary.spec.observability
-        val metadata = deployment.spec.template.metadata
-
-        val metrics = observability?.metrics ?: primary.spec.prometheus
-        if (metrics.enabled) {
-            metadata.annotations["prometheus.io/scrape"] = "true"
-            metadata.annotations["prometheus.io/port"] = metrics.port
-            metadata.annotations["prometheus.io/path"] = metrics.path
-        }
-
-        metadata.labels["observability.fintlabs.no/loki"] = observability?.logging?.loki?.toString() ?: "true"
+        labels["observability.fintlabs.no/loki"] = primary.spec.observability?.logging?.loki?.toString() ?: "true"
     }
 
     private fun createPodSpec(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = PodSpec().apply {
         volumes = createPodVolumes(primary, context)
-        containers = listOf(createContainer(primary, context))
+        containers = listOf(createAppContainer(primary, context))
         imagePullSecrets = createImagePullSecrets(primary)
     }
 
@@ -63,7 +48,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         .plus(config.imagePullSecrets)
         .map { LocalObjectReference(it) }
 
-    private fun createContainer(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Container().apply {
+    private fun createAppContainer(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Container().apply {
         name = primary.metadata.name
         image = primary.spec.image
         imagePullPolicy = primary.spec.imagePullPolicy
@@ -75,13 +60,26 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         volumeMounts = createContainerVolumeMounts(primary, context)
     }
 
-    private fun createContainerPorts(primary: FlaisApplicationCrd) = listOf(
-        ContainerPort().apply {
-            name = "http"
-            containerPort = primary.spec.port
-            protocol = "TCP"
+    private fun createContainerPorts(primary: FlaisApplicationCrd): List<ContainerPort> {
+        val ports = mutableListOf(
+            ContainerPort().apply {
+                name = "http"
+                containerPort = primary.spec.port
+                protocol = "TCP"
+            }
+        )
+
+        val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
+        if (metrics.enabled && metrics.port.toInt() != primary.spec.port) {
+            ports.add(ContainerPort().apply {
+                name = "metrics"
+                containerPort = metrics.port.toInt()
+                protocol = "TCP"
+            })
         }
-    )
+
+        return ports
+    }
 
     private fun createContainerEnv(primary: FlaisApplicationCrd): List<EnvVar> {
         val envVars = primary.spec.env.toMutableList()

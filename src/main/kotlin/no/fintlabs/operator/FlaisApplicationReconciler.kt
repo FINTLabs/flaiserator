@@ -24,6 +24,11 @@ import kotlin.jvm.optionals.getOrDefault
             type = ServiceDR::class
         ),
         Dependent(
+            name = PodMetricsDR.COMPONENT,
+            type = PodMetricsDR::class,
+            reconcilePrecondition = CreatePodMetricsCondition::class
+        ),
+        Dependent(
             name = OnePasswordDR.COMPONENT,
             type = OnePasswordDR::class,
             reconcilePrecondition = CreateOnePasswordCondition::class
@@ -31,7 +36,7 @@ import kotlin.jvm.optionals.getOrDefault
         Dependent(
             name = IngressDR.COMPONENT,
             type = IngressDR::class,
-            reconcilePrecondition = no.fintlabs.operator.CreateIngressCondition::class
+            reconcilePrecondition = CreateIngressCondition::class
         ),
         Dependent(
             name = PostgresUserDR.COMPONENT,
@@ -41,7 +46,7 @@ import kotlin.jvm.optionals.getOrDefault
         Dependent(
             name = KafkaDR.COMPONENT,
             type = KafkaDR::class,
-            reconcilePrecondition = no.fintlabs.operator.CreateKafkaCondition::class
+            reconcilePrecondition = CreateKafkaCondition::class
         )
     ],
     labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
