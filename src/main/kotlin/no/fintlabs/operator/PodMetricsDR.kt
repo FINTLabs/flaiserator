@@ -4,7 +4,6 @@ import com.coreos.monitoring.v1.PodMonitor
 import com.coreos.monitoring.v1.PodMonitorSpec
 import com.coreos.monitoring.v1.podmonitorspec.PodMetricsEndpoints
 import com.coreos.monitoring.v1.podmonitorspec.Selector
-import io.fabric8.kubernetes.api.model.IntOrString
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
@@ -23,7 +22,7 @@ class PodMetricsDR : CRUDKubernetesDependentResource<PodMonitor, FlaisApplicatio
             jobLabel = "app.kubernetes.io/name"
             podTargetLabels = listOf("app", "fintlabs.no/team", "fintlabs.no/org-id")
             podMetricsEndpoints = listOf(PodMetricsEndpoints().apply {
-                targetPort = IntOrString(metrics.port)
+                port = metrics.port
                 path = metrics.path
             })
             selector = Selector().apply {
