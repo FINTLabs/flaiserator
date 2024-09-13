@@ -15,7 +15,7 @@ import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 @KubernetesDependent(
     labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
 )
-class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java)  {
+class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = IngressRoute().apply {
         metadata = createObjectMeta(primary)
         spec = IngressRouteSpec().apply {
@@ -39,8 +39,28 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
 
     private fun createMatch(primary: FlaisApplicationCrd) = listOfNotNull(
         "Host(`${primary.spec.url.hostname}`)",
-        basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" }
+        createBasePaths(primary),
+        createHeaders(primary.spec.ingress.headers)
     ).joinToString(" && ")
+
+    private fun createBasePaths(primary: FlaisApplicationCrd): String? {
+        val basePaths = listOfNotNull(
+            basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
+            *primary.spec.ingress.basePaths.takeUnless { it.isEmpty() }
+                ?.map { "PathPrefix(`$it`)" }
+                ?.toTypedArray() ?: emptyArray()
+        )
+
+        return basePaths.takeIf { it.isNotEmpty() }
+            ?.joinToString(" || ")
+            ?.let { if (basePaths.size > 1) "($it)" else it }
+    }
+
+    private fun createHeaders(headers: Map<String, String>?): String? =
+        headers?.takeIf { it.isNotEmpty() }
+            ?.map { (key, value) -> "Headers(`$key`, `$value`)" }
+            ?.joinToString(" && ")
+            ?.let { if (headers.size > 1) "($it)" else it }
 
     private fun createMiddlewares(primary: FlaisApplicationCrd) = primary.spec.ingress.middlewares.map {
         Middlewares().apply {
