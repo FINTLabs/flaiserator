@@ -35,57 +35,6 @@ class IngressDRTest{
     }
 
     @Test
-    fun `should create IngressRoute with multiple basePaths`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(
-                url = Url("test.example.com"),
-                ingress = Ingress(
-                    enabled = true,
-                    basePaths = listOf("/path1", "/path2")
-                )
-            )
-        }
-
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
-        assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && (PathPrefix(`/path1`) || PathPrefix(`/path2`))", ingressRoute.spec.routes[0].match)
-    }
-
-    @Test
-    fun `should create IngressRoute with headers`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(
-                url = Url("test.example.com", "/test"),
-                ingress = Ingress(
-                    enabled = true,
-                    headers = mapOf("x-org-id" to "fintlabs.no", "x-nin" to "123")
-                )
-            )
-        }
-
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
-        assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && (Headers(`x-nin`, `123`) && Headers(`x-org-id`, `fintlabs.no`))", ingressRoute.spec.routes[0].match)
-    }
-
-    @Test
-    fun `should create IngressRoute with header`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(
-                url = Url("test.example.com", "/test"),
-                ingress = Ingress(
-                    enabled = true,
-                    headers = mapOf("x-org-id" to "fintlabs.no")
-                )
-            )
-        }
-
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
-        assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Headers(`x-org-id`, `fintlabs.no`)", ingressRoute.spec.routes[0].match)
-    }
-
-    @Test
     fun `should not create IngressRoute since enabled is false`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(url = Url("test.example.com", "/test"), ingress = Ingress(false))
@@ -148,6 +97,74 @@ class IngressDRTest{
         val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
         assertEquals("Host(`test.example.com`)", ingressRoute.spec.routes[0].match)
+    }
+
+    @Test
+    fun `should create IngressRoute with multiple basePaths`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                url = Url("test.example.com"),
+                ingress = Ingress(
+                    enabled = true,
+                    basePaths = listOf("/path1", "/path2")
+                )
+            )
+        }
+
+        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        assertNotNull(ingressRoute)
+        assertEquals("Host(`test.example.com`) && (PathPrefix(`/path1`) || PathPrefix(`/path2`))", ingressRoute.spec.routes[0].match)
+    }
+
+    @Test
+    fun `should create IngressRoute with singular value in basePaths`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                url = Url("test.example.com"),
+                ingress = Ingress(
+                    enabled = true,
+                    basePaths = listOf("/path1")
+                )
+            )
+        }
+
+        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        assertNotNull(ingressRoute)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/path1`)", ingressRoute.spec.routes[0].match)
+    }
+
+    @Test
+    fun `should create IngressRoute with headers`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                url = Url("test.example.com", "/test"),
+                ingress = Ingress(
+                    enabled = true,
+                    headers = mapOf("x-org-id" to "fintlabs.no", "x-nin" to "123")
+                )
+            )
+        }
+
+        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        assertNotNull(ingressRoute)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && (Headers(`x-nin`, `123`) && Headers(`x-org-id`, `fintlabs.no`))", ingressRoute.spec.routes[0].match)
+    }
+
+    @Test
+    fun `should create IngressRoute with header`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                url = Url("test.example.com", "/test"),
+                ingress = Ingress(
+                    enabled = true,
+                    headers = mapOf("x-org-id" to "fintlabs.no")
+                )
+            )
+        }
+
+        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        assertNotNull(ingressRoute)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Headers(`x-org-id`, `fintlabs.no`)", ingressRoute.spec.routes[0].match)
     }
 
     @Test
