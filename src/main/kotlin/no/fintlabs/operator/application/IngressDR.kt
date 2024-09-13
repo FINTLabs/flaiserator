@@ -43,14 +43,18 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
         createHeaders(primary.spec.ingress.headers)
     ).joinToString(" && ")
 
-    // TODO: add () wrapper around string
-    private fun createBasePaths(primary: FlaisApplicationCrd): String? = listOfNotNull(
-        basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
-        *primary.spec.ingress.basePaths.takeUnless { it.isEmpty() }
-            ?.map { "PathPrefix(`$it`)" }
-            ?.toTypedArray() ?: emptyArray()
-    ).takeIf { it.isNotEmpty() }
-        ?.joinToString(" || ")
+    private fun createBasePaths(primary: FlaisApplicationCrd): String? {
+        val basePaths = listOfNotNull(
+            basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
+            *primary.spec.ingress.basePaths.takeUnless { it.isEmpty() }
+                ?.map { "PathPrefix(`$it`)" }
+                ?.toTypedArray() ?: emptyArray()
+        )
+
+        return basePaths.takeIf { it.isNotEmpty() }
+            ?.joinToString(" || ")
+            ?.let { if (basePaths.size > 1) "($it)" else it }
+    }
 
     private fun createHeaders(headers: Map<String, String>?): String? {
         return null
