@@ -39,9 +39,11 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
 
     private fun createMatch(primary: FlaisApplicationCrd) = listOfNotNull(
         "Host(`${primary.spec.url.hostname}`)",
-        createBasePaths(primary)
+        createBasePaths(primary),
+        createHeaders(primary.spec.ingress.headers)
     ).joinToString(" && ")
 
+    // TODO: add () wrapper around string
     private fun createBasePaths(primary: FlaisApplicationCrd): String? = listOfNotNull(
         basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
         *primary.spec.ingress.basePaths.takeUnless { it.isEmpty() }
@@ -49,6 +51,10 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
             ?.toTypedArray() ?: emptyArray()
     ).takeIf { it.isNotEmpty() }
         ?.joinToString(" || ")
+
+    private fun createHeaders(headers: Map<String, String>?): String? {
+        return null
+    }
 
     private fun createMiddlewares(primary: FlaisApplicationCrd) = primary.spec.ingress.middlewares.map {
         Middlewares().apply {
