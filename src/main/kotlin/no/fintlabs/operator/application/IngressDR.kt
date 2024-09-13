@@ -15,7 +15,7 @@ import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 @KubernetesDependent(
     labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
 )
-class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java)  {
+class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = IngressRoute().apply {
         metadata = createObjectMeta(primary)
         spec = IngressRouteSpec().apply {
@@ -39,8 +39,16 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
 
     private fun createMatch(primary: FlaisApplicationCrd) = listOfNotNull(
         "Host(`${primary.spec.url.hostname}`)",
-        basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" }
+        createBasePaths(primary)
     ).joinToString(" && ")
+
+    private fun createBasePaths(primary: FlaisApplicationCrd): String? = listOfNotNull(
+        basePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
+        *primary.spec.ingress.basePaths.takeUnless { it.isEmpty() }
+            ?.map { "PathPrefix(`$it`)" }
+            ?.toTypedArray() ?: emptyArray()
+    ).takeIf { it.isNotEmpty() }
+        ?.joinToString(" || ")
 
     private fun createMiddlewares(primary: FlaisApplicationCrd) = primary.spec.ingress.middlewares.map {
         Middlewares().apply {
