@@ -56,9 +56,11 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
             ?.let { if (basePaths.size > 1) "($it)" else it }
     }
 
-    private fun createHeaders(headers: Map<String, String>?): String? {
-        return null
-    }
+    private fun createHeaders(headers: Map<String, String>?): String? =
+        headers?.takeIf { it.isNotEmpty() }
+            ?.map { (key, value) -> "Headers(`$key`, `$value`)" }
+            ?.joinToString(" && ")
+            ?.let { if (headers.size > 1) "($it)" else it }
 
     private fun createMiddlewares(primary: FlaisApplicationCrd) = primary.spec.ingress.middlewares.map {
         Middlewares().apply {
