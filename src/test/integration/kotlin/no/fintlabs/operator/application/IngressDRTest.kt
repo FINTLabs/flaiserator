@@ -35,6 +35,23 @@ class IngressDRTest{
     }
 
     @Test
+    fun `should create IngressRoute with multiple basePaths`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                url = Url("test.example.com"),
+                ingress = Ingress(
+                    enabled = true,
+                    basePaths = listOf("/path1", "/path2")
+                )
+            )
+        }
+
+        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        assertNotNull(ingressRoute)
+        assertEquals("Host(`test.example.com`) && (PathPrefix(`/path1`) || PathPrefix(`/path2`))", ingressRoute.spec.routes[0].match)
+    }
+
+    @Test
     fun `should not create IngressRoute since enabled is false`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(url = Url("test.example.com", "/test"), ingress = Ingress(false))
