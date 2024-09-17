@@ -32,11 +32,18 @@ val baseModule = module {
         }
     }
     single {
-        KubernetesClientBuilder().withKubernetesSerialization(KubernetesSerialization(get(), true)).build()
+        KubernetesClientBuilder()
+            .withKubernetesSerialization(KubernetesSerialization(get(), true))
+            .build()
+    }
+    single<(Operator) -> Unit> {
+        { operator ->
+            getAll<Reconciler<*>>().forEach { operator.register(it) }
+        }
     }
     single {
         Operator(ConfigurationService.newOverriddenConfigurationService { it.withKubernetesClient(get()) }).apply {
-            getAll<Reconciler<*>>().forEach { register(it) }
+            get<(Operator) -> Unit>().invoke(this)
         }
     }
 }
