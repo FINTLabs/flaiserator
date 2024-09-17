@@ -1,6 +1,7 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.nio.file.Files
 import kotlin.io.path.exists
@@ -110,13 +111,17 @@ tasks {
         gradleVersion = "8.7"
     }
 
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_21.toString()
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
 
-    java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+    withType<KotlinCompile> {
+        compilerOptions{
+            jvmTarget = JvmTarget.JVM_21
+            freeCompilerArgs.add("-Xjsr305=strict")
+        }
     }
 
     javaGen {
@@ -141,7 +146,7 @@ tasks {
 
     register("generateCrd") {
         project.dependencies {
-            kapt(libs.fabric8.crd.generator)
+            kapt(libs.fabric8.crd.generator.apt)
         }
 
         getByName("kaptKotlin").doLast {
