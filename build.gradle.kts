@@ -146,7 +146,7 @@ tasks {
 
     register("generateCrd") {
         project.dependencies {
-            kapt(libs.fabric8.crd.generator)
+            kapt(libs.fabric8.crd.generator.apt)
         }
 
         getByName("kaptKotlin").doLast {
