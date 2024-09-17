@@ -140,6 +140,7 @@ tasks {
         useJUnitPlatform()
 
         maxParallelForks = fetchNumCores()
+        forkEvery = 1
         testLogging {
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
