@@ -81,14 +81,6 @@ testing {
                 implementation(sourceSets.test.get().runtimeClasspath)
                 implementation(sourceSets.test.get().output)
             }
-
-            targets {
-                all {
-                    testTask.configure {
-                        shouldRunAfter(test)
-                    }
-                }
-            }
         }
     }
 }
@@ -141,6 +133,7 @@ tasks {
 
         maxParallelForks = fetchNumCores()
         forkEvery = 1
+        
         testLogging {
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
