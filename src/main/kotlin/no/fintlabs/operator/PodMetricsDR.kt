@@ -24,6 +24,7 @@ class PodMetricsDR : CRUDKubernetesDependentResource<PodMonitor, FlaisApplicatio
             podMetricsEndpoints = listOf(PodMetricsEndpoints().apply {
                 port = metrics.port
                 path = metrics.path
+                honorLabels = false
             })
             selector = Selector().apply {
                 matchLabels = mapOf("app" to primary.metadata.name)
