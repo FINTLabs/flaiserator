@@ -33,6 +33,7 @@ rules:
       - fintlabs.no
       - onepassword.com
       - traefik.containo.us
+      - monitoring.coreos.com
     resources:
       - "*"
     verbs:
