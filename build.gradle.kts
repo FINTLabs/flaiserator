@@ -81,16 +81,6 @@ testing {
                 implementation(sourceSets.test.get().runtimeClasspath)
                 implementation(sourceSets.test.get().output)
             }
-
-            targets {
-                all {
-                    testTask.configure {
-                        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
-                        forkEvery = 1
-                        shouldRunAfter(test)
-                    }
-                }
-            }
         }
     }
 }
@@ -140,6 +130,13 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform()
+
+        maxParallelForks = fetchNumCores()
+        forkEvery = 1
+        
+        testLogging {
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
     }
 
     register("generateCrd") {
@@ -182,3 +179,7 @@ tasks {
     }
 }
 
+fun fetchNumCores(): Int = Runtime.getRuntime().availableProcessors().let {
+    if (System.getenv("CI") != null) it
+    else it / 2
+}.coerceAtLeast(1)

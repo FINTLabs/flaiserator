@@ -12,39 +12,75 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  checks: write
 
 jobs:
-  test:
-    name: Verify pull request
+  unit-tests:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Gradle test and build
-        run: ./gradlew :test :integrationTest --stacktrace
+
+      - name: Run Unit Tests
+        run: ./gradlew :test --stacktrace
 
       - name: Unit Test Reports
         uses: dorny/test-reporter@v1.9.1
-        if: success() || failure()
+        if: always()
         with:
           name: Unit Test Reports
-          path: '/build/test-results/test/*.xml'
-          reporter: java-junit
-      - name: Unit Test Reports
-        uses: dorny/test-reporter@v1.9.1
-        if: success() || failure()
-        with:
-          name: Integration Test Reports
-          path: '/build/test-results/integrationTest/*.xml'
+          path: 'build/test-results/test/*.xml'
           reporter: java-junit
 
+  integration-tests:
+    name: Run Integration Tests
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download setup-envtest
+        uses: robinraju/release-downloader@v1.11
+        with:
+          repository: 'kubernetes-sigs/controller-runtime'
+          latest: true
+          fileName: 'setup-envtest-linux-amd64'
+
+      - name: Setup kube test API
+        run: |
+          chmod +x setup-envtest-linux-amd64
+          ./setup-envtest-linux-amd64 use --bin-dir ~/.kubeapitest
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run Integration Tests
+        env:
+          KUBE_API_TEST_OFFLINE_MODE: true
+        run: ./gradlew :integrationTest --stacktrace
+
+      - name: Integration Test Reports
+        uses: dorny/test-reporter@v1.9.1
+        if: always()
+        with:
+          name: Integration Test Reports
+          path: 'build/test-results/integrationTest/*.xml'
+          reporter: java-junit

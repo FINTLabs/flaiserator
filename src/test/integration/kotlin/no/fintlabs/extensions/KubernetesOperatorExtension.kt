@@ -3,6 +3,8 @@ package no.fintlabs.extensions
 import io.fabric8.crd.generator.CRDGenerator
 import io.fabric8.crd.generator.CRDGenerator.AbstractCRDOutput
 import io.fabric8.kubeapitest.KubeAPIServer
+import io.fabric8.kubeapitest.KubeAPIServerConfigBuilder
+import io.fabric8.kubeapitest.KubeAPIServerConfigBuilder.KUBE_API_TEST_OFFLINE_MODE
 import io.fabric8.kubernetes.api.model.Namespace
 import io.fabric8.kubernetes.client.Config
 import io.fabric8.kubernetes.client.CustomResource
@@ -24,7 +26,9 @@ import java.time.Duration
 class KubernetesOperatorExtension
 private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>) : BeforeEachCallback,
     BeforeAllCallback, AfterAllCallback, AfterEachCallback, ParameterResolver, KoinComponent {
-    private val kubernetesApi = KubeAPIServer()
+    private val kubernetesApi = KubeAPIServer(KubeAPIServerConfigBuilder().apply {
+        withOfflineMode(System.getenv(KUBE_API_TEST_OFFLINE_MODE).toBoolean())
+    }.build())
     private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
     private var additionalResources = emptyList<KubernetesResourceSource>()
@@ -33,7 +37,6 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
         prepareAdditionalResources(context)
         kubernetesApi.start()
         ensureCRDs()
-
     }
 
     override fun afterAll(context: ExtensionContext) {
