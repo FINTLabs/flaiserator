@@ -1,0 +1,35 @@
+version: 2
+updates:
+  # Gradle dependencies (weekly)
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "sunday"
+    open-pull-requests-limit: 10
+    groups:
+      gradle:
+        patterns:
+          - '*'
+
+  # GitHub Actions dependencies (monthly)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "sunday"
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  # Docker dependencies (monthly)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "sunday"
+    groups:
+      docker:
+        patterns:
+          - '*'
