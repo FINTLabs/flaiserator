@@ -46,7 +46,7 @@ class PodMetricsDRTest {
         val podMonitor = context.createAndGetPodMonitor(flaisApplication)
         assertNotNull(podMonitor)
         assertEquals("/metrics", podMonitor.spec.podMetricsEndpoints[0].path)
-        assertEquals("1234", podMonitor.spec.podMetricsEndpoints[0].targetPort.strVal)
+        assertEquals("1234", podMonitor.spec.podMetricsEndpoints[0].port)
     }
 
     @Test
