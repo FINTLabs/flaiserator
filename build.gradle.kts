@@ -1,4 +1,3 @@
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -7,23 +6,12 @@ import java.nio.file.Files
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
 
-val kotlinVersion: String by project
-val mockkVersion: String by project
-val fabric8Version: String by project
-val koinVersion: String by project
-val operatorSdkVersion: String by project
-val awaitilityVersion: String by project
-val hopliteVersion: String by project
-val logbackVersion: String by project
-val logbackLogstashEncoderVersion: String by project
-
-
 plugins {
     application
-    kotlin("jvm")
-    kotlin("kapt")
 
-    id("io.fabric8.java-generator")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.fabric8.generator)
 }
 
 group = "no.fintlabs"
@@ -46,33 +34,24 @@ repositories {
 }
 
 dependencies {
-    implementation("io.fabric8:kubernetes-client:$fabric8Version")
-    implementation("io.fabric8:crd-generator-apt:$fabric8Version")
-    implementation("io.javaoperatorsdk:operator-framework-core:$operatorSdkVersion")
-    implementation(platform("io.insert-koin:koin-bom:$koinVersion"))
-    implementation("io.insert-koin:koin-core")
-    implementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
-    implementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logbackLogstashEncoderVersion")
-
-
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.core)
+    implementation(libs.bundles.fabric8)
+    implementation(libs.operator.framework.core)
+    implementation(libs.bundles.hoplite)
+    implementation(libs.bundles.logging)
 
     testImplementation(kotlin("test"))
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("io.fabric8:kubernetes-server-mock:${fabric8Version}")
-    testImplementation("io.fabric8:kube-api-test:${fabric8Version}")
-    testImplementation("io.javaoperatorsdk:operator-framework-junit-5:$operatorSdkVersion")
-    testImplementation("io.insert-koin:koin-test:$koinVersion")
-    testImplementation("io.insert-koin:koin-test-junit5:$koinVersion")
-    testImplementation("org.awaitility:awaitility-kotlin:$awaitilityVersion")
+    testImplementation(libs.mockk)
+    testImplementation(libs.awaitility.kotlin)
+    testImplementation(libs.operator.framework.junit5)
+    testImplementation(libs.bundles.fabric8test)
+    testImplementation(libs.bundles.koinTest)
 }
-
-
-
 
 testing {
     suites {
+        @Suppress("UnstableApiUsage")
         val test by getting(JvmTestSuite::class) {
             testType.set(TestSuiteType.UNIT_TEST)
             sources {
@@ -84,7 +63,7 @@ testing {
                 }
             }
         }
-
+        @Suppress("UnstableApiUsage")
         val integrationTest by registering(JvmTestSuite::class) {
             testType.set(TestSuiteType.INTEGRATION_TEST)
             sources {
@@ -163,7 +142,7 @@ tasks {
 
     register("generateCrd") {
         project.dependencies {
-            kapt("io.fabric8:crd-generator-apt:$fabric8Version")
+            kapt(libs.fabric8.crd.generator)
         }
 
         getByName("kaptKotlin").doLast {
