@@ -32,3 +32,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Gradle test and build
         run: ./gradlew :test :integrationTest --stacktrace
+
+      - name: Unit Test Reports
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()
+        with:
+          name: Unit Test Reports
+          path: '/build/test-results/test/*.xml'
+          reporter: java-junit
+      - name: Unit Test Reports
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()
+        with:
+          name: Integration Test Reports
+          path: '/build/test-results/integrationTest/*.xml'
+          reporter: java-junit
+
