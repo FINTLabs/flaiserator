@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.client.CustomResource
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import io.javaoperatorsdk.operator.Operator
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
@@ -21,7 +22,8 @@ import java.io.ByteArrayOutputStream
 import java.time.Duration
 
 class KubernetesOperatorExtension
-    private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>) : BeforeEachCallback, BeforeAllCallback, AfterAllCallback, AfterEachCallback, ParameterResolver, KoinComponent {
+private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>) : BeforeEachCallback,
+    BeforeAllCallback, AfterAllCallback, AfterEachCallback, ParameterResolver, KoinComponent {
     private val kubernetesApi = KubeAPIServer()
     private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
@@ -39,20 +41,22 @@ class KubernetesOperatorExtension
     }
 
     override fun beforeEach(context: ExtensionContext) {
-        val kubernetesClient = createKubernetesClient()
         val namespace = namespaceSupplier.apply(context)
+        val kubernetesClient = createKubernetesClient(namespace)
 
         prepareKoin(kubernetesClient)
         prepareKubernetes(kubernetesClient, namespace)
         applyAdditionalResources(kubernetesClient, namespace)
-        context.store().put(KubernetesOperatorContext::class.simpleName, KubernetesOperatorContext(namespace, kubernetesClient))
+        context.store()
+            .put(KubernetesOperatorContext::class.simpleName, KubernetesOperatorContext(namespace, kubernetesClient))
 
         get<Operator>().start()
     }
 
     override fun afterEach(context: ExtensionContext) {
         val kubernetesClient = get<KubernetesClient>()
-        val kubernetesOperatorContext = context.store().get(KubernetesOperatorContext::class.simpleName) as KubernetesOperatorContext
+        val kubernetesOperatorContext =
+            context.store().get(KubernetesOperatorContext::class.simpleName) as KubernetesOperatorContext
 
         cleanupKubernetes(kubernetesClient, kubernetesOperatorContext.namespace)
 
@@ -88,7 +92,17 @@ class KubernetesOperatorExtension
     }
 
     private fun prepareKoin(kubernetesClient: KubernetesClient) {
-        getKoin().declare(kubernetesClient)
+        getKoin().apply {
+            declare(kubernetesClient)
+            declare<(Operator) -> Unit>(
+                { operator ->
+                    getAll<Reconciler<*>>().forEach {
+                        operator.register(it) { config ->
+                            config.settingNamespace(kubernetesClient.namespace)
+                        }
+                    }
+                })
+        }
     }
 
     private fun prepareKubernetes(kubernetesClient: KubernetesClient, namespace: String) {
@@ -108,8 +122,10 @@ class KubernetesOperatorExtension
         return this.getStore(KUBERNETES_OPERATOR_STORE)
     }
 
-    private fun createKubernetesClient(): KubernetesClient {
-        return KubernetesClientBuilder().withConfig(Config.fromKubeconfig(kubernetesApi.kubeConfigYaml)).build()
+    private fun createKubernetesClient(namespace: String? = null): KubernetesClient {
+        return KubernetesClientBuilder().withConfig(Config.fromKubeconfig(kubernetesApi.kubeConfigYaml).apply {
+            setNamespace(namespace)
+        }).build()
     }
 
     private fun prepareAdditionalResources(context: ExtensionContext) {
@@ -129,9 +145,11 @@ class KubernetesOperatorExtension
     }
 
     companion object {
-        fun create(crdClass: List<Class<out CustomResource<*,*>>> = emptyList()) = KubernetesOperatorExtension(crdClass)
+        fun create(crdClass: List<Class<out CustomResource<*, *>>> = emptyList()) =
+            KubernetesOperatorExtension(crdClass)
 
-        private val KUBERNETES_OPERATOR_STORE: ExtensionContext.Namespace = ExtensionContext.Namespace.create("KUBERNETES_OPERATOR_STORE")
+        private val KUBERNETES_OPERATOR_STORE: ExtensionContext.Namespace =
+            ExtensionContext.Namespace.create("KUBERNETES_OPERATOR_STORE")
     }
 }
 
