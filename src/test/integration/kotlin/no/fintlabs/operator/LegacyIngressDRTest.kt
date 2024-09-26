@@ -18,7 +18,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class IngressDRTest{
+class LegacyIngressDRTest{
     //region General
     @Test
     @Tags(Tag("legacy-ingress"))
