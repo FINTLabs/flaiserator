@@ -50,6 +50,6 @@ data class FlaisApplicationSpec(
     val kafka: Kafka = Kafka(),
     val database: Database = Database(),
     val url: Url = Url(),
-    val ingress: Ingress = Ingress(),
+    val ingress: Ingress? = null,
     val observability: Observability? = null
 )
