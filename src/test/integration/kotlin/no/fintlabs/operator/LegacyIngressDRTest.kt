@@ -9,6 +9,8 @@ import no.fintlabs.operator.Utils.createTestFlaisApplication
 import no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.operator.api.v1alpha1.Ingress
 import no.fintlabs.operator.api.v1alpha1.Url
+import org.junit.jupiter.api.Tag
+import org.junit.jupiter.api.Tags
 import org.junit.jupiter.api.extension.RegisterExtension
 import us.containo.traefik.v1alpha1.IngressRoute
 import kotlin.test.Test
@@ -19,7 +21,8 @@ import kotlin.test.assertNull
 class IngressDRTest{
     //region General
     @Test
-    fun `should creaet IngressRoute`(context: KubernetesOperatorContext) {
+    @Tags(Tag("legacy-ingress"))
+    fun `should create IngressRoute`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(url = Url("test.example.com", "/test"), ingress = Ingress(true))
         }

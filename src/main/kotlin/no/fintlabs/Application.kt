@@ -29,6 +29,7 @@ val baseModule = module {
     single {
         ObjectMapper().apply {
             addMixIn(Quantity::class.java, QuantityMixIn::class.java)
+            registerKotlinModule()
         }
     }
     single {
