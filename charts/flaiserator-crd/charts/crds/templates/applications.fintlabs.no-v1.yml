@@ -123,6 +123,29 @@ spec:
                     items:
                       type: "string"
                     type: "array"
+                  routes:
+                    items:
+                      properties:
+                        headers:
+                          additionalProperties:
+                            type: "string"
+                          type: "object"
+                        host:
+                          type: "string"
+                        middlewares:
+                          items:
+                            type: "string"
+                          type: "array"
+                        path:
+                          type: "string"
+                        queries:
+                          additionalProperties:
+                            type: "string"
+                          type: "object"
+                      required:
+                      - "host"
+                      type: "object"
+                    type: "array"
                 type: "object"
               kafka:
                 properties:
