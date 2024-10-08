@@ -41,6 +41,7 @@ dependencies {
     implementation(libs.operator.framework.core)
     implementation(libs.bundles.hoplite)
     implementation(libs.bundles.logging)
+    implementation(libs.jackson.module.kotlin)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.mockk)

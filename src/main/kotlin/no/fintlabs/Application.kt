@@ -1,6 +1,8 @@
 package no.fintlabs
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.addMixIn
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.fabric8.kubernetes.api.model.Quantity
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization
@@ -28,7 +30,8 @@ val baseModule = module {
     single(createdAtStart = true) { defaultConfig() }
     single {
         ObjectMapper().apply {
-            addMixIn(Quantity::class.java, QuantityMixIn::class.java)
+            addMixIn<Quantity, QuantityMixIn>()
+            registerKotlinModule()
         }
     }
     single {

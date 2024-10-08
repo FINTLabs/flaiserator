@@ -7,6 +7,7 @@ import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient
+import no.fintlabs.CustomKubernetesClientBuilder
 import no.fintlabs.operator.api.v1alpha1.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.hamcrest.MatcherAssert.assertThat
@@ -16,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.hamcrest.CoreMatchers.`is` as isEqualTo
 
-@EnableKubernetesMockClient(crud = true)
+@EnableKubernetesMockClient(crud = true, kubernetesClientBuilderCustomizer = CustomKubernetesClientBuilder::class)
 class FlaisApplicationCrdTest {
 
     private lateinit var client: KubernetesClient
@@ -173,21 +174,52 @@ class FlaisApplicationCrdTest {
     }
 
     @Test
-    fun `FlaisApplicationCrd should have correct ingress`() {
+    fun `FlaisApplicationCrd should have correct legacy ingress`() {
         createAndApplyFlaisApplication(
             FlaisApplicationSpec(
                 ingress = Ingress(
                     enabled = true,
                     basePath = "/test-path",
-                    middlewares = listOf("test-middleware")
+                    middlewares = setOf("test-middleware")
                 )
             )
         )
         val resFlaisApplication = getFlaisApplication()
-        assertEquals(true, resFlaisApplication.spec.ingress.enabled)
-        assertEquals("/test-path", resFlaisApplication.spec.ingress.basePath)
-        assertEquals(1, resFlaisApplication.spec.ingress.middlewares.size)
-        assertEquals("test-middleware", resFlaisApplication.spec.ingress.middlewares.first())
+        assertEquals(true, resFlaisApplication.spec.ingress?.enabled)
+        assertEquals("/test-path", resFlaisApplication.spec.ingress?.basePath)
+        assertEquals(1, resFlaisApplication.spec.ingress?.middlewares?.size)
+        assertEquals("test-middleware", resFlaisApplication.spec.ingress?.middlewares?.first())
+    }
+
+    @Test
+    fun `FlaisApplicationCrd should have correct ingress`() {
+        createAndApplyFlaisApplication(
+            FlaisApplicationSpec(
+                ingress = Ingress(
+                    routes = listOf(
+                        Ingress.Route(
+                            host = "test-host",
+                            path = "/test-path",
+                            headers = mapOf("test-header" to "test-value"),
+                            queries = mapOf("test-query" to "test-value"),
+                            middlewares = setOf("test-middleware")
+                        )
+                    ),
+                    middlewares = setOf("test-middleware")
+                )
+            )
+        )
+        val resFlaisApplication = getFlaisApplication()
+        assertEquals(1, resFlaisApplication.spec.ingress?.routes?.size)
+        val route = resFlaisApplication.spec.ingress?.routes?.first()
+        assertEquals("test-host", route?.host)
+        assertEquals("/test-path", route?.path)
+        assertEquals(1, route?.headers?.size)
+        assertEquals("test-value", route?.headers?.get("test-header"))
+        assertEquals(1, route?.queries?.size)
+        assertEquals("test-value", route?.queries?.get("test-query"))
+        assertEquals(1, route?.middlewares?.size)
+        assertEquals("test-middleware", route?.middlewares?.first())
     }
 
 
