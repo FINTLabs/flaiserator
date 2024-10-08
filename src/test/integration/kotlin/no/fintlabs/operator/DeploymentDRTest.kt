@@ -205,10 +205,10 @@ class DeploymentDRTest {
         assertNotNull(deployment)
         assertEquals(2, deployment.spec.template.spec.containers[0].resources.requests.size)
         assertEquals("500m", deployment.spec.template.spec.containers[0].resources.requests["cpu"]?.toString())
-        assertEquals("512Mi", deployment.spec.template.spec.containers[0].resources.requests["memory"]?.toString())
+        assertEquals("${Quantity("512Mi").numericalAmount.stripTrailingZeros()}", deployment.spec.template.spec.containers[0].resources.requests["memory"]?.toString())
         assertEquals(2, deployment.spec.template.spec.containers[0].resources.limits.size)
         assertEquals("1", deployment.spec.template.spec.containers[0].resources.limits["cpu"]?.toString())
-        assertEquals("1Gi", deployment.spec.template.spec.containers[0].resources.limits["memory"]?.toString())
+        assertEquals("${Quantity("1Gi").numericalAmount.stripTrailingZeros()}", deployment.spec.template.spec.containers[0].resources.limits["memory"]?.toString())
     }
     //endregion
 
