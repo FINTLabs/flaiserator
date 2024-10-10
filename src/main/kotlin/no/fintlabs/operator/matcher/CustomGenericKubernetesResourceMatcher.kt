@@ -88,48 +88,37 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
     private fun normalizeValuesForComparison(resource: R, resourceMap: MutableMap<String, Any>) {
         when (resource) {
-            is Deployment -> {
-                resource.spec.template.spec.containers.normalizeContainerResources(resourceMap)
-            }
-
-            is Job -> {
-                resource.spec.template.spec.containers.normalizeContainerResources(resourceMap)
-            }
-
+            is Pod -> resource.spec.containers.normalizeContainers(resourceMap)
+            is Deployment -> resource.spec.template.spec.containers.normalizeContainers(resourceMap)
+            is Job -> resource.spec.template.spec.containers.normalizeContainers(resourceMap)
             is StatefulSet -> {
-                resource.spec.template.spec.containers.normalizeContainerResources(resourceMap)
+                resource.spec.template.spec.containers.normalizeContainers(resourceMap)
                 resource.spec.volumeClaimTemplates.forEachIndexed { i, pvc ->
                     pvc.spec.resources?.normalizeResources(resourceMap, "spec", "volumeClaimTemplates", i, "spec", "resources")
                 }
             }
-
-            is PersistentVolumeClaim -> {
-                resource.spec.resources?.normalizeResources(resourceMap, "spec", "resources")
-            }
-
-            is PersistentVolume -> {
-                resource.spec.capacity?.normalizeAmount(resourceMap, "spec", "capacity")
-            }
+            is PersistentVolumeClaim -> resource.spec.resources?.normalizeResources(resourceMap, "spec", "resources")
+            is PersistentVolume -> resource.spec.capacity?.normalizeQuantity(resourceMap, "spec", "capacity")
         }
     }
 
-    private fun List<Container>.normalizeContainerResources(map: MutableMap<String, Any>) {
+    private fun List<Container>.normalizeContainers(map: MutableMap<String, Any>) {
         this.forEachIndexed { i, container ->
             container.resources?.normalizeResources(map, "spec", "template", "spec", "containers", i, "resources")
         }
     }
 
     private fun ResourceRequirements.normalizeResources(map: MutableMap<String, Any>, vararg path: Any) {
-        this.limits?.normalizeAmount(map, *path, "limits")
-        this.requests?.normalizeAmount(map, *path, "requests")
+        this.limits?.normalizeQuantity(map, *path, "limits")
+        this.requests?.normalizeQuantity(map, *path, "requests")
     }
 
     private fun VolumeResourceRequirements.normalizeResources(map: MutableMap<String, Any>, vararg path: Any) {
-        this.limits?.normalizeAmount(map, *path, "limits")
-        this.requests?.normalizeAmount(map, *path, "requests")
+        this.limits?.normalizeQuantity(map, *path, "limits")
+        this.requests?.normalizeQuantity(map, *path, "requests")
     }
 
-    private fun Map<String, Quantity>.normalizeAmount(map: MutableMap<String, Any>, vararg path: Any) {
+    private fun Map<String, Quantity>.normalizeQuantity(map: MutableMap<String, Any>, vararg path: Any) {
         GenericKubernetesResource.get<MutableMap<String, Any>?>(map, *path)?.let { resourceMap ->
             this.forEach { (key, value) ->
                 resourceMap[key] = value.numericalAmount.stripTrailingZeros()
