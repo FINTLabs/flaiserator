@@ -1,6 +1,7 @@
 package no.fintlabs
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
@@ -25,7 +26,9 @@ fun main() {
 val baseModule = module {
     single(createdAtStart = true) { defaultConfig() }
     single {
-        ObjectMapper()
+        ObjectMapper().apply {
+            registerKotlinModule()
+        }
     }
     single {
         KubernetesClientBuilder()

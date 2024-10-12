@@ -11,13 +11,32 @@ metadata:
     app.kubernetes.io/part-of: flais
     fintlabs.no/team: flais
 spec:
-  port: 80
   org-id: rogfk.no
+
+  replicas: 1
+  port: 80
   image: docker/getting-started
-  prometheus:
-    enabled: true
-    port: "80"
-    path: /prometheus
+  resources:
+    limits:
+      memory: "1024Mi"
+      cpu: "1"
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  observability:
+    metrics:
+      path: /metrics
+      port: 8080
+    logging:
+      loki: true
+
   env:
     - name: ENV1
       value: test
@@ -28,50 +47,30 @@ spec:
   envFrom:
     - secretRef:
         name: flais-test-application-secret
+    - configMapRef:
+        name: flais-test-application-configmap
   onePassword:
     itemPath: "vaults/aks-alpha-vault/items/azurerator"
-  storage:
-    container-blob: true
-    file-share: true
   database:
-    enabled: true
-  auth:
-    application:
-      enabled: true
-      allowedUsers:
-        - ola@norman.no
-    service:
-      enabled: true
-  fint:
-    adapter:
-      shortDescription: Test adapter
-      components:
-        - administrasjon_kodeverk
-        - administrasjon_personal
-    client:
-      shortDescription: Test client
-      components:
-        - administrasjon_kodeverk
-        - administrasjon_personal
-  url:
-    hostname: test.flais.io
-    basePath: /alpha/fintlabs-no
-  ingress:
-    enabled: true
-    #match: Host(`alpha.felleskomponent.no`) && PathPrefix(`/`)
+    database: test
   kafka:
     acls:
       - topic: '*.test.topic'
         permission: read
-  resources:
-    limits:
-      memory: "1024Mi"
-      cpu: "1"
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-  restartPolicy: Always
-  replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+
+  ingress:
+    routes:
+      - host: flais-test-application.example.com
+        path: /test
+        headers:
+          x-forwarded: flais-test-application.example.com
+          x-forwarded-path: re:^test(.*)$
+        queries:
+          showAll: false
+          isRegex: re:.*
+      - host: flais-test-application.example.com
+        path: re:/test2(.*)$
+        middlewares:
+          - some-middleware
+    middlewares:
+      - another-middleware

@@ -1,5 +1,6 @@
 package no.fintlabs.extensions
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.fabric8.crd.generator.CRDGenerator
 import io.fabric8.crd.generator.CRDGenerator.AbstractCRDOutput
 import io.fabric8.kubeapitest.KubeAPIServer
@@ -10,6 +11,7 @@ import io.fabric8.kubernetes.client.Config
 import io.fabric8.kubernetes.client.CustomResource
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
+import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
@@ -45,7 +47,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
     override fun beforeEach(context: ExtensionContext) {
         val namespace = namespaceSupplier.apply(context)
-        val kubernetesClient = createKubernetesClient(namespace)
+        val kubernetesClient = createKubernetesClient(namespace, get())
 
         prepareKoin(kubernetesClient)
         prepareKubernetes(kubernetesClient, namespace)
@@ -125,10 +127,15 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
         return this.getStore(KUBERNETES_OPERATOR_STORE)
     }
 
-    private fun createKubernetesClient(namespace: String? = null): KubernetesClient {
-        return KubernetesClientBuilder().withConfig(Config.fromKubeconfig(kubernetesApi.kubeConfigYaml).apply {
-            setNamespace(namespace)
-        }).build()
+    private fun createKubernetesClient(namespace: String? = null, serializer: ObjectMapper? = null): KubernetesClient {
+        return KubernetesClientBuilder().apply {
+            withConfig(Config.fromKubeconfig(kubernetesApi.kubeConfigYaml).apply {
+                setNamespace(namespace)
+            })
+            if (serializer != null) {
+                withKubernetesSerialization(KubernetesSerialization(serializer, true))
+            }
+        }.build()
     }
 
     private fun prepareAdditionalResources(context: ExtensionContext) {
