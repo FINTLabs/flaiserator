@@ -2,6 +2,7 @@ package no.fintlabs.operator.matcher
 
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
+import io.fabric8.kubernetes.api.model.apps.ReplicaSet
 import io.fabric8.kubernetes.api.model.apps.StatefulSet
 import io.fabric8.kubernetes.api.model.batch.v1.Job
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization
@@ -91,6 +92,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
             is Pod -> resource.spec.containers.normalizeContainers(resourceMap)
             is Deployment -> resource.spec.template.spec.containers.normalizeContainers(resourceMap)
             is Job -> resource.spec.template.spec.containers.normalizeContainers(resourceMap)
+            is ReplicaSet -> resource.spec.template.spec.containers.normalizeContainers(resourceMap)
             is StatefulSet -> {
                 resource.spec.template.spec.containers.normalizeContainers(resourceMap)
                 resource.spec.volumeClaimTemplates.forEachIndexed { i, pvc ->
