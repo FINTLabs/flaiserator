@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "simple-job"
+spec:
+  template:
+    metadata:
+      labels:
+        app: "simple-job-nginx"
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: nginx
+          image: nginx:1.17.0
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
