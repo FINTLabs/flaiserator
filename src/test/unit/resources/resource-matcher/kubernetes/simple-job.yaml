@@ -1,0 +1,99 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: "2024-10-12T22:03:20Z"
+  generation: 1
+  labels:
+    app: simple-job-nginx
+    batch.kubernetes.io/controller-uid: 770ed47d-2b77-46ab-8124-5d94b793624b
+    batch.kubernetes.io/job-name: simple-job
+    controller-uid: 770ed47d-2b77-46ab-8124-5d94b793624b
+    job-name: simple-job
+  managedFields:
+  - apiVersion: batch/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:spec:
+        f:template:
+          f:metadata:
+            f:labels:
+              f:app: {}
+          f:spec:
+            f:containers:
+              k:{"name":"nginx"}:
+                .: {}
+                f:image: {}
+                f:name: {}
+                f:resources:
+                  f:limits:
+                    f:cpu: {}
+                    f:memory: {}
+                  f:requests:
+                    f:cpu: {}
+                    f:memory: {}
+            f:restartPolicy: {}
+    manager: controller
+    operation: Apply
+    time: "2024-10-12T22:03:20Z"
+  - apiVersion: batch/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:status:
+        f:active: {}
+        f:ready: {}
+        f:startTime: {}
+        f:terminating: {}
+        f:uncountedTerminatedPods: {}
+    manager: kube-controller-manager
+    operation: Update
+    subresource: status
+    time: "2024-10-12T22:03:22Z"
+  name: simple-job
+  namespace: default
+  resourceVersion: "85255"
+  uid: 770ed47d-2b77-46ab-8124-5d94b793624b
+spec:
+  backoffLimit: 6
+  completionMode: NonIndexed
+  completions: 1
+  manualSelector: false
+  parallelism: 1
+  podReplacementPolicy: TerminatingOrFailed
+  selector:
+    matchLabels:
+      batch.kubernetes.io/controller-uid: 770ed47d-2b77-46ab-8124-5d94b793624b
+  suspend: false
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: simple-job-nginx
+        batch.kubernetes.io/controller-uid: 770ed47d-2b77-46ab-8124-5d94b793624b
+        batch.kubernetes.io/job-name: simple-job
+        controller-uid: 770ed47d-2b77-46ab-8124-5d94b793624b
+        job-name: simple-job
+    spec:
+      containers:
+      - image: nginx:1.17.0
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Never
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  active: 1
+  ready: 1
+  startTime: "2024-10-12T22:03:20Z"
+  terminating: 0
+  uncountedTerminatedPods: {}
