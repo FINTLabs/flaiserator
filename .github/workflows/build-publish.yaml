@@ -45,18 +45,18 @@ jobs:
               - 'charts/**'
 
 
-  build:
-    name: Build app
+  app:
+    name: Build and Publish App
     needs: changes
-    if: needs.changes.outputs.app || github.event_name == 'workflow_dispatch'
-    uses: ./.github/workflows/.app-build.yaml
+    if: needs.changes.outputs.app == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/.app-build-publish.yaml
     secrets: inherit
 
   charts:
-    name: Build and release charts
-    needs: [build]
+    name: Build and Publish Charts
+    needs: app
     if: always()
-    uses: ./.github/workflows/.charts.yaml
+    uses: ./.github/workflows/.charts-publish.yaml
     with:
-      app-version: ${{ needs.build.outputs.version }}
+      app-version: ${{ needs.app.outputs.version }}
     secrets: inherit
