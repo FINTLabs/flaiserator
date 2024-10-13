@@ -1,4 +1,4 @@
-name: .app-build.yaml
+name: App Build
 
 on:
   workflow_call:
