@@ -1,3 +1,5 @@
+name: Publish Charts
+
 on:
   workflow_call:
     inputs:
