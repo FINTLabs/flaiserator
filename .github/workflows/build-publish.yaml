@@ -55,8 +55,14 @@ jobs:
   charts:
     name: Build and Publish Charts
     needs: app
-    if: always()
     uses: ./.github/workflows/.charts-publish.yaml
     with:
       app-version: ${{ needs.app.outputs.version }}
+    secrets: inherit
+
+  charts-only:
+    name: Build and Publish Charts Only
+    needs: [ changes ]
+    if: needs.changes.outputs.app == 'false' && github.event_name != 'workflow_dispatch'
+    uses: ./.github/workflows/.charts-publish.yaml
     secrets: inherit
