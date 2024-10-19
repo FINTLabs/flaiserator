@@ -13,6 +13,7 @@ import no.fintlabs.operator.Utils.createAndGetResource
 import no.fintlabs.operator.Utils.createKoinTestExtension
 import no.fintlabs.operator.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.Utils.createTestFlaisApplication
+import no.fintlabs.operator.Utils.waitUntilIsDeployed
 import no.fintlabs.operator.api.LOKI_LOGGING_LABEL
 import no.fintlabs.operator.api.v1alpha1.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
@@ -462,6 +463,36 @@ class DeploymentDRTest {
         assertEquals(8080, deployment.spec.template.spec.containers[0].ports[0].containerPort)
         assertEquals("metrics", deployment.spec.template.spec.containers[0].ports[1].name)
         assertEquals(8081, deployment.spec.template.spec.containers[0].ports[1].containerPort)
+    }
+    //endregion
+
+    //region PodSelector
+    @Test
+    fun `should recreate deployment on pod selector change selector`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication()
+
+        var deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+
+        context.operator.stop()
+        context.delete(deployment)
+
+        deployment.spec.apply {
+            selector.matchLabels["another"] = "another"
+            template.metadata.labels["another"] = "another"
+        }
+        deployment.metadata.resourceVersion = null
+
+        context.create(deployment)
+
+        context.operator.start()
+        context.waitUntilIsDeployed(flaisApplication)
+        deployment = context.get<Deployment>(deployment.metadata.name)
+
+        assertNotNull(deployment)
+        assertEquals(1, deployment.spec.selector.matchLabels.size)
+        assert(deployment.spec.selector.matchLabels.containsKey("app"))
+        assertEquals(deployment.metadata.name, deployment.spec.selector.matchLabels["app"])
     }
     //endregion
 
