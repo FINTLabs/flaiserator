@@ -16,12 +16,13 @@ import org.koin.core.component.get
 import org.koin.core.component.inject
 import org.slf4j.MDC
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 
 @ControllerConfiguration(
     labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
 )
-class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, EventSourceInitializer<FlaisApplicationCrd>, KoinComponent {
+class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, ErrorStatusHandler<FlaisApplicationCrd>, EventSourceInitializer<FlaisApplicationCrd>, KoinComponent {
     private val logger = getLogger()
 
     private val deployment by inject<DeploymentDR>()
@@ -56,7 +57,11 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
         }
 
         val result = workflow.reconcile(resource, context)
-        val statusUpdated = updateStatus(resource, determineNewStatus(resource, result))
+        if (result.erroredDependentsExist()) {
+            context.managedDependentResourceContext().put(WORKFLOW_RESULT_KEY, result)
+            result.throwAggregateExceptionIfErrorsPresent()
+        }
+        val statusUpdated = updateStatus(resource, determineNewStatus(resource, context, result))
 
         return when {
             statusUpdated -> UpdateControl.patchStatus(resource)
@@ -68,6 +73,14 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
 
     override fun cleanup(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): DeleteControl {
         return DeleteControl.defaultDelete()
+    }
+
+    override fun updateErrorStatus(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>, e: Exception?): ErrorStatusUpdateControl<FlaisApplicationCrd> {
+        val result = context.managedDependentResourceContext().get(WORKFLOW_RESULT_KEY, WorkflowReconcileResult::class.java)
+        return when (updateStatus(resource, determineNewStatus(resource, context, result.getOrNull()))) {
+            true -> ErrorStatusUpdateControl.updateStatus(resource)
+            else -> ErrorStatusUpdateControl.noStatusUpdate()
+        }
     }
 
     override fun prepareEventSources(context: EventSourceContext<FlaisApplicationCrd>): MutableMap<String, EventSource> =
@@ -95,20 +108,27 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
         }?.rescheduleAfter(0)
     }
 
-    private fun determineNewStatus(primary: FlaisApplicationCrd, workflowResult: WorkflowReconcileResult): FlaisApplicationStatus {
-        val ready = workflowResult.allDependentResourcesReady()
-        val failed = workflowResult.erroredDependentsExist()
+    private fun determineNewStatus(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>, workflowResult: WorkflowReconcileResult?): FlaisApplicationStatus {
+        val ready = workflowResult?.allDependentResourcesReady() ?: false
+        val failed = workflowResult?.erroredDependentsExist() ?: true
+        val isLastAttempt = context.retryInfo.getOrNull()?.isLastAttempt ?: false
 
-        for ((dep, res) in workflowResult.reconcileResults) {
-            logger.info("Reconcile result for ${dep.javaClass.simpleName} - ${res.singleOperation}")
+        if (workflowResult != null) {
+            for ((dep, res) in workflowResult.reconcileResults) {
+                logger.info("Reconcile result for ${dep.javaClass.simpleName} - ${res.singleOperation}")
+            }
+            for ((dep, error) in workflowResult.erroredDependents) {
+                logger.info("Reconcile error for ${dep.javaClass.simpleName} - $error")
+            }
         }
 
         return primary.status.copy(
             state = when {
-                failed -> FlaisApplicationState.FAILED
-                ready -> FlaisApplicationState.DEPLOYED
+                isLastAttempt && failed -> FlaisApplicationState.FAILED
+                ready && !failed -> FlaisApplicationState.DEPLOYED
                 else -> FlaisApplicationState.PENDING
             },
+            dependentErrors = workflowResult?.erroredDependents?.map { it.key.resourceType().simpleName to (it.value.message ?: "") }?.toMap(),
             correlationId = primary.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
         )
     }
@@ -129,6 +149,6 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
     }
 
     companion object {
-        const val DEPLOYMENT_CORRELATION_ID_GENERATED = "deployment-correlation-id-generated"
+        const val WORKFLOW_RESULT_KEY = "workflow_result"
     }
 }
