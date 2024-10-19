@@ -1,122 +1,145 @@
 package no.fintlabs.operator
 
 import io.javaoperatorsdk.operator.api.reconciler.*
-import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent
+import io.javaoperatorsdk.operator.processing.dependent.workflow.Workflow
+import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder
+import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowReconcileResult
+import io.javaoperatorsdk.operator.processing.event.source.EventSource
+import io.javaoperatorsdk.operator.processing.retry.GradualRetry
 import no.fintlabs.operator.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
 import no.fintlabs.operator.api.ORG_ID_LABEL
 import no.fintlabs.operator.api.TEAM_LABEL
 import no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.operator.api.v1alpha1.FlaisApplicationState
 import no.fintlabs.operator.api.v1alpha1.FlaisApplicationStatus
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.get
+import org.koin.core.component.inject
 import org.slf4j.MDC
 import java.util.*
-import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrNull
 
 
+@GradualRetry(maxAttempts = 3)
 @ControllerConfiguration(
-    dependents = [
-        Dependent(
-            name = DeploymentDR.COMPONENT,
-            type = DeploymentDR::class
-        ),
-        Dependent(
-            name = ServiceDR.COMPONENT,
-            type = ServiceDR::class
-        ),
-        Dependent(
-            name = PodMetricsDR.COMPONENT,
-            type = PodMetricsDR::class,
-            reconcilePrecondition = CreatePodMetricsCondition::class
-        ),
-        Dependent(
-            name = OnePasswordDR.COMPONENT,
-            type = OnePasswordDR::class,
-            reconcilePrecondition = CreateOnePasswordCondition::class
-        ),
-        Dependent(
-            name = IngressDR.COMPONENT,
-            type = IngressDR::class,
-            reconcilePrecondition = CreateIngressCondition::class
-        ),
-        Dependent(
-            name = PostgresUserDR.COMPONENT,
-            type = PostgresUserDR::class,
-            reconcilePrecondition = CreatePostgresUserCondition::class
-        ),
-        Dependent(
-            name = KafkaDR.COMPONENT,
-            type = KafkaDR::class,
-            reconcilePrecondition = CreateKafkaCondition::class
-        )
-    ],
     labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
 )
-class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, ContextInitializer<FlaisApplicationCrd> {
+class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, ErrorStatusHandler<FlaisApplicationCrd>, EventSourceInitializer<FlaisApplicationCrd>, KoinComponent {
     private val logger = getLogger()
+
+    private val deployment by inject<DeploymentDR>()
+    private val service by inject<ServiceDR>()
+    private val podMetrics by inject<PodMetricsDR>()
+    private val onePassword by inject<OnePasswordDR>()
+    private val ingress by inject<IngressDR>()
+    private val postgresUser by inject<PostgresUserDR>()
+    private val kafka by inject<KafkaDR>()
+
+    private val workflow: Workflow<FlaisApplicationCrd> = WorkflowBuilder<FlaisApplicationCrd>()
+        .addDependentResource(deployment, DeploymentDR.COMPONENT)
+        .addDependentResource(service, ServiceDR.COMPONENT)
+        .addDependentResource(podMetrics, PodMetricsDR.COMPONENT)
+            .withReconcilePrecondition(get<CreatePodMetricsCondition>())
+        .addDependentResource(onePassword, OnePasswordDR.COMPONENT)
+            .withReconcilePrecondition(get<CreateOnePasswordCondition>())
+        .addDependentResource(ingress, IngressDR.COMPONENT)
+            .withReconcilePrecondition(get<CreateIngressCondition>())
+        .addDependentResource(postgresUser, PostgresUserDR.COMPONENT)
+            .withReconcilePrecondition(get<CreatePostgresUserCondition>())
+        .addDependentResource(kafka, KafkaDR.COMPONENT)
+            .withReconcilePrecondition(get<CreateKafkaCondition>())
+        .withThrowExceptionFurther(false)
+        .build()
 
     override fun reconcile(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): UpdateControl<FlaisApplicationCrd> {
         setMDC(resource)
-        logger.info("Reconciling FlaisApplication ${resource.metadata.name}")
-        val updateControl = determineUpdateControl(resource, updateStatus(resource, context), updateResource(context))
-        removeMDC()
-        return updateControl
-    }
+        initReconciliation(resource)?.let {
+            removeMDC()
+            return it
+        }
 
-    private fun determineUpdateControl(resource: FlaisApplicationCrd, statusUpdated: Boolean, resourceUpdated: Boolean) = when {
-        statusUpdated && resourceUpdated -> UpdateControl.updateResourceAndStatus(resource)
-        resourceUpdated -> UpdateControl.updateResource(resource)
-        statusUpdated -> UpdateControl.updateStatus(resource)
-        else -> UpdateControl.noUpdate()
+        val result = workflow.reconcile(resource, context)
+        if (result.erroredDependentsExist()) {
+            context.managedDependentResourceContext().put(WORKFLOW_RESULT_KEY, result)
+            result.throwAggregateExceptionIfErrorsPresent()
+        }
+        val statusUpdated = updateStatus(resource, determineNewStatus(resource, context, result))
+
+        return when {
+            statusUpdated -> UpdateControl.patchStatus(resource)
+            else -> UpdateControl.noUpdate()
+        }.also {
+            removeMDC()
+        }
     }
 
     override fun cleanup(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): DeleteControl {
         return DeleteControl.defaultDelete()
     }
 
-    override fun initContext(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) {
-        ensureCorrelationId(primary, context)
+    override fun updateErrorStatus(resource: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>, e: Exception?): ErrorStatusUpdateControl<FlaisApplicationCrd> {
+        val result = context.managedDependentResourceContext().get(WORKFLOW_RESULT_KEY, WorkflowReconcileResult::class.java)
+        return when (updateStatus(resource, determineNewStatus(resource, context, result.getOrNull()))) {
+            true -> ErrorStatusUpdateControl.updateStatus(resource)
+            else -> ErrorStatusUpdateControl.noStatusUpdate()
+        }
     }
 
-    private fun updateResource(context: Context<FlaisApplicationCrd>): Boolean {
-        return context.managedDependentResourceContext()
-            .get(DEPLOYMENT_CORRELATION_ID_GENERATED, Boolean::class.javaObjectType)
-            .getOrDefault(false)
+    override fun prepareEventSources(context: EventSourceContext<FlaisApplicationCrd>): MutableMap<String, EventSource> =
+        EventSourceInitializer.eventSourcesFromWorkflow(context, workflow)
+
+    private fun initReconciliation(resource: FlaisApplicationCrd) : UpdateControl<FlaisApplicationCrd>? {
+        val annotations = resource.metadata.annotations
+        val hasCorrelationId = annotations.containsKey(DEPLOYMENT_CORRELATION_ID_ANNOTATION)
+        if (!hasCorrelationId) {
+            val uuid = UUID.randomUUID().toString()
+            logger.debug("Generating correlation ID $uuid for ${resource.metadata.name}")
+            annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] = uuid
+        }
+
+        val newStatus = resource.status.copy(
+            state = FlaisApplicationState.PENDING,
+            correlationId = annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+        )
+        val statusUpdated = updateStatus(resource, newStatus)
+
+        return when {
+            !hasCorrelationId -> UpdateControl.updateResourceAndStatus(resource)
+            statusUpdated -> UpdateControl.updateStatus(resource)
+            else -> null
+        }?.rescheduleAfter(0)
     }
 
-    private fun updateStatus(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): Boolean {
-        val newStatus = determineNewStatus(primary, context)
-        return if (primary.status != newStatus) {
-            primary.status = newStatus
-            true
-        } else false
-    }
+    private fun determineNewStatus(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>, workflowResult: WorkflowReconcileResult?): FlaisApplicationStatus {
+        val ready = workflowResult?.allDependentResourcesReady() ?: false
+        val failed = workflowResult?.erroredDependentsExist() ?: true
+        val isLastAttempt = context.retryInfo.getOrNull()?.isLastAttempt ?: false
 
-    private fun determineNewStatus(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): FlaisApplicationStatus {
-        val workflowResult = context.managedDependentResourceContext().workflowReconcileResult.get()
-        val ready = workflowResult.allDependentResourcesReady()
-        val failed = workflowResult.erroredDependentsExist()
-
-        for ((dep, res) in workflowResult.reconcileResults) {
-            logger.info("Reconcile result for ${dep.javaClass.simpleName} - ${res.singleOperation}")
+        if (workflowResult != null) {
+            for ((dep, res) in workflowResult.reconcileResults) {
+                logger.info("Reconcile result for ${dep.javaClass.simpleName} - ${res.singleOperation}")
+            }
+            for ((dep, error) in workflowResult.erroredDependents) {
+                logger.info("Reconcile error for ${dep.javaClass.simpleName} - $error")
+            }
         }
 
         return primary.status.copy(
             state = when {
-                failed -> FlaisApplicationState.FAILED
-                ready -> FlaisApplicationState.DEPLOYED
+                isLastAttempt && failed -> FlaisApplicationState.FAILED
+                ready && !failed -> FlaisApplicationState.DEPLOYED
                 else -> FlaisApplicationState.PENDING
             },
+            dependentErrors = workflowResult?.erroredDependents?.map { it.key.resourceType().simpleName to (it.value.message ?: "") }?.toMap(),
             correlationId = primary.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
         )
     }
 
-    private fun ensureCorrelationId(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) {
-        primary.metadata.annotations.computeIfAbsent(DEPLOYMENT_CORRELATION_ID_ANNOTATION) {
-            val uuid = UUID.randomUUID().toString()
-            logger.debug("Generating correlation ID $uuid for ${primary.metadata.name}")
-            context.managedDependentResourceContext().put(DEPLOYMENT_CORRELATION_ID_GENERATED, true)
-            uuid
-        }
+    private fun updateStatus(primary: FlaisApplicationCrd, newStatus: FlaisApplicationStatus): Boolean {
+        return if (primary.status != newStatus) {
+            primary.status = newStatus
+            true
+        } else false
     }
 
     private fun setMDC(resource: FlaisApplicationCrd) {
@@ -128,6 +151,6 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
     }
 
     companion object {
-        const val DEPLOYMENT_CORRELATION_ID_GENERATED = "deployment-correlation-id-generated"
+        const val WORKFLOW_RESULT_KEY = "workflow_result"
     }
 }

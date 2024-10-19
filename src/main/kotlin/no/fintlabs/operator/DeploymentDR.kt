@@ -23,6 +23,9 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
     private val config: Config by inject()
     private val logger = getLogger()
 
+    private val createKafkaCondition by inject<CreateKafkaCondition>()
+    private val createPostgresUserCondition by inject<CreatePostgresUserCondition>()
+    private val createOnePasswordCondition by inject<CreateOnePasswordCondition>()
 
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Deployment().apply {
         metadata = createObjectMeta(primary)
@@ -134,7 +137,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
                 secretRef = SecretEnvSource().apply {
                     name = "${primary.metadata.name}-kafka"
                 }
-            }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
+            }.takeIf { createKafkaCondition.isMet(null, primary, context) }
         )
 
         return primary.spec.envFrom.toMutableSet()
@@ -149,7 +152,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
             secret = SecretVolumeSource().apply {
                 secretName = "${primary.metadata.name}-kafka-certificates"
             }
-        }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
+        }.takeIf { createKafkaCondition.isMet(null, primary, context) }
     )
 
     private fun createContainerVolumeMounts(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = listOfNotNull(
@@ -157,16 +160,12 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
             name = "credentials"
             mountPath = "/credentials"
             readOnly = true
-        }.takeIf { creteKafkaCondition.isMet(null, primary, context) }
+        }.takeIf { createKafkaCondition.isMet(null, primary, context) }
     )
 
     override fun useSSA(context: Context<FlaisApplicationCrd>?) = true
 
     companion object {
         const val COMPONENT = "deployment"
-
-        val creteKafkaCondition = no.fintlabs.operator.CreateKafkaCondition()
-        val createPostgresUserCondition = CreatePostgresUserCondition()
-        val createOnePasswordCondition = CreateOnePasswordCondition()
     }
 }
