@@ -28,6 +28,12 @@ object Utils {
         return get<T>(nameSelector(app))
     }
 
+    inline fun <reified T : HasMetadata> KubernetesOperatorContext.updateAndGetResource(app: FlaisApplicationCrd, nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name }): T? {
+        update(app)
+        waitUntilIsDeployed(app)
+        return get<T>(nameSelector(app))
+    }
+
     fun KubernetesOperatorContext.waitUntilIsDeployed(app: FlaisApplicationCrd) {
         waitUntil<FlaisApplicationCrd>(
             app.metadata.name,
