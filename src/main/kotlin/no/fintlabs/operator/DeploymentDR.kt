@@ -21,6 +21,7 @@ import org.koin.core.component.inject
 )
 class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java), KoinComponent {
     private val config: Config by inject()
+    private val logger = getLogger()
 
 
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = Deployment().apply {
@@ -39,6 +40,19 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
     override fun match(actual: Deployment, desired: Deployment, primary: FlaisApplicationCrd, matcher: ResourceUpdaterMatcher<Deployment>, context: Context<FlaisApplicationCrd>): Matcher.Result<Deployment> {
         this.addMetadata(true, actual, desired, primary, context)
         return Matcher.Result.computed(CustomGenericKubernetesResourceMatcher.getInstance<Deployment>().matches(actual, desired, context), desired);
+    }
+
+    override fun handleUpdate(actual: Deployment, desired: Deployment, primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): Deployment {
+        val kubernetesSerialization = context.client.kubernetesSerialization
+        val desiredSelector = kubernetesSerialization.convertValue(desired.spec.selector, Map::class.java)
+        val actualSelector = kubernetesSerialization.convertValue(actual.spec.selector, Map::class.java)
+        val podSelectorMatch = desiredSelector == actualSelector
+
+        if (podSelectorMatch) return handleUpdate(actual, desired, primary, context)
+
+        logger.info("Pod selector does not match, recreating deployment ${actual.metadata.name}")
+        handleDelete(primary, actual, context)
+        return handleCreate(desired, primary, context)
     }
 
     private fun cretePodMetadata(primary: FlaisApplicationCrd) = createObjectMeta(primary).apply {
