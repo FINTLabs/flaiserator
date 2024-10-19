@@ -49,6 +49,7 @@ dependencies {
     testImplementation(libs.operator.framework.junit5)
     testImplementation(libs.bundles.fabric8test)
     testImplementation(libs.bundles.koinTest)
+    testImplementation(libs.bundles.logunit)
 }
 
 testing {
