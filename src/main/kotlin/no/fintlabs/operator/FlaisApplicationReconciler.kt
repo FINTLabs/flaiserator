@@ -5,6 +5,7 @@ import io.javaoperatorsdk.operator.processing.dependent.workflow.Workflow
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowReconcileResult
 import io.javaoperatorsdk.operator.processing.event.source.EventSource
+import io.javaoperatorsdk.operator.processing.retry.GradualRetry
 import no.fintlabs.operator.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
 import no.fintlabs.operator.api.ORG_ID_LABEL
 import no.fintlabs.operator.api.TEAM_LABEL
@@ -19,6 +20,7 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 
+@GradualRetry(maxAttempts = 3)
 @ControllerConfiguration(
     labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
 )
