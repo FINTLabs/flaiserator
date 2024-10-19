@@ -9,6 +9,7 @@ hoplite = "2.8.2"
 logback = "1.5.8"
 logstashEncoder = "8.0"
 jackson = "2.17.0"
+logunit = "2.0.0"
 
 [libraries]
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
@@ -26,6 +27,8 @@ fabric8-kubernetes-server-mock = { module = "io.fabric8:kubernetes-server-mock",
 fabric8-kube-api-test = { module = "io.fabric8:kube-api-test", version.ref = "fabric8" }
 operator-framework-junit5 = { module = "io.javaoperatorsdk:operator-framework-junit-5", version.ref = "operatorSdk" }
 awaitility-kotlin = { module = "org.awaitility:awaitility-kotlin", version.ref = "awaitility" }
+logunit-core = { module = "io.github.netmikey.logunit:logunit-core", version.ref = "logunit"}
+logunit-logback = { module = "io.github.netmikey.logunit:logunit-logback", version.ref = "logunit"}
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core" }
@@ -43,3 +46,4 @@ fabric8 = ["fabric8-kubernetes-client", "fabric8-crd-generator-apt"]
 fabric8test = ["fabric8-kubernetes-server-mock", "fabric8-kube-api-test"]
 logging = ["logback-classic", "logstash-logback-encoder"]
 hoplite = ["hoplite-core", "hoplite-yaml"]
+logunit = ["logunit-core", "logunit-logback"]

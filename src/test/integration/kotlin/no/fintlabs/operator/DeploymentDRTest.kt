@@ -6,6 +6,7 @@ import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
+import io.github.netmikey.logunit.api.LogCapturer
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesResources
 import no.fintlabs.loadConfig
@@ -13,6 +14,8 @@ import no.fintlabs.operator.Utils.createAndGetResource
 import no.fintlabs.operator.Utils.createKoinTestExtension
 import no.fintlabs.operator.Utils.createKubernetesOperatorExtension
 import no.fintlabs.operator.Utils.createTestFlaisApplication
+import no.fintlabs.operator.Utils.updateAndGetResource
+import no.fintlabs.operator.Utils.waitUntilIsDeployed
 import no.fintlabs.operator.api.LOKI_LOGGING_LABEL
 import no.fintlabs.operator.api.v1alpha1.*
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
@@ -465,9 +468,62 @@ class DeploymentDRTest {
     }
     //endregion
 
+    //region PodSelector
+    @Test
+    fun `should recreate deployment on pod selector change selector`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication()
+
+        var deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+
+        context.operator.stop()
+        context.delete(deployment)
+
+        deployment.spec.apply {
+            selector.matchLabels["another"] = "another"
+            template.metadata.labels["another"] = "another"
+        }
+        deployment.metadata.resourceVersion = null
+
+        context.create(deployment)
+
+        context.operator.start()
+        context.waitUntilIsDeployed(flaisApplication)
+        deployment = context.get<Deployment>(deployment.metadata.name)
+
+        assertNotNull(deployment)
+        assertEquals(1, deployment.spec.selector.matchLabels.size)
+        assert(deployment.spec.selector.matchLabels.containsKey("app"))
+        assertEquals(deployment.metadata.name, deployment.spec.selector.matchLabels["app"])
+    }
+
+    @Test
+    fun `should not recreate deployment on pod selector match`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication()
+
+        var deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+
+        flaisApplication.apply {
+            spec = spec.copy(
+                image = "test-image:234567890"
+            )
+        }
+
+        
+        deployment = context.updateAndGetResource(flaisApplication)
+        assertNotNull(deployment)
+        logs.assertDoesNotContain("Pod selector does not match, recreating deployment")
+
+    }
+    //endregion
+
 
     private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplicationCrd) =
         createAndGetResource<Deployment>(app)
+
+    @RegisterExtension
+    val logs: LogCapturer = LogCapturer.create().captureForType(DeploymentDR::class.java)
 
     companion object {
         @RegisterExtension

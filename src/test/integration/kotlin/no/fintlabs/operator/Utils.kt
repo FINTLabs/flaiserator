@@ -24,11 +24,29 @@ import java.time.Duration
 object Utils {
     inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(app: FlaisApplicationCrd, nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name }): T? {
         create(app)
-        await atMost Duration.ofSeconds(10) until {
-            get<FlaisApplicationCrd>(app.metadata.name)?.status?.state == FlaisApplicationState.DEPLOYED
-        }
+        waitUntilIsDeployed(app)
         return get<T>(nameSelector(app))
     }
+
+    inline fun <reified T : HasMetadata> KubernetesOperatorContext.updateAndGetResource(app: FlaisApplicationCrd, nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name }): T? {
+        update(app)
+        waitUntilIsDeployed(app)
+        return get<T>(nameSelector(app))
+    }
+
+    fun KubernetesOperatorContext.waitUntilIsDeployed(app: FlaisApplicationCrd) {
+        waitUntil<FlaisApplicationCrd>(
+            app.metadata.name,
+        ) { it.status?.state == FlaisApplicationState.DEPLOYED }
+    }
+
+    inline fun <reified T : HasMetadata> KubernetesOperatorContext.waitUntil(resourceName: String, timeout: Duration = Duration.ofSeconds(30), crossinline condition: (T) -> Boolean) {
+        await atMost timeout until {
+            get<T>(resourceName)?.let { condition(it) } ?: false
+        }
+    }
+
+
 
     fun createTestFlaisApplication(): FlaisApplicationCrd {
         return FlaisApplicationCrd().apply {
