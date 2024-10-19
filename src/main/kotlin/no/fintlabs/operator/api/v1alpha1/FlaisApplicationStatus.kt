@@ -5,6 +5,5 @@ import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus
 data class FlaisApplicationStatus(
     val state: FlaisApplicationState = FlaisApplicationState.PENDING,
     val correlationId: String? = null,
-    val dependentResourceStatus: List<String> = emptyList(),
     val dependentErrors: Map<String, String>? = null
 ) : ObservedGenerationAwareStatus()

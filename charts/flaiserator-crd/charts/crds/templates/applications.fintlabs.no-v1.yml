@@ -270,10 +270,10 @@ spec:
             properties:
               correlationId:
                 type: "string"
-              dependentResourceStatus:
-                items:
+              dependentErrors:
+                additionalProperties:
                   type: "string"
-                type: "array"
+                type: "object"
               observedGeneration:
                 type: "integer"
               state:
