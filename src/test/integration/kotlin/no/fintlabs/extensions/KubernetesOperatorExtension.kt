@@ -57,20 +57,22 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
         prepareKoin(kubernetesClient)
         prepareKubernetes(kubernetesClient, namespace)
         applyAdditionalResources(kubernetesClient, namespace)
-        context.store()
-            .put(KubernetesOperatorContext::class.simpleName, KubernetesOperatorContext(namespace, kubernetesClient))
 
-        get<Operator>().start()
+        val operator = get<Operator>()
+        context.store()
+            .put(KubernetesOperatorContext::class.simpleName, KubernetesOperatorContext(namespace, kubernetesClient, operator))
+
+        operator.start()
     }
 
     override fun afterEach(context: ExtensionContext) {
-        val kubernetesClient = get<KubernetesClient>()
         val kubernetesOperatorContext =
             context.store().get(KubernetesOperatorContext::class.simpleName) as KubernetesOperatorContext
+        val kubernetesClient = kubernetesOperatorContext.kubernetesClient
 
         cleanupKubernetes(kubernetesClient, kubernetesOperatorContext.namespace)
 
-        get<Operator>().stop()
+        kubernetesOperatorContext.operator.stop()
         kubernetesClient.close()
     }
 

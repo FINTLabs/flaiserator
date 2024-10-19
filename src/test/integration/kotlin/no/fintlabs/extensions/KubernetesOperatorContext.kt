@@ -2,10 +2,12 @@ package no.fintlabs.extensions
 
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.client.KubernetesClient
+import io.javaoperatorsdk.operator.Operator
 
 class KubernetesOperatorContext(
     val namespace: String,
-    private val kubernetesClient: KubernetesClient
+    val kubernetesClient: KubernetesClient,
+    val operator: Operator
 ) {
     inline fun <reified T : HasMetadata> get(name: String): T? {
         return get(T::class.java, name)
