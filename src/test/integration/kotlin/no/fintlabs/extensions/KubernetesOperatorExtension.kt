@@ -15,12 +15,17 @@ import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
+import no.fintlabs.OperatorConfigHandler
+import no.fintlabs.OperatorPostConfigHandler
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
 import org.junit.jupiter.api.extension.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
+import org.koin.core.context.loadKoinModules
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.Duration
@@ -66,6 +71,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
         cleanupKubernetes(kubernetesClient, kubernetesOperatorContext.namespace)
 
         get<Operator>().stop()
+        kubernetesClient.close()
     }
 
     override fun supportsParameter(pContext: ParameterContext, eContext: ExtensionContext): Boolean =
@@ -98,15 +104,21 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
     private fun prepareKoin(kubernetesClient: KubernetesClient) {
         getKoin().apply {
-            declare(kubernetesClient)
-            declare<(Operator) -> Unit>(
-                { operator ->
-                    getAll<Reconciler<*>>().forEach {
-                        operator.register(it) { config ->
-                            config.settingNamespace(kubernetesClient.namespace)
+            loadKoinModules(
+                module {
+                    single { kubernetesClient }
+                    single(named("test")) { OperatorConfigHandler { config -> config.withCloseClientOnStop(false) } }
+                    single {
+                        OperatorPostConfigHandler { operator ->
+                            getAll<Reconciler<*>>().forEach {
+                                operator.register(it) { config ->
+                                    config.settingNamespace(kubernetesClient.namespace)
+                                }
+                            }
                         }
                     }
-                })
+                }
+            )
         }
     }
 
