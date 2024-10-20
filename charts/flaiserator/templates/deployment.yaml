@@ -12,10 +12,7 @@ spec:
   template:
     metadata:
       annotations:
-        prometheus.io/scrape: "false"
-        prometheus.io/port: "8080"
-        prometheus.io/path: "/metrics"
-        {{- with .Values.podLabels }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       labels:
@@ -37,6 +34,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           {{- with .Values.volumeMounts }}
