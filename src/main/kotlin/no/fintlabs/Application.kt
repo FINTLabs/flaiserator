@@ -82,8 +82,21 @@ val baseModule = module {
     }
     single<HttpHandler> {
         val prometheusRegistry: PrometheusMeterRegistry = get()
+        val operator: Operator = get()
         routes(
             "/metrics" bind Method.GET to { Response(Status.OK).body(prometheusRegistry.scrape()) },
+            "/health" bind Method.GET to {
+                when (operator.runtimeInfo.isStarted) {
+                    true -> Response(Status.OK).body("Operator is healthy.")
+                    false -> Response(Status.SERVICE_UNAVAILABLE).body("Operator is not healthy.")
+                }
+            },
+            "/ready" bind Method.GET to {
+                when (operator.runtimeInfo.isStarted) {
+                    true -> Response(Status.OK).body("Operator is ready.")
+                    false -> Response(Status.SERVICE_UNAVAILABLE).body("Operator is not ready.")
+                }
+            }
         )
     }
 }
