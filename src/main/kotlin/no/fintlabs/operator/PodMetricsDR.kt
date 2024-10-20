@@ -16,13 +16,14 @@ import no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd
 class PodMetricsDR : CRUDKubernetesDependentResource<PodMonitor, FlaisApplicationCrd>(PodMonitor::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): PodMonitor = PodMonitor().apply {
         val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
+        val portName = if (metrics.port.toInt() == primary.spec.port) "http" else "metrics"
 
         metadata = createObjectMeta(primary)
         spec = PodMonitorSpec().apply {
             jobLabel = "app.kubernetes.io/name"
             podTargetLabels = listOf("app", "fintlabs.no/team", "fintlabs.no/org-id")
             podMetricsEndpoints = listOf(PodMetricsEndpoints().apply {
-                port = metrics.port
+                port = portName
                 path = metrics.path
                 honorLabels = false
             })

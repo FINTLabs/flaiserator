@@ -31,6 +31,8 @@ class PodMetricsDRTest {
         assertNotNull(podMonitor)
         assertEquals("test", podMonitor.metadata.name)
         assertEquals("test", podMonitor.spec.selector.matchLabels["app"])
+        assertEquals("/actuator/prometheus", podMonitor.spec.podMetricsEndpoints[0].path)
+        assertEquals("http", podMonitor.spec.podMetricsEndpoints[0].port)
     }
 
     @Test
@@ -46,7 +48,7 @@ class PodMetricsDRTest {
         val podMonitor = context.createAndGetPodMonitor(flaisApplication)
         assertNotNull(podMonitor)
         assertEquals("/metrics", podMonitor.spec.podMetricsEndpoints[0].path)
-        assertEquals("1234", podMonitor.spec.podMetricsEndpoints[0].port)
+        assertEquals("metrics", podMonitor.spec.podMetricsEndpoints[0].port)
     }
 
     @Test
