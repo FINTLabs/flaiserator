@@ -10,14 +10,23 @@ logback = "1.5.8"
 logstashEncoder = "8.0"
 jackson = "2.17.0"
 logunit = "2.0.0"
+http4k = "5.32.4.0"
+micrometer = "1.13.6"
 
 [libraries]
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
 fabric8-crd-generator-apt = { module = "io.fabric8:crd-generator-apt", version.ref = "fabric8" }
 operator-framework-core = { module = "io.javaoperatorsdk:operator-framework-core", version.ref = "operatorSdk" }
+operator-micrometer-support = { module = "io.javaoperatorsdk:micrometer-support", version.ref = "operatorSdk" }
 hoplite-core = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
 hoplite-yaml = { module = "com.sksamuel.hoplite:hoplite-yaml", version.ref = "hoplite" }
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
+http4k-server-jetty = { module = "org.http4k:http4k-server-jetty", version.ref = "http4k" }
+http4k-metrics-micrometer = { module = "org.http4k:http4k-metrics-micrometer", version.ref = "http4k" }
+
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashEncoder" }
@@ -41,9 +50,11 @@ kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" }
 
 [bundles]
+operator = ["operator-framework-core", "operator-micrometer-support"]
 koinTest = ["koin-test", "koin-test-junit5"]
 fabric8 = ["fabric8-kubernetes-client", "fabric8-crd-generator-apt"]
 fabric8test = ["fabric8-kubernetes-server-mock", "fabric8-kube-api-test"]
 logging = ["logback-classic", "logstash-logback-encoder"]
 hoplite = ["hoplite-core", "hoplite-yaml"]
 logunit = ["logunit-core", "logunit-logback"]
+http4k = ["http4k-server-jetty", "http4k-metrics-micrometer"]
