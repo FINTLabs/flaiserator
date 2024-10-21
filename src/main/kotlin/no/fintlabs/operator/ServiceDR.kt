@@ -23,6 +23,7 @@ class ServiceDR : CRUDKubernetesDependentResource<Service, FlaisApplicationCrd>(
             type = "ClusterIP"
             ports = listOf(
                 ServicePort().apply {
+                    name = "http"
                     protocol = "TCP"
                     port = primary.spec.port
                 }
