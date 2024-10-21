@@ -167,7 +167,9 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
                         fillResultsAndTraverseFurther(result, actualMap, managedFields, objectMapper, key, keyInActual, managedFieldValue)
                     }
                 } else {
-                    result[keyInActual] = actualMap[keyInActual]!!
+                    actualMap[keyInActual]?.let {
+                        result[keyInActual] = it
+                    }
                 }
             } else if (key != DOT_KEY) {
                 throw IllegalStateException("Key: $key has no prefix: $F_PREFIX")
