@@ -252,15 +252,8 @@ spec:
                 properties:
                   basePath:
                     type: "string"
-                    x-kubernetes-validations:
-                    - message: "Invalid path"
-                      rule: "self.matches('^/[A-Za-z0-9/_-]*$')"
                   hostname:
                     type: "string"
-                    x-kubernetes-validations:
-                    - message: "Invalid hostname"
-                      rule: "self.matches('^[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?(\\\
-                        \\.[a-zA-Z0-9]([-a-zA-Z0-9]*[a-zA-Z0-9])?)*$')"
                 type: "object"
             required:
             - "image"
