@@ -122,6 +122,22 @@ class DeploymentDRTest {
         assertNotNull(deployment)
         assertEquals("Recreate", deployment.spec.strategy.type)
     }
+
+    @Test
+    fun `should update deployment with correct image`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(image = "test-image:latest")
+        }
+
+        var deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("test-image:latest", deployment.spec.template.spec.containers[0].image)
+
+        flaisApplication.spec = flaisApplication.spec.copy(image = "test-image:234567890")
+        deployment = context.updateAndGetResource(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("test-image:234567890", deployment.spec.template.spec.containers[0].image)
+    }
     //endregion
 
     //region Metadata
