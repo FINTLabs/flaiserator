@@ -51,7 +51,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         val actualSelector = kubernetesSerialization.convertValue(actual.spec.selector, Map::class.java)
         val podSelectorMatch = desiredSelector == actualSelector
 
-        if (podSelectorMatch) return handleUpdate(actual, desired, primary, context)
+        if (podSelectorMatch) return super.handleUpdate(actual, desired, primary, context)
 
         logger.info("Pod selector does not match, recreating deployment ${actual.metadata.name}")
         handleDelete(primary, actual, context)

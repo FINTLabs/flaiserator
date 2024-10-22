@@ -66,7 +66,7 @@ class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<Flai
         val statusUpdated = updateStatus(resource, determineNewStatus(resource, context, result))
 
         return when {
-            statusUpdated -> UpdateControl.patchStatus(resource)
+            statusUpdated -> UpdateControl.updateStatus(resource)
             else -> UpdateControl.noUpdate()
         }.also {
             removeMDC()
