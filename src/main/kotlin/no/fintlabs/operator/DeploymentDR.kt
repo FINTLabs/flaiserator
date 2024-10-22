@@ -113,7 +113,7 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         envVars.add(EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null))
         envVars.add(EnvVar("TZ", "Europe/Oslo", null))
 
-        primary.spec.url.basePath?.let { basePath ->
+        primary.spec.url.basePath?.takeIf { it.isNotBlank() }?.let { basePath ->
             envVars.add(EnvVar("spring.webflux.base-path", basePath, null))
             envVars.add(EnvVar("spring.mvc.servlet.path", basePath, null))
         }
