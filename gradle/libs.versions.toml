@@ -1,16 +1,16 @@
 [versions]
-kotlin = "2.0.20"
-mockk = "1.13.12"
+kotlin = "2.0.21"
+mockk = "1.13.13"
 fabric8 = "6.13.4"
 koin = "4.0.0"
 operatorSdk = "4.9.5"
 awaitility = "4.2.2"
 hoplite = "2.8.2"
-logback = "1.5.8"
+logback = "1.5.12"
 logstashEncoder = "8.0"
-jackson = "2.17.0"
+jackson = "2.18.1"
 logunit = "2.0.0"
-http4k = "5.32.4.0"
+http4k = "5.33.0.1"
 micrometer = "1.13.6"
 
 [libraries]
