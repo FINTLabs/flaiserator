@@ -1,25 +1,25 @@
 apiVersion: fintlabs.no/v1alpha1
 kind: Application
 metadata:
-  name: flais-test-application
-  namespace: rogfk-no
+  name: test-application
+  namespace: test-namespace
   labels:
     app.kubernetes.io/name: flais-test-application
-    app.kubernetes.io/instance: flais-test-application_rogfk_no
+    app.kubernetes.io/instance: flais-test-application_test-com
     app.kubernetes.io/version: latest
     app.kubernetes.io/component: test-application
     app.kubernetes.io/part-of: flais
     fintlabs.no/team: flais
 spec:
-  org-id: rogfk.no
+  org-id: test.com
 
   replicas: 1
   port: 80
   image: docker/getting-started
   resources:
     limits:
-      memory: "1024Mi"
-      cpu: "1"
+      memory: "256Mi"
+      cpu: "500m"
     requests:
       memory: "128Mi"
       cpu: "100m"
@@ -67,9 +67,8 @@ spec:
           x-forwarded-path: re:^test(.*)$
         queries:
           showAll: false
-          isRegex: re:.*
       - host: flais-test-application.example.com
-        path: re:/test2(.*)$
+        path: /team/{name:[a-z]+}
         middlewares:
           - some-middleware
     middlewares:
