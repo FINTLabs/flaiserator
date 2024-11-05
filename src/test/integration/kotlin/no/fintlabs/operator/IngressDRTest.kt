@@ -52,7 +52,7 @@ class IngressDRTest{
         assertNotNull(ingressRoute)
         assertEquals("test", ingressRoute.metadata.name)
         assertEquals("web", ingressRoute.spec.entryPoints[0])
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key`, `value`) && Header(`header`, `value`)", ingressRoute.spec.routes[0].match)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`) && Headers(`header`, `value`)", ingressRoute.spec.routes[0].match)
         assertEquals(8080, ingressRoute.spec.routes[0].services[0].port.intVal)
         assertEquals("test", ingressRoute.spec.routes[0].services[0].name)
         assertEquals(context.namespace, ingressRoute.spec.routes[0].services[0].namespace)
@@ -124,7 +124,7 @@ class IngressDRTest{
 
         val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key`, `value`) && Query(`key2`, `value2`)", ingressRoute.spec.routes[0].match)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`, `key2=value2`)", ingressRoute.spec.routes[0].match)
     }
 
     @Test
@@ -137,33 +137,20 @@ class IngressDRTest{
 
         val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Header(`header`, `value`) && Header(`header2`, `value2`)", ingressRoute.spec.routes[0].match)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Headers(`header`, `value`) && Headers(`header2`, `value2`)", ingressRoute.spec.routes[0].match)
     }
 
     @Test
     fun `should create IngressRoute with regex path`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(ingress = Ingress(routes = listOf(
-                Ingress.Route("test.example.com", "re:/test.*")
+                Ingress.Route("test.example.com", "/{path:test.*}")
             )))
         }
 
         val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathRegexp(`/test.*`)", ingressRoute.spec.routes[0].match)
-    }
-
-    @Test
-    fun `should create IngressRoute with regex query`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication().apply {
-            spec = spec.copy(ingress = Ingress(routes = listOf(
-                Ingress.Route("test.example.com", "/test", queries = mapOf("key" to "re:value.*"))
-            )))
-        }
-
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
-        assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && QueryRegexp(`key`, `value.*`)", ingressRoute.spec.routes[0].match)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/{path:test.*}`)", ingressRoute.spec.routes[0].match)
     }
 
     @Test
@@ -176,33 +163,33 @@ class IngressDRTest{
 
         val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && HeaderRegexp(`header`, `value.*`)", ingressRoute.spec.routes[0].match)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && HeadersRegexp(`header`, `value.*`)", ingressRoute.spec.routes[0].match)
     }
 
     @Test
     fun `should create IngressRoute with multiple regexes`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(ingress = Ingress(routes = listOf(
-                Ingress.Route("test.example.com", "re:/test.*", queries = mapOf("key" to "re:value.*"), headers = mapOf("header" to "re:value.*"))
+                Ingress.Route("test.example.com", "/{name:test.*}", queries = mapOf("key" to "value"), headers = mapOf("header" to "re:value.*"))
             )))
         }
 
         val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathRegexp(`/test.*`) && QueryRegexp(`key`, `value.*`) && HeaderRegexp(`header`, `value.*`)", ingressRoute.spec.routes[0].match)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/{name:test.*}`) && Query(`key=value`) && HeadersRegexp(`header`, `value.*`)", ingressRoute.spec.routes[0].match)
     }
 
     @Test
     fun `should create IngressRoute with multiple regexes and non-regexes`(context: KubernetesOperatorContext) {
         val flaisApplication = createTestFlaisApplication().apply {
             spec = spec.copy(ingress = Ingress(routes = listOf(
-                Ingress.Route("test.example.com", "/test", queries = mapOf("key" to "re:value.*", "key2" to "value2"), headers = mapOf("header" to "re:value.*", "header2" to "value2"))
+                Ingress.Route("test.example.com", "/test", queries = mapOf("key" to "value", "key2" to "value2"), headers = mapOf("header" to "re:value.*", "header2" to "value2"))
             )))
         }
 
         val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && QueryRegexp(`key`, `value.*`) && Query(`key2`, `value2`) && HeaderRegexp(`header`, `value.*`) && Header(`header2`, `value2`)", ingressRoute.spec.routes[0].match)
+        assertEquals("Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`, `key2=value2`) && HeadersRegexp(`header`, `value.*`) && Headers(`header2`, `value2`)", ingressRoute.spec.routes[0].match)
     }
     //endregion
 
