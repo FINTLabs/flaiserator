@@ -51,15 +51,17 @@ class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplication
         append("Host(`${route.host}`)")
         route.path?.takeIf { it.isNotEmpty() }?.let {
             append(" && ")
-            append(if (it.isRegex()) "PathRegexp(`${it.stripRegexPrefix().toRegex()}`)" else "PathPrefix(`$it`)")
+            append("PathPrefix(`$it`)")
         }
-        route.queries?.filter { it.key.isNotEmpty() && it.value.isNotEmpty() }?.forEach { (key, value) ->
+        route.queries?.filter { it.key.isNotEmpty() && it.value.isNotEmpty() }?.map { (key, value) ->
+            "`$key=$value`"
+        }?.let {
             append(" && ")
-            append(if (value.isRegex()) "QueryRegexp(`$key`, `${value.stripRegexPrefix().toRegex()}`)" else "Query(`$key`, `$value`)")
+            append("Query(${it.joinToString(", ")})")
         }
         route.headers?.filter { it.key.isNotEmpty() && it.value.isNotEmpty() }?.forEach { (key, value) ->
             append(" && ")
-            append(if (value.isRegex()) "HeaderRegexp(`$key`, `${value.stripRegexPrefix().toRegex()}`)" else "Header(`$key`, `$value`)")
+            append(if (value.isRegex()) "HeadersRegexp(`$key`, `${value.stripRegexPrefix().toRegex()}`)" else "Headers(`$key`, `$value`)")
         }
     }
 
