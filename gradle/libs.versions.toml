@@ -1,17 +1,17 @@
 [versions]
 kotlin = "2.1.0"
-mockk = "1.13.13"
-fabric8 = "6.13.4"
-koin = "4.0.0"
+mockk = "1.13.14"
+fabric8 = "7.0.1"
+koin = "4.0.1"
 operatorSdk = "4.9.7"
 awaitility = "4.2.2"
 hoplite = "2.9.0"
-logback = "1.5.12"
+logback = "1.5.15"
 logstashEncoder = "8.0"
 jackson = "2.18.2"
 logunit = "2.0.0"
-http4k = "5.37.1.1"
-micrometer = "1.14.1"
+http4k = "5.43.0.0"
+micrometer = "1.14.2"
 
 [libraries]
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
