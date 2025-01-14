@@ -1,8 +1,7 @@
 package no.fintlabs.extensions
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.fabric8.crd.generator.CRDGenerator
-import io.fabric8.crd.generator.CRDGenerator.AbstractCRDOutput
+import io.fabric8.crdv2.generator.CRDGenerator
 import io.fabric8.kubeapitest.KubeAPIServer
 import io.fabric8.kubeapitest.KubeAPIServerConfigBuilder
 import io.fabric8.kubeapitest.KubeAPIServerConfigBuilder.KUBE_API_TEST_OFFLINE_MODE
@@ -177,7 +176,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
     }
 }
 
-class InMemoryCRDOutput : AbstractCRDOutput<ByteArrayOutputStream>() {
+class InMemoryCRDOutput : CRDGenerator.AbstractCRDOutput<ByteArrayOutputStream>() {
     private val streams = mutableListOf<ByteArrayOutputStream>()
 
     override fun createStreamFor(crdName: String): ByteArrayOutputStream {

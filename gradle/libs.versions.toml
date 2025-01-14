@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.1.0"
 mockk = "1.13.13"
-fabric8 = "6.13.4"
+fabric8 = "7.0.1"
 koin = "4.0.0"
 operatorSdk = "4.9.7"
 awaitility = "4.2.2"
@@ -14,8 +14,11 @@ http4k = "5.37.1.1"
 micrometer = "1.14.1"
 
 [libraries]
+
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
-fabric8-crd-generator-apt = { module = "io.fabric8:crd-generator-apt", version.ref = "fabric8" }
+fabric8-generator-api = { module = "io.fabric8:crd-generator-api-v2", version.ref = "fabric8" }
+fabric8-generator-collector = { module = "io.fabric8:crd-generator-collector", version.ref = "fabric8" }
+
 operator-framework-core = { module = "io.javaoperatorsdk:operator-framework-core", version.ref = "operatorSdk" }
 operator-micrometer-support = { module = "io.javaoperatorsdk:micrometer-support", version.ref = "operatorSdk" }
 hoplite-core = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
@@ -52,7 +55,7 @@ fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" 
 [bundles]
 operator = ["operator-framework-core", "operator-micrometer-support"]
 koinTest = ["koin-test", "koin-test-junit5"]
-fabric8 = ["fabric8-kubernetes-client", "fabric8-crd-generator-apt"]
+fabric8 = ["fabric8-kubernetes-client", "fabric8-generator-api"]
 fabric8test = ["fabric8-kubernetes-server-mock", "fabric8-kube-api-test"]
 logging = ["logback-classic", "logstash-logback-encoder"]
 hoplite = ["hoplite-core", "hoplite-yaml"]
