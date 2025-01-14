@@ -1,17 +1,9 @@
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.nio.file.Files
-import kotlin.io.path.exists
-import kotlin.io.path.writeText
+
 
 plugins {
     application
 
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.kapt)
+    kotlin("jvm")
     alias(libs.plugins.fabric8.generator)
 }
 
@@ -31,7 +23,6 @@ application {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 dependencies {
@@ -69,6 +60,7 @@ testing {
                 }
             }
         }
+
         @Suppress("UnstableApiUsage")
         val integrationTest by registering(JvmTestSuite::class) {
             testType.set(TestSuiteType.INTEGRATION_TEST)
@@ -102,30 +94,21 @@ tasks {
                 }
         }
 
+        val configuration = configurations.runtimeClasspath.get().map {
+            it.toPath().toFile()
+        }
+        val buildDirectory = layout.buildDirectory
+
         doLast {
-            configurations.runtimeClasspath.get().forEach {
-                val file = layout.buildDirectory.file("libs/${it.name}").get().asFile
+            configuration.forEach {
+                val file = buildDirectory
+                        .file("libs/${it.name}")
+                        .get()
+                        .asFile
                 if (!file.exists()) {
                     it.copyTo(file)
                 }
             }
-        }
-    }
-
-    withType<Wrapper> {
-        gradleVersion = "8.7"
-    }
-
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
-    }
-
-    withType<KotlinCompile> {
-        compilerOptions{
-            jvmTarget = JvmTarget.JVM_21
-            freeCompilerArgs.add("-Xjsr305=strict")
         }
     }
 
@@ -143,49 +126,21 @@ tasks {
 
         maxParallelForks = fetchNumCores()
         forkEvery = 1
-        
+
         testLogging {
             exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         }
     }
 
-    register("generateCrd") {
-        project.dependencies {
-            kapt(libs.fabric8.crd.generator.apt)
-        }
+    register<GenerateCrdsTask>("generateCrds") {
+        description = "Generate CRDs from the compiled custom resource class `no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd`"
+        group = "crd"
 
-        getByName("kaptKotlin").doLast {
-            val objectMapper = ObjectMapper(YAMLFactory())
-            val sourceDir = layout.buildDirectory.dir("tmp/kapt3/classes/main/META-INF/fabric8").get().asFile.toPath()
-            val targetDir = layout.projectDirectory.dir("charts/flaiserator-crd/charts/crds/templates").asFile.toPath()
+        sourceSet = sourceSets["main"]
+        includePackages = listOf("no.fintlabs.operator.api")
+        targetDirectory = project.layout.projectDirectory.dir("charts/flaiserator-crd/charts/crds/templates")
 
-            if (targetDir.exists()) targetDir.toFile().deleteRecursively()
-
-            Files.createDirectories(targetDir)
-            Files.list(sourceDir).forEach { filePath ->
-                if (filePath.toString().endsWith("-v1.yml")) {
-                    val crdNode = objectMapper.readTree(filePath.toFile()) as ObjectNode
-                    val metadataObject = crdNode.withObject("metadata")
-
-                    // Ensure the annotations node exists
-                    metadataObject.putNull("annotations")
-
-                    var crdContent = objectMapper.writeValueAsString(crdNode)
-                    crdContent = crdContent.replace(
-                        "annotations: null",
-                        """annotations:
-                    |{{- with .Values.annotations }}
-                    |{{- toYaml . | nindent 4 }}
-                    |{{- end }}""".trimMargin()
-                    )
-
-                    val targetPath = targetDir.resolve(filePath.fileName)
-                    Files.createFile(targetPath).writeText(crdContent, Charsets.UTF_8)
-                }
-            }
-        }
-
-        finalizedBy("kaptKotlin")
+        dependsOn(compileJava, compileKotlin)
     }
 }
 
