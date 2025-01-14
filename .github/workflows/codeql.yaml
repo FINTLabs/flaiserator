@@ -35,8 +35,6 @@ jobs:
 
       - name: Assemble
         run: ./gradlew assemble --parallel -Dorg.gradle.jvmargs="-Dkotlin.daemon.jvmargs=-Xmx8g" --configuration-cache
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
