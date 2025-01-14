@@ -1,5 +1,4 @@
 [versions]
-kotlin = "2.1.0"
 mockk = "1.13.13"
 fabric8 = "7.0.1"
 koin = "4.0.0"
@@ -48,8 +47,6 @@ koin-test = { module = "io.insert-koin:koin-test" }
 koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" }
 
 [bundles]
