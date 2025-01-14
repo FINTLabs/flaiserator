@@ -41,7 +41,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Gradle test and build
-        run: ./gradlew build
+        run: ./gradlew build --configuration-cache
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
