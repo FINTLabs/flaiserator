@@ -13,7 +13,6 @@ http4k = "5.45.1.0"
 micrometer = "1.14.3"
 
 [libraries]
-
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
 fabric8-generator-api = { module = "io.fabric8:crd-generator-api-v2", version.ref = "fabric8" }
 fabric8-generator-collector = { module = "io.fabric8:crd-generator-collector", version.ref = "fabric8" }
@@ -47,6 +46,7 @@ koin-test = { module = "io.insert-koin:koin-test" }
 koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5" }
 
 [plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.0"}
 fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" }
 
 [bundles]
