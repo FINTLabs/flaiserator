@@ -34,7 +34,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Assemble
-        run: ./gradlew assemble --parallel -Dorg.gradle.jvmargs="-Dkotlin.daemon.jvmargs=-Xmx8g" --configuration-cache
+        run: ./gradlew clean assemble --parallel --no-daemon --no-build-cache
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
