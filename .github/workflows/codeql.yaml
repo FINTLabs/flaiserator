@@ -47,7 +47,6 @@ jobs:
         with:
           patterns: |
             -**/*test*.kt
-            -**/generated-main-avro-java/**
           input: sarif-results/java.sarif
           output: sarif-results/java.sarif
 
