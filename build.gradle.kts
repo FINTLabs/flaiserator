@@ -1,8 +1,9 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 
 plugins {
     application
-
     kotlin("jvm")
     alias(libs.plugins.fabric8.generator)
 }
@@ -26,6 +27,7 @@ repositories {
 }
 
 dependencies {
+    implementation(kotlin("stdlib"))
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.core)
     implementation(libs.bundles.fabric8)
@@ -84,6 +86,23 @@ testing {
 }
 
 tasks {
+    withType<Wrapper> {
+        gradleVersion = "8.12"
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    withType<KotlinCompile> {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+            freeCompilerArgs.add("-Xjsr305=strict")
+        }
+    }
+
     jar {
         archiveBaseName = "app"
         manifest {
