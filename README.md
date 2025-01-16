@@ -1,4 +1,5 @@
 # FLAISerator
+![Build And Publish](https://github.com/FINTLabs/flaiserator/actions/workflows/build-publish.yaml/badge.svg) ![CodeQL](https://github.com/FINTLabs/flaiserator/actions/workflows/codeql.yaml/badge.svg)
 
 _FLAISerator is a template engine that runs within Kubernetes_.
 
@@ -30,8 +31,6 @@ FLAIS resources for external system provisioning:
 * `NamOAuthClientApplicationResource` for [NAMerator](https://github.com/FINTLabs/namerator),
 * `PGSchemaAndUser` for [PGerator](https://github.com/FINTLabs/pgerator),
 * `AivenKafkaAcl` for [Aivenerator](https://github.com/FINTLabs/aivenerator),
-
-
 
 ## Documentation
 
