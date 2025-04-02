@@ -5,15 +5,12 @@ import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec
 import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.Context
-import io.javaoperatorsdk.operator.processing.dependent.Matcher
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
-import io.javaoperatorsdk.operator.processing.dependent.kubernetes.ResourceUpdaterMatcher
 import no.fintlabs.Config
 import no.fintlabs.operator.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.operator.api.ORG_ID_LABEL
 import no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd
-import no.fintlabs.operator.matcher.CustomGenericKubernetesResourceMatcher
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -39,11 +36,6 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
             }
             strategy = primary.spec.strategy
         }
-    }
-
-    override fun match(actual: Deployment, desired: Deployment, primary: FlaisApplicationCrd, matcher: ResourceUpdaterMatcher<Deployment>, context: Context<FlaisApplicationCrd>): Matcher.Result<Deployment> {
-        this.addMetadata(true, actual, desired, primary, context)
-        return Matcher.Result.computed(CustomGenericKubernetesResourceMatcher.getInstance<Deployment>().matches(actual, desired, context), desired);
     }
 
     override fun handleUpdate(actual: Deployment, desired: Deployment, primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): Deployment {

@@ -12,6 +12,7 @@ import io.javaoperatorsdk.operator.processing.LoggingUtils
 import no.fintlabs.operator.getLogger
 import java.util.*
 
+@Deprecated("Deprecated when using JOSDK >= 5.0.0")
 class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
     companion object {
