@@ -7,11 +7,26 @@ updates:
       day: "sunday"
     open-pull-requests-limit: 10
     groups:
-      gradle:
+      kubernetes:
         patterns:
-          - '*'
-
+          - "io.fabric8*"
+          - "io.javaoperatorsdk*"
+      micrometer:
+        patterns:
+          - "io.micrometer*"
+      div:
+        patterns:
+          - "com.sksamuel.hoplite*"
+          - "com.fasterxml.jackson.module*"
           - "org.http4k*"
+          - "ch.qos.logback*"
+          - "net.logstash.logback*"
+          - "io.mockk*"
+          - "org.awaitility*"
+          - "io.github.netmikey.logunit*"
+          - "io.insert-koin*"
+          - "org.jetbrains.kotlin*"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
