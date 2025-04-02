@@ -4,6 +4,7 @@ import com.coreos.monitoring.v1.PodMonitor
 import com.coreos.monitoring.v1.PodMonitorSpec
 import com.coreos.monitoring.v1.podmonitorspec.PodMetricsEndpoints
 import com.coreos.monitoring.v1.podmonitorspec.Selector
+import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
@@ -11,7 +12,7 @@ import no.fintlabs.operator.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd
 
 @KubernetesDependent(
-    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
+    informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR)
 )
 class PodMetricsDR : CRUDKubernetesDependentResource<PodMonitor, FlaisApplicationCrd>(PodMonitor::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): PodMonitor = PodMonitor().apply {

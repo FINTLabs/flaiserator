@@ -1,5 +1,6 @@
 package no.fintlabs.operator
 
+import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.*
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Workflow
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder
@@ -7,6 +8,7 @@ import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowReconci
 import io.javaoperatorsdk.operator.processing.event.source.EventSource
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry
 import no.fintlabs.operator.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
+import no.fintlabs.operator.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.operator.api.ORG_ID_LABEL
 import no.fintlabs.operator.api.TEAM_LABEL
 import no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd
@@ -22,7 +24,7 @@ import kotlin.jvm.optionals.getOrNull
 
 @GradualRetry(maxAttempts = 3)
 @ControllerConfiguration(
-    labelSelector = "$ORG_ID_LABEL,$TEAM_LABEL"
+    informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR)
 )
 class FlaisApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, ErrorStatusHandler<FlaisApplicationCrd>, EventSourceInitializer<FlaisApplicationCrd>, KoinComponent {
     private val logger = getLogger()

@@ -3,6 +3,7 @@ package no.fintlabs.operator
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec
+import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.Matcher
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
@@ -17,7 +18,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @KubernetesDependent(
-    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
+    informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR)
 )
 class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java), KoinComponent {
     private val config: Config by inject()

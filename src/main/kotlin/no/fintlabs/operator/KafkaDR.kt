@@ -1,5 +1,6 @@
 package no.fintlabs.operator
 
+import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
@@ -10,7 +11,7 @@ import no.fintlabs.v1alpha1.KafkaUserAndAclSpec
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 
 @KubernetesDependent(
-    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
+    informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR)
 )
 class KafkaDR : CRUDKubernetesDependentResource<KafkaUserAndAcl, FlaisApplicationCrd>(KafkaUserAndAcl::class.java) {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = KafkaUserAndAcl().apply {

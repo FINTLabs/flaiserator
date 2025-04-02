@@ -1,6 +1,7 @@
 package no.fintlabs.operator
 
 import io.fabric8.kubernetes.api.model.IntOrString
+import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
@@ -15,7 +16,7 @@ import us.containo.traefik.v1alpha1.ingressroutespec.routes.Middlewares
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 
 @KubernetesDependent(
-    labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR
+    informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR)
 )
 class IngressDR : CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java)  {
     override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = IngressRoute().apply {
