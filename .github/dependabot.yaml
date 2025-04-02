@@ -1,10 +1,9 @@
 version: 2
 updates:
-  # Gradle dependencies (weekly)
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
       day: "sunday"
     open-pull-requests-limit: 10
     groups:
@@ -12,22 +11,21 @@ updates:
         patterns:
           - '*'
 
-  # GitHub Actions dependencies (monthly)
+          - "org.http4k*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
       day: "sunday"
     groups:
       github-actions:
         patterns:
           - '*'
 
-  # Docker dependencies (monthly)
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
       day: "sunday"
     groups:
       docker:
