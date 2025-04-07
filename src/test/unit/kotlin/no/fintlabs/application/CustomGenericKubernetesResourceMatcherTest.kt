@@ -1,4 +1,6 @@
-package no.fintlabs.operator
+@file:Suppress("DEPRECATION")
+
+package no.fintlabs.application
 
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.PersistentVolume
@@ -11,7 +13,7 @@ import io.javaoperatorsdk.operator.api.reconciler.DefaultContext
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import no.fintlabs.operator.matcher.CustomGenericKubernetesResourceMatcher
+import no.fintlabs.application.matcher.CustomGenericKubernetesResourceMatcher
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import kotlin.test.Test

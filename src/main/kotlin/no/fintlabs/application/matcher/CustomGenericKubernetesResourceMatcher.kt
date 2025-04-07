@@ -1,4 +1,4 @@
-package no.fintlabs.operator.matcher
+package no.fintlabs.application.matcher
 
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.Deployment
@@ -9,7 +9,8 @@ import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.OperatorException
 import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.LoggingUtils
-import no.fintlabs.operator.getLogger
+import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.getLogger
 import java.util.*
 
 @Deprecated("Deprecated when using JOSDK >= 5.0.0")
