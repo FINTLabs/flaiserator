@@ -7,8 +7,11 @@ import io.javaoperatorsdk.operator.Operator
 class KubernetesOperatorContext(
     val namespace: String,
     val kubernetesClient: KubernetesClient,
-    val operator: Operator
+    private val getOperator: () -> Operator
 ) {
+    val operator
+        get() = getOperator()
+
     inline fun <reified T : HasMetadata> get(name: String): T? {
         return get(T::class.java, name)
     }

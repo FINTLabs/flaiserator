@@ -1,8 +1,8 @@
 package no.fintlabs
 
 import no.fintlabs.extensions.KubernetesOperatorContext
-import no.fintlabs.operator.Utils.createKoinTestExtension
-import no.fintlabs.operator.Utils.createKubernetesOperatorExtension
+import no.fintlabs.application.Utils.createKoinTestExtension
+import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method
 import org.http4k.core.Request

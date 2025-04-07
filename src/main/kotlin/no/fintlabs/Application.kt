@@ -6,6 +6,7 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.config.ConfigurationService
+import io.javaoperatorsdk.operator.api.monitoring.Metrics
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.monitoring.micrometer.MicrometerMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
@@ -13,7 +14,10 @@ import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
-import no.fintlabs.operator.applicationReconcilerModule
+import no.fintlabs.application.applicationReconcilerModule
+import no.fintlabs.operator.OperatorConfigHandler
+import no.fintlabs.operator.OperatorConfiguration
+import no.fintlabs.operator.OperatorPostConfigHandler
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method
 import org.http4k.core.Response
@@ -58,25 +62,23 @@ val baseModule = module {
             .withKubernetesSerialization(KubernetesSerialization(get(), true))
             .build()
     }
+    single<Metrics> {
+        get<PrometheusMeterRegistry>().let { registry ->
+            MicrometerMetrics.withoutPerResourceMetrics(registry)
+        }
+    }
     single {
         OperatorPostConfigHandler { operator ->
             getAll<Reconciler<*>>().forEach { operator.register(it) }
         }
     }
-    single {
-        OperatorConfigHandler { config ->
-            config.withKubernetesClient(get())
-            get<PrometheusMeterRegistry>().let { registry ->
-                config.withMetrics (MicrometerMetrics.withoutPerResourceMetrics(registry))
-            }
+    single<ConfigurationService> {
+        OperatorConfiguration().apply {
+            getAll<OperatorConfigHandler>().reversed().forEach { it.accept(this) }
         }
     }
     single {
-        val config = ConfigurationService.newOverriddenConfigurationService { config ->
-            getAll<OperatorConfigHandler>().reversed().forEach { it.accept(config) }
-        }
-
-        Operator(config).apply {
+        Operator(get<ConfigurationService>()).apply {
             get<OperatorPostConfigHandler>().accept(this)
         }
     }
