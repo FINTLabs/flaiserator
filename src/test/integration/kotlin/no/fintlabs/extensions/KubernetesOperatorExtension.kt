@@ -14,8 +14,8 @@ import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
-import no.fintlabs.OperatorConfigHandler
-import no.fintlabs.OperatorPostConfigHandler
+import no.fintlabs.operator.OperatorConfigHandler
+import no.fintlabs.operator.OperatorPostConfigHandler
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
@@ -50,6 +50,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
     }
 
     override fun beforeEach(context: ExtensionContext) {
+        val operatorConfig = getKubernetesOperatorConfig(context)
         val namespace = namespaceSupplier.apply(context)
         val kubernetesClient = createKubernetesClient(namespace, get())
 
@@ -57,11 +58,15 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
         prepareKubernetes(kubernetesClient, namespace)
         applyAdditionalResources(kubernetesClient, namespace)
 
-        val operator = get<Operator>()
         context.store()
-            .put(KubernetesOperatorContext::class.simpleName, KubernetesOperatorContext(namespace, kubernetesClient, operator))
+            .put(KubernetesOperatorContext::class.simpleName, KubernetesOperatorContext(namespace, kubernetesClient) {
+                get<Operator>()
+            })
 
-        operator.start()
+        if (!operatorConfig.explicitStart) {
+            val operator = get<Operator>()
+            operator.start()
+        }
     }
 
     override fun afterEach(context: ExtensionContext) {
@@ -108,7 +113,9 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
             loadKoinModules(
                 module {
                     single { kubernetesClient }
-                    single(named("test")) { OperatorConfigHandler { config -> config.withCloseClientOnStop(false) } }
+                    single(named("test")) { OperatorConfigHandler {
+                        it.setCloseClientOnStop(false)
+                    } }
                     single {
                         OperatorPostConfigHandler { operator ->
                             getAll<Reconciler<*>>().forEach {
@@ -166,6 +173,9 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
             }
         }
     }
+
+    private fun getKubernetesOperatorConfig(context: ExtensionContext): KubernetesOperator =
+        context.requiredTestMethod.getAnnotation(KubernetesOperator::class.java) ?: KubernetesOperator()
 
     companion object {
         fun create(crdClass: List<Class<out CustomResource<*, *>>> = emptyList()) =
