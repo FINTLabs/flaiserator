@@ -7,9 +7,6 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.github.netmikey.logunit.api.LogCapturer
-import no.fintlabs.extensions.KubernetesOperatorContext
-import no.fintlabs.extensions.KubernetesResources
-import no.fintlabs.loadConfig
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -18,6 +15,9 @@ import no.fintlabs.application.Utils.updateAndGetResource
 import no.fintlabs.application.Utils.waitUntilIsDeployed
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
 import no.fintlabs.application.api.v1alpha1.*
+import no.fintlabs.extensions.KubernetesOperatorContext
+import no.fintlabs.extensions.KubernetesResources
+import no.fintlabs.loadConfig
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -285,6 +285,23 @@ class DeploymentDRTest {
         assertEquals("value2", deployment.spec.template.spec.containers[0].env[1].value)
         assertEquals("TZ", deployment.spec.template.spec.containers[0].env[2].name)
         assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[2].value)
+    }
+
+    @Test
+    fun `should nullify value in env with empty string value`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(env = listOf(
+                EnvVar().apply {
+                    name = "fint.org-id"
+                    value = ""
+                }
+            ))
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[0].name)
+        assertEquals(null, deployment.spec.template.spec.containers[0].env[0].value)
     }
 
     @Test

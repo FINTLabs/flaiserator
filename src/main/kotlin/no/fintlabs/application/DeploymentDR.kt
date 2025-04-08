@@ -104,7 +104,12 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
     }
 
     private fun createContainerEnv(primary: FlaisApplicationCrd): List<EnvVar> {
-        val envVars = primary.spec.env.toMutableList()
+        val envVars = primary.spec.env.map {
+            if (it.value?.isEmpty() == true) {
+                it.value = null
+            }
+            it
+        }.toMutableList()
 
         envVars.add(EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null))
         envVars.add(EnvVar("TZ", "Europe/Oslo", null))
