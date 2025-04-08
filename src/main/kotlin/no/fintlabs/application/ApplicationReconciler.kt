@@ -3,10 +3,7 @@ package no.fintlabs.application
 import io.javaoperatorsdk.operator.api.reconciler.*
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry
 import no.fintlabs.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationStatus
-import no.fintlabs.application.api.v1alpha1.clone
+import no.fintlabs.application.api.v1alpha1.*
 import no.fintlabs.operator.workflow.Dependent
 import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent
@@ -129,7 +126,7 @@ class ApplicationReconciler : Reconciler<FlaisApplicationCrd>, Cleaner<FlaisAppl
                 ready && !failed -> FlaisApplicationState.DEPLOYED
                 else -> FlaisApplicationState.PENDING
             },
-            dependentErrors = workflowResult.erroredDependents.map { it.key.name() to (it.value.message ?: "") }.toMap().takeIf { it.isNotEmpty() }
+            errors = workflowResult.erroredDependents.map { StatusError (it.value.message ?: "", it.key.name()) }.takeIf { it.isNotEmpty() }
         )
     }
 

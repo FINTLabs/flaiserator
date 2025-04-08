@@ -152,11 +152,11 @@ tasks {
     }
 
     register<GenerateCrdsTask>("generateCrds") {
-        description = "Generate CRDs from the compiled custom resource class `no.fintlabs.operator.api.v1alpha1.FlaisApplicationCrd`"
+        description = "Generate CRDs from the compiled custom resource class `no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd`"
         group = "crd"
 
         sourceSet = sourceSets["main"]
-        includePackages = listOf("no.fintlabs.operator.api")
+        includePackages = listOf("no.fintlabs.application.api")
         targetDirectory = project.layout.projectDirectory.dir("charts/flaiserator-crd/charts/crds/templates")
 
         dependsOn(compileJava, compileKotlin)

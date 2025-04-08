@@ -2,8 +2,6 @@ package no.fintlabs.application
 
 import io.mockk.every
 import io.mockk.spyk
-import no.fintlabs.extensions.KubernetesOperator
-import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -11,6 +9,8 @@ import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.Utils.waitUntil
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
+import no.fintlabs.extensions.KubernetesOperator
+import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.core.component.get
 import org.koin.test.KoinTest
@@ -63,8 +63,8 @@ class ApplicationReconcilerTest : KoinTest {
         val app = context.get<FlaisApplicationCrd>(flaisApplication.metadata.name)
 
         assertNotNull(app)
-        assertEquals(1, app.status.dependentErrors?.size)
-        assertEquals("test", app.status.dependentErrors?.get("service"))
+        assertEquals(1, app.status.errors?.size)
+        assertEquals("test", app.status.errors?.find { it.dependent == service.name() }?.message)
     }
 
 
