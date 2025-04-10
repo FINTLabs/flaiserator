@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import org.hamcrest.CoreMatchers.`is` as isEqualTo
 
 @EnableKubernetesMockClient(crud = true, kubernetesClientBuilderCustomizer = CustomKubernetesClientBuilder::class)
@@ -220,6 +221,64 @@ class FlaisApplicationCrdTest {
         assertEquals("test-value", route?.queries?.get("test-query"))
         assertEquals(1, route?.middlewares?.size)
         assertEquals("test-middleware", route?.middlewares?.first())
+    }
+
+    @Test
+    fun `FlaisApplicationCrd should have correct default probes`() {
+        createAndApplyFlaisApplication(
+            FlaisApplicationSpec(
+                probes = Probes(
+                    startup = Probe(),
+                    readiness = Probe(),
+                    liveness = Probe()
+                )
+            )
+        )
+
+        val resFlaisApplication = getFlaisApplication()
+        val startupProbe = resFlaisApplication.spec.probes?.startup
+        assertNotNull(startupProbe)
+        assertNull(startupProbe.path)
+        assertNull(startupProbe.port)
+        assertEquals(ProbeDefaults.TIMEOUT_SECONDS, startupProbe.timeoutSeconds)
+        assertEquals(ProbeDefaults.PERIOD_SECONDS, startupProbe.periodSeconds)
+        assertEquals(ProbeDefaults.FAILURE_THRESHOLD, startupProbe.failureThreshold)
+        assertNull(startupProbe.initialDelaySeconds)
+
+        val readinessProbe = resFlaisApplication.spec.probes?.readiness
+        assertEquals(startupProbe, readinessProbe)
+
+        val livenessProbe = resFlaisApplication.spec.probes?.liveness
+        assertEquals(startupProbe, livenessProbe)
+    }
+
+    @Test
+    fun `FlaisApplicationCrd should have correct probe values`() {
+        createAndApplyFlaisApplication(
+            FlaisApplicationSpec(
+                probes = Probes(
+                    startup = Probe(
+                        port = IntOrString(1234),
+                        path = "/test-path",
+                        timeoutSeconds = 100,
+                        periodSeconds = 100,
+                        failureThreshold = 100,
+                        initialDelaySeconds = 100,
+                    ),
+                )
+            )
+        )
+
+        val resFlaisApplication = getFlaisApplication()
+        val startupProbe = resFlaisApplication.spec.probes?.startup
+        assertNotNull(startupProbe)
+        assertEquals("/test-path", startupProbe.path)
+        assertEquals(1234, startupProbe.port?.intVal)
+        assertEquals(100, startupProbe.timeoutSeconds)
+        assertEquals(100, startupProbe.periodSeconds)
+        assertEquals(100, startupProbe.failureThreshold)
+        assertEquals(100, startupProbe.initialDelaySeconds)
+
     }
 
 

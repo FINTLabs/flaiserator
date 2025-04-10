@@ -32,6 +32,7 @@ data class FlaisApplicationSpec(
         .addToLimits("cpu", Quantity("500m"))
         .addToLimits("memory", Quantity("512Mi"))
         .build(),
+    val probes: Probes? = null,
 
     @Min(1.0)
     val port: Int = 8080,

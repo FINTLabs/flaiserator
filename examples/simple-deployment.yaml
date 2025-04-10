@@ -11,10 +11,13 @@ metadata:
     app.kubernetes.io/part-of: flais
     fintlabs.no/team: flais
 spec:
-  org-id: test.com
+  orgId: test.com
   replicas: 1
   port: 80
-  image: docker/getting-started
+  image: nginx
+  probes:
+    readiness:
+      path: /readiness
   resources:
     limits:
       memory: "256Mi"
