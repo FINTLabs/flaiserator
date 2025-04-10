@@ -13,6 +13,7 @@ import no.fintlabs.application.api.ORG_ID_LABEL
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import no.fintlabs.application.api.v1alpha1.Probe as FlaisProbe
 
 
 @KubernetesDependent(
@@ -80,6 +81,9 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         envFrom = createContainerEnvFrom(primary, context)
         ports = createContainerPorts(primary)
         volumeMounts = createContainerVolumeMounts(primary, context)
+        startupProbe = primary.spec.probes?.startup?.let { createPodProbe(it, primary.spec.port) }
+        readinessProbe = primary.spec.probes?.readiness?.let { createPodProbe(it, primary.spec.port) }
+        livenessProbe = primary.spec.probes?.liveness?.let { createPodProbe(it, primary.spec.port) }
     }
 
     private fun createContainerPorts(primary: FlaisApplicationCrd): List<ContainerPort> {
@@ -144,6 +148,23 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
         return primary.spec.envFrom.toMutableSet()
             .plus(envFromSources)
             .toList()
+    }
+
+    private fun createPodProbe(probe: FlaisProbe, appPort: Int) = Probe().apply {
+        httpGet = HTTPGetAction().apply {
+            path = probe.path.ensureLeadingSlash()
+            port = probe.port ?: IntOrString(appPort)
+        }
+        initialDelaySeconds = probe.initialDelaySeconds
+        failureThreshold = probe.failureThreshold
+        periodSeconds = probe.periodSeconds
+        timeoutSeconds = probe.timeoutSeconds
+    }
+
+    private fun String?.ensureLeadingSlash(): String = when {
+        isNullOrBlank() -> "/"
+        startsWith("/") -> this
+        else -> "/$this"
     }
 
     // Volumes and volume mounts

@@ -15,6 +15,7 @@ import no.fintlabs.application.Utils.updateAndGetResource
 import no.fintlabs.application.Utils.waitUntilIsDeployed
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
 import no.fintlabs.application.api.v1alpha1.*
+import no.fintlabs.application.api.v1alpha1.Probe
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesResources
 import no.fintlabs.loadConfig
@@ -548,6 +549,105 @@ class DeploymentDRTest {
         assertNotNull(deployment)
         logs.assertDoesNotContain("Pod selector does not match, recreating deployment")
 
+    }
+    //endregion
+
+    //region Probes
+    @Test
+    fun `should create default probes`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                probes = Probes(
+                    startup = Probe(),
+                    liveness = Probe(),
+                    readiness = Probe()
+                )
+            )
+        }
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val appContainer = deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        assertNotNull(appContainer)
+
+        val startupProbe = appContainer.startupProbe
+        assertNotNull(startupProbe)
+        assertEquals("/", startupProbe.httpGet.path)
+        assertEquals(flaisApplication.spec.port, startupProbe.httpGet.port.intVal)
+        assertEquals(ProbeDefaults.PERIOD_SECONDS, startupProbe.periodSeconds)
+        assertEquals(ProbeDefaults.TIMEOUT_SECONDS, startupProbe.timeoutSeconds)
+        assertEquals(ProbeDefaults.FAILURE_THRESHOLD, startupProbe.failureThreshold)
+        assertEquals(null, startupProbe.initialDelaySeconds)
+
+        val livenessProbe = appContainer.startupProbe
+        assertNotNull(livenessProbe)
+        assertEquals("/", livenessProbe.httpGet.path)
+        assertEquals(flaisApplication.spec.port, livenessProbe.httpGet.port.intVal)
+        assertEquals(ProbeDefaults.PERIOD_SECONDS, livenessProbe.periodSeconds)
+        assertEquals(ProbeDefaults.TIMEOUT_SECONDS, livenessProbe.timeoutSeconds)
+        assertEquals(ProbeDefaults.FAILURE_THRESHOLD, livenessProbe.failureThreshold)
+        assertEquals(null, livenessProbe.initialDelaySeconds)
+
+        val readinessProbe = appContainer.startupProbe
+        assertNotNull(readinessProbe)
+        assertEquals("/", readinessProbe.httpGet.path)
+        assertEquals(flaisApplication.spec.port, readinessProbe.httpGet.port.intVal)
+        assertEquals(ProbeDefaults.PERIOD_SECONDS, readinessProbe.periodSeconds)
+        assertEquals(ProbeDefaults.TIMEOUT_SECONDS, readinessProbe.timeoutSeconds)
+        assertEquals(ProbeDefaults.FAILURE_THRESHOLD, readinessProbe.failureThreshold)
+        assertEquals(null, readinessProbe.initialDelaySeconds)
+    }
+
+    @Test
+    fun `should be able to set custom probe parameters`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                probes = Probes(
+                    liveness = Probe(
+                        path = "/liveness",
+                        port = IntOrString(8080),
+                        periodSeconds = 100,
+                        timeoutSeconds = 100,
+                        failureThreshold = 100,
+                        initialDelaySeconds = 100,
+                    ),
+                )
+            )
+        }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val appContainer = deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        assertNotNull(appContainer)
+
+        val livenessProbe = appContainer.livenessProbe
+        assertNotNull(livenessProbe)
+
+        assertEquals("/liveness", livenessProbe.httpGet.path)
+        assertEquals(8080, livenessProbe.httpGet.port.intVal)
+        assertEquals(100, livenessProbe.periodSeconds)
+        assertEquals(100, livenessProbe.timeoutSeconds)
+        assertEquals(100, livenessProbe.failureThreshold)
+        assertEquals(100, livenessProbe.initialDelaySeconds)
+    }
+
+    @Test
+    fun `should add leading slash if missing`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                probes = Probes(
+                    startup = Probe(path = "some/path"),
+                )
+            )
+        }
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val appContainer = deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        assertNotNull(appContainer)
+
+        val startupProbe = appContainer.startupProbe
+        assertNotNull(startupProbe)
+
+        assertEquals("/some/path", startupProbe.httpGet.path)
     }
     //endregion
 
