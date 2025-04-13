@@ -1,5 +1,5 @@
 [versions]
-mockk = "1.13.17"
+mockk = "1.14.0"
 fabric8 = "7.1.0"
 koin = "4.0.4"
 operatorSdk = "5.0.4"
