@@ -229,8 +229,16 @@ class FlaisApplicationCrdTest {
             FlaisApplicationSpec(
                 probes = Probes(
                     startup = Probe(),
-                    readiness = Probe(),
-                    liveness = Probe()
+                    readiness = Probe(
+                        initialDelaySeconds = 10,
+                        failureThreshold = 10,
+                        periodSeconds = 10,
+                        timeoutSeconds = 10
+                    ),
+                    liveness = Probe(
+                        path = "test-path",
+                        port = IntOrString("3000"),
+                    )
                 )
             )
         )
@@ -240,16 +248,22 @@ class FlaisApplicationCrdTest {
         assertNotNull(startupProbe)
         assertNull(startupProbe.path)
         assertNull(startupProbe.port)
-        assertEquals(ProbeDefaults.TIMEOUT_SECONDS, startupProbe.timeoutSeconds)
-        assertEquals(ProbeDefaults.PERIOD_SECONDS, startupProbe.periodSeconds)
-        assertEquals(ProbeDefaults.FAILURE_THRESHOLD, startupProbe.failureThreshold)
+        assertNull( startupProbe.timeoutSeconds)
+        assertNull(startupProbe.periodSeconds)
+        assertNull( startupProbe.failureThreshold)
         assertNull(startupProbe.initialDelaySeconds)
 
         val readinessProbe = resFlaisApplication.spec.probes?.readiness
-        assertEquals(startupProbe, readinessProbe)
+        assertNotNull(readinessProbe)
+        assertEquals(10, readinessProbe.initialDelaySeconds)
+        assertEquals(10, readinessProbe.failureThreshold)
+        assertEquals(10, readinessProbe.periodSeconds)
+        assertEquals(10, readinessProbe.timeoutSeconds)
 
         val livenessProbe = resFlaisApplication.spec.probes?.liveness
-        assertEquals(startupProbe, livenessProbe)
+        assertNotNull(livenessProbe)
+        assertEquals("test-path", livenessProbe.path)
+        assertEquals("3000", livenessProbe.port?.strVal)
     }
 
     @Test

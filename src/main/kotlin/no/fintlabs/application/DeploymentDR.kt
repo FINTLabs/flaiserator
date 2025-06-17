@@ -155,11 +155,19 @@ class DeploymentDR : CRUDKubernetesDependentResource<Deployment, FlaisApplicatio
             path = probe.path.ensureLeadingSlash()
             port = probe.port ?: IntOrString(appPort)
         }
-        initialDelaySeconds = probe.initialDelaySeconds
-        failureThreshold = probe.failureThreshold
-        periodSeconds = probe.periodSeconds
-        timeoutSeconds = probe.timeoutSeconds
+        initialDelaySeconds = probe.initialDelaySeconds.takeIfPositive()
+        failureThreshold = probe.failureThreshold.takeIfPositive()
+        periodSeconds = probe.periodSeconds.takeIfPositive()
+        timeoutSeconds = probe.timeoutSeconds.takeIfPositive()
     }
+
+    /**
+     * Returns this value if > 0; otherwise null.
+     *
+     * Setting zero causes JOSDK to send zero (which Kubernetes then overrides to its default), causing unnecessary updates.
+     * Returning null makes JOSDK omit the field so Kubernetes can apply its default cleanly.
+     */
+    private fun Int?.takeIfPositive(): Int? = this?.takeIf { it > 0 }
 
     private fun String?.ensureLeadingSlash(): String = when {
         isNullOrBlank() -> "/"
