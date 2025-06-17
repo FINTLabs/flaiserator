@@ -26,6 +26,7 @@ import org.koin.dsl.module
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @KubernetesResources("deployment/kubernetes")
 class DeploymentDRTest {
@@ -576,7 +577,7 @@ class DeploymentDRTest {
         assertEquals(ProbeDefaults.PERIOD_SECONDS, startupProbe.periodSeconds)
         assertEquals(ProbeDefaults.TIMEOUT_SECONDS, startupProbe.timeoutSeconds)
         assertEquals(ProbeDefaults.FAILURE_THRESHOLD, startupProbe.failureThreshold)
-        assertEquals(null, startupProbe.initialDelaySeconds)
+        assertNull( startupProbe.initialDelaySeconds)
 
         val livenessProbe = appContainer.startupProbe
         assertNotNull(livenessProbe)
@@ -585,7 +586,7 @@ class DeploymentDRTest {
         assertEquals(ProbeDefaults.PERIOD_SECONDS, livenessProbe.periodSeconds)
         assertEquals(ProbeDefaults.TIMEOUT_SECONDS, livenessProbe.timeoutSeconds)
         assertEquals(ProbeDefaults.FAILURE_THRESHOLD, livenessProbe.failureThreshold)
-        assertEquals(null, livenessProbe.initialDelaySeconds)
+        assertNull(livenessProbe.initialDelaySeconds)
 
         val readinessProbe = appContainer.startupProbe
         assertNotNull(readinessProbe)
@@ -594,7 +595,7 @@ class DeploymentDRTest {
         assertEquals(ProbeDefaults.PERIOD_SECONDS, readinessProbe.periodSeconds)
         assertEquals(ProbeDefaults.TIMEOUT_SECONDS, readinessProbe.timeoutSeconds)
         assertEquals(ProbeDefaults.FAILURE_THRESHOLD, readinessProbe.failureThreshold)
-        assertEquals(null, readinessProbe.initialDelaySeconds)
+        assertNull( readinessProbe.initialDelaySeconds)
     }
 
     @Test
@@ -648,6 +649,62 @@ class DeploymentDRTest {
         assertNotNull(startupProbe)
 
         assertEquals("/some/path", startupProbe.httpGet.path)
+    }
+
+    @Test
+    fun `should use kubernetes defaults if probe values are 0`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                probes = Probes(
+                    liveness = Probe(
+                        initialDelaySeconds = 0,
+                        failureThreshold = 0,
+                        periodSeconds = 0,
+                        timeoutSeconds = 0
+                    )
+                )
+            )
+        }
+
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val appContainer = deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        assertNotNull(appContainer)
+        val livenessProbe = appContainer.livenessProbe
+        assertNotNull(livenessProbe)
+        assertEquals(ProbeDefaults.PERIOD_SECONDS,livenessProbe.periodSeconds)
+        assertEquals(ProbeDefaults.TIMEOUT_SECONDS, livenessProbe.timeoutSeconds)
+        assertEquals(ProbeDefaults.FAILURE_THRESHOLD, livenessProbe.failureThreshold)
+        assertNull(livenessProbe.initialDelaySeconds)
+    }
+
+    @Test
+    fun `should use kubernetes defaults if probe values are null`(context: KubernetesOperatorContext) {
+        val flaisApplication = createTestFlaisApplication().apply {
+            spec = spec.copy(
+                probes = Probes(
+                    liveness = Probe(
+                        initialDelaySeconds = null,
+                        failureThreshold = null,
+                        periodSeconds = null,
+                        timeoutSeconds = null
+                    )
+                )
+            )
+        }
+
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val appContainer = deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        assertNotNull(appContainer)
+        val livenessProbe = appContainer.livenessProbe
+        assertNotNull(livenessProbe)
+        assertEquals(ProbeDefaults.PERIOD_SECONDS,livenessProbe.periodSeconds)
+        assertEquals(ProbeDefaults.TIMEOUT_SECONDS, livenessProbe.timeoutSeconds)
+        assertEquals(ProbeDefaults.FAILURE_THRESHOLD, livenessProbe.failureThreshold)
+        assertNull(livenessProbe.initialDelaySeconds)
     }
     //endregion
 

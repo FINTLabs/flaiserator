@@ -18,7 +18,7 @@ data class Probe(
     val path: String? = null,
     val port: IntOrString? = null,
     val initialDelaySeconds: Int? = null,
-    val failureThreshold: Int = ProbeDefaults.FAILURE_THRESHOLD,
-    val periodSeconds: Int = ProbeDefaults.PERIOD_SECONDS,
-    val timeoutSeconds: Int = ProbeDefaults.TIMEOUT_SECONDS,
+    val failureThreshold: Int? = null,
+    val periodSeconds: Int? = null,
+    val timeoutSeconds: Int? = null,
 )
