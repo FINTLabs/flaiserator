@@ -1,13 +1,13 @@
 [versions]
-mockk = "1.13.17"
+mockk = "1.14.5"
 fabric8 = "7.2.0"
-koin = "4.0.4"
+koin = "4.1.0"
 operatorSdk = "5.0.4"
 awaitility = "4.3.0"
 hoplite = "2.9.0"
 logback = "1.5.18"
 logstashEncoder = "8.1"
-jackson = "2.18.3"
+jackson = "2.19.2"
 logunit = "2.0.0"
 http4k = "5.47.0.0"
 micrometer = "1.15.2"
@@ -46,7 +46,7 @@ koin-test = { module = "io.insert-koin:koin-test" }
 koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.1.20"}
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.10"}
 fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" }
 
 [bundles]
