@@ -2,9 +2,6 @@ package no.fintlabs.extensions
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.fabric8.crdv2.generator.CRDGenerator
-import io.fabric8.kubeapitest.KubeAPIServer
-import io.fabric8.kubeapitest.KubeAPIServerConfigBuilder
-import io.fabric8.kubeapitest.KubeAPIServerConfigBuilder.KUBE_API_TEST_OFFLINE_MODE
 import io.fabric8.kubernetes.api.model.Namespace
 import io.fabric8.kubernetes.client.Config
 import io.fabric8.kubernetes.client.CustomResource
@@ -25,6 +22,8 @@ import org.koin.core.component.get
 import org.koin.core.context.loadKoinModules
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.testcontainers.k3s.K3sContainer
+import org.testcontainers.utility.DockerImageName
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.Duration
@@ -32,21 +31,24 @@ import java.time.Duration
 class KubernetesOperatorExtension
 private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>) : BeforeEachCallback,
     BeforeAllCallback, AfterAllCallback, AfterEachCallback, ParameterResolver, KoinComponent {
-    private val kubernetesApi = KubeAPIServer(KubeAPIServerConfigBuilder().apply {
-        withOfflineMode(System.getenv(KUBE_API_TEST_OFFLINE_MODE).toBoolean())
-    }.build())
+    private val k3s: K3sContainer
     private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
     private var additionalResources = emptyList<KubernetesResourceSource>()
 
+    init {
+        val kubernetesVersion = System.getenv("TEST_KUBERNETES_VERSION") ?: "v1.33.3"
+        k3s = K3sContainer(DockerImageName.parse("rancher/k3s:$kubernetesVersion-k3s1"))
+    }
+
     override fun beforeAll(context: ExtensionContext) {
         prepareAdditionalResources(context)
-        kubernetesApi.start()
+        k3s.start()
         ensureCRDs()
     }
 
     override fun afterAll(context: ExtensionContext) {
-        kubernetesApi.stop()
+        k3s.stop()
     }
 
     override fun beforeEach(context: ExtensionContext) {
@@ -149,7 +151,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
     private fun createKubernetesClient(namespace: String? = null, serializer: ObjectMapper? = null): KubernetesClient {
         return KubernetesClientBuilder().apply {
-            withConfig(Config.fromKubeconfig(kubernetesApi.kubeConfigYaml).apply {
+            withConfig(Config.fromKubeconfig(k3s.kubeConfigYaml).apply {
                 setNamespace(namespace)
             })
             if (serializer != null) {

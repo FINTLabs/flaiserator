@@ -43,6 +43,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.awaitility.kotlin)
     testImplementation(libs.operator.framework.junit5)
+    testImplementation(libs.testcontainers.k3s)
     testImplementation(libs.bundles.fabric8test)
     testImplementation(libs.bundles.koinTest)
     testImplementation(libs.bundles.logunit)
