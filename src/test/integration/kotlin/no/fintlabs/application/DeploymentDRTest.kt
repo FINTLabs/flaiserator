@@ -12,7 +12,7 @@ import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.Utils.updateAndGetResource
-import no.fintlabs.application.Utils.waitUntilIsDeployed
+import no.fintlabs.application.Utils.waitUntil
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
 import no.fintlabs.application.api.v1alpha1.*
 import no.fintlabs.application.api.v1alpha1.Probe
@@ -23,6 +23,7 @@ import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
+import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -523,7 +524,10 @@ class DeploymentDRTest {
         context.create(deployment)
 
         context.operator.start()
-        context.waitUntilIsDeployed(flaisApplication)
+        context.waitUntil<FlaisApplicationCrd>(deployment.metadata.name, pollDelay = Duration.ofSeconds(5)) {
+            it.status.state == FlaisApplicationState.DEPLOYED
+        }
+
         deployment = context.get<Deployment>(deployment.metadata.name)
 
         assertNotNull(deployment)
