@@ -4,17 +4,19 @@ import com.coreos.monitoring.v1.PodMonitor
 import com.onepassword.v1.OnePasswordItem
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
-import no.fintlabs.baseModule
-import no.fintlabs.extensions.KubernetesOperatorContext
-import no.fintlabs.extensions.KubernetesOperatorExtension
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationSpec
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
+import no.fintlabs.baseModule
+import no.fintlabs.extensions.KubernetesOperatorContext
+import no.fintlabs.extensions.KubernetesOperatorExtension
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.PGUser
+import org.awaitility.core.ConditionFactory
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
+import org.awaitility.kotlin.withPollDelay
 import org.koin.core.module.Module
 import org.koin.test.junit5.KoinTestExtension
 import us.containo.traefik.v1alpha1.IngressRoute
@@ -40,13 +42,19 @@ object Utils {
         ) { it.status?.state == FlaisApplicationState.DEPLOYED }
     }
 
-    inline fun <reified T : HasMetadata> KubernetesOperatorContext.waitUntil(resourceName: String, timeout: Duration = Duration.ofSeconds(1000), crossinline condition: (T) -> Boolean) {
-        await atMost timeout until {
+    inline fun <reified T : HasMetadata> KubernetesOperatorContext.waitUntil(
+        resourceName: String,
+        timeout: Duration = Duration.ofSeconds(1000),
+        pollDelay: Duration? = null,
+        crossinline condition: (T) -> Boolean
+    ) {
+        await withOptionalPollDelay pollDelay atMost timeout until {
             get<T>(resourceName)?.let { condition(it) } ?: false
         }
     }
 
-
+    infix fun ConditionFactory.withOptionalPollDelay(delay: Duration?): ConditionFactory =
+        delay?.let { withPollDelay(it) } ?: this
 
     fun createTestFlaisApplication(): FlaisApplicationCrd {
         return FlaisApplicationCrd().apply {
