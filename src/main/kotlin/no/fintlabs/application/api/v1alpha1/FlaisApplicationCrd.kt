@@ -10,13 +10,15 @@ import io.fabric8.kubernetes.model.annotation.Version
 @Group("fintlabs.no")
 @Version("v1alpha1")
 @Kind("Application")
-class FlaisApplicationCrd : CustomResource<FlaisApplicationSpec, FlaisApplicationStatus>(), Namespaced {
-}
+class FlaisApplicationCrd :
+    CustomResource<FlaisApplicationSpec, FlaisApplicationStatus>(), Namespaced {}
 
-fun FlaisApplicationCrd.clone() = FlaisApplicationCrd().apply {
-    metadata = ObjectMeta().apply {
-        name = this@clone.metadata.name
-        namespace = this@clone.metadata.namespace
-        managedFields = null
+fun FlaisApplicationCrd.clone() =
+    FlaisApplicationCrd().apply {
+      metadata =
+          ObjectMeta().apply {
+            name = this@clone.metadata.name
+            namespace = this@clone.metadata.namespace
+            managedFields = null
+          }
     }
-}

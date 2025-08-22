@@ -2,6 +2,10 @@ package no.fintlabs.application
 
 import io.mockk.every
 import io.mockk.spyk
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -15,67 +19,66 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.core.component.get
 import org.koin.test.KoinTest
 import org.koin.test.mock.declare
-import kotlin.test.Test
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class ApplicationReconcilerTest : KoinTest {
 
-    @Test
-    fun `should set correlation id on FlaisApplication`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication()
-        val app = context.createAndGetApplication(flaisApplication)
+  @Test
+  fun `should set correlation id on FlaisApplication`(context: KubernetesOperatorContext) {
+    val flaisApplication = createTestFlaisApplication()
+    val app = context.createAndGetApplication(flaisApplication)
 
-        assertNotNull(app)
-        assertContains(app.metadata.annotations, "fintlabs.no/deployment-correlation-id")
-        assertNotNull(app.status.correlationId)
-        assertEquals(app.metadata.annotations["fintlabs.no/deployment-correlation-id"], app.status.correlationId)
-    }
+    assertNotNull(app)
+    assertContains(app.metadata.annotations, "fintlabs.no/deployment-correlation-id")
+    assertNotNull(app.status.correlationId)
+    assertEquals(
+        app.metadata.annotations["fintlabs.no/deployment-correlation-id"], app.status.correlationId)
+  }
 
-    @Test
-    fun `should not set correlation id on FlaisApplication if exists`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication().apply {
-            metadata.annotations["fintlabs.no/deployment-correlation-id"] = "123"
+  @Test
+  fun `should not set correlation id on FlaisApplication if exists`(
+      context: KubernetesOperatorContext
+  ) {
+    val flaisApplication =
+        createTestFlaisApplication().apply {
+          metadata.annotations["fintlabs.no/deployment-correlation-id"] = "123"
         }
-        val app = context.createAndGetApplication(flaisApplication)
+    val app = context.createAndGetApplication(flaisApplication)
 
-        assertNotNull(app)
-        assertContains(app.metadata.annotations, "fintlabs.no/deployment-correlation-id")
-        assertEquals("123", app.metadata.annotations["fintlabs.no/deployment-correlation-id"])
-        assertNotNull(app.status.correlationId)
-        assertEquals("123", app.status.correlationId)
+    assertNotNull(app)
+    assertContains(app.metadata.annotations, "fintlabs.no/deployment-correlation-id")
+    assertEquals("123", app.metadata.annotations["fintlabs.no/deployment-correlation-id"])
+    assertNotNull(app.status.correlationId)
+    assertEquals("123", app.status.correlationId)
+  }
+
+  @KubernetesOperator(explicitStart = true)
+  @Test
+  fun `should handle dependent errors`(context: KubernetesOperatorContext) {
+    val service = spyk(get<ServiceDR>())
+    every { service.reconcile(any(), any()) } throws RuntimeException("test")
+
+    declare<ServiceDR> { service }
+
+    context.operator.start()
+
+    val flaisApplication = createTestFlaisApplication()
+    context.create(flaisApplication)
+    context.waitUntil<FlaisApplicationCrd>(flaisApplication.metadata.name) {
+      it.status.state != FlaisApplicationState.PENDING
     }
+    val app = context.get<FlaisApplicationCrd>(flaisApplication.metadata.name)
 
-    @KubernetesOperator(explicitStart = true)
-    @Test
-    fun `should handle dependent errors`(context: KubernetesOperatorContext) {
-        val service = spyk(get<ServiceDR>())
-        every { service.reconcile(any(), any()) } throws RuntimeException("test")
+    assertNotNull(app)
+    assertEquals(1, app.status.errors?.size)
+    assertEquals("test", app.status.errors?.find { it.dependent == service.name() }?.message)
+  }
 
-        declare<ServiceDR> { service }
+  private fun KubernetesOperatorContext.createAndGetApplication(app: FlaisApplicationCrd) =
+      createAndGetResource<FlaisApplicationCrd>(app)
 
-        context.operator.start()
+  companion object {
+    @RegisterExtension val koinTestExtension = createKoinTestExtension()
 
-        val flaisApplication = createTestFlaisApplication()
-        context.create(flaisApplication)
-        context.waitUntil<FlaisApplicationCrd>(flaisApplication.metadata.name) { it.status.state != FlaisApplicationState.PENDING }
-        val app = context.get<FlaisApplicationCrd>(flaisApplication.metadata.name)
-
-        assertNotNull(app)
-        assertEquals(1, app.status.errors?.size)
-        assertEquals("test", app.status.errors?.find { it.dependent == service.name() }?.message)
-    }
-
-
-    private fun KubernetesOperatorContext.createAndGetApplication(app: FlaisApplicationCrd) =
-        createAndGetResource<FlaisApplicationCrd>(app)
-
-    companion object {
-        @RegisterExtension
-        val koinTestExtension = createKoinTestExtension()
-
-        @RegisterExtension
-        val kubernetesOperatorExtension = createKubernetesOperatorExtension()
-    }
+    @RegisterExtension val kubernetesOperatorExtension = createKubernetesOperatorExtension()
+  }
 }

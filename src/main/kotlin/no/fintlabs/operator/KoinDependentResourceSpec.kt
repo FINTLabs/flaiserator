@@ -14,13 +14,13 @@ class KoinDependentResourceSpec<R, P : HasMetadata>(
     readyCondition: Condition<*, *>? = null,
     reconcileCondition: Condition<*, *>? = null,
     dependsOn: Set<String> = emptySet(),
-) : DependentResourceSpec<R, P, KubernetesDependentResourceConfig<*>>(
-    dependentResourceClass,
-    name,
-    dependsOn,
-    readyCondition,
-    reconcileCondition,
-    null,
-    null,
-    null
-)
+) :
+    DependentResourceSpec<R, P, KubernetesDependentResourceConfig<*>>(
+        dependentResourceClass,
+        name,
+        dependsOn,
+        readyCondition,
+        reconcileCondition,
+        null,
+        null,
+        null)
