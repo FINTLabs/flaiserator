@@ -7,10 +7,6 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.github.netmikey.logunit.api.LogCapturer
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -26,6 +22,10 @@ import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @KubernetesResources("deployment/kubernetes")
 class DeploymentDRTest {
@@ -541,7 +541,7 @@ class DeploymentDRTest {
     context.create(deployment)
     context.operator.start()
 
-    deployment = context.updateAndGetResource(flaisApplication)
+    deployment = context.updateAndGetResource(flaisApplication.apply { status = null })
 
     assertNotNull(deployment)
     assertEquals(1, deployment.spec.selector.matchLabels.size)
