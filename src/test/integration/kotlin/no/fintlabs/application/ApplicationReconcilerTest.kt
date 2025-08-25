@@ -2,10 +2,6 @@ package no.fintlabs.application
 
 import io.mockk.every
 import io.mockk.spyk
-import kotlin.test.Test
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -19,6 +15,10 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.core.component.get
 import org.koin.test.KoinTest
 import org.koin.test.mock.declare
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ApplicationReconcilerTest : KoinTest {
 
@@ -64,7 +64,7 @@ class ApplicationReconcilerTest : KoinTest {
     val flaisApplication = createTestFlaisApplication()
     context.create(flaisApplication)
     context.waitUntil<FlaisApplicationCrd>(flaisApplication.metadata.name) {
-      it.status.state != FlaisApplicationState.PENDING
+      it.status !== null && it.status?.state != FlaisApplicationState.PENDING
     }
     val app = context.get<FlaisApplicationCrd>(flaisApplication.metadata.name)
 
