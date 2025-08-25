@@ -2,14 +2,15 @@ package no.fintlabs.application
 
 import io.javaoperatorsdk.operator.api.reconciler.*
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry
-import java.util.*
-import kotlin.jvm.optionals.getOrNull
 import no.fintlabs.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
 import no.fintlabs.application.api.v1alpha1.*
 import no.fintlabs.operator.workflow.Dependent
 import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent
 import org.slf4j.MDC
+import java.time.Duration
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @GradualRetry(maxAttempts = 3)
 @ControllerConfiguration
@@ -110,7 +111,7 @@ class ApplicationReconciler :
       correlationIdUpdated -> UpdateControl.patchResourceAndStatus(patchResource)
       updateStatus -> UpdateControl.patchStatus(patchResource)
       else -> null
-    }?.apply { rescheduleAfter(100) }
+    }?.apply { rescheduleAfter(Duration.ofMillis(100)) }
   }
 
   private fun determineNewStatus(
