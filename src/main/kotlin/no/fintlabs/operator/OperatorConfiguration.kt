@@ -19,6 +19,7 @@ import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
+import java.time.Duration
 
 typealias KCondition = Condition<*, *>
 
@@ -27,6 +28,7 @@ class OperatorConfiguration :
   private var metrics: Metrics? = null
   private var kubernetesClient: KubernetesClient? = null
   private var closeClientOnStop: Boolean? = null
+  private var reconciliationTerminationTimeout: Duration? = null
 
   override fun setMetrics(metrics: Metrics) {
     this.metrics = metrics
@@ -39,6 +41,13 @@ class OperatorConfiguration :
   override fun setCloseClientOnStop(stopClientOnStop: Boolean) {
     this.closeClientOnStop = stopClientOnStop
   }
+
+  override fun setReconciliationTerminationTimeout(timeout: Duration) {
+    this.reconciliationTerminationTimeout = timeout
+  }
+
+  override fun reconciliationTerminationTimeout(): Duration =
+    reconciliationTerminationTimeout ?: super.reconciliationTerminationTimeout()
 
   override fun getKubernetesClient(): KubernetesClient = kubernetesClient ?: get()
 
