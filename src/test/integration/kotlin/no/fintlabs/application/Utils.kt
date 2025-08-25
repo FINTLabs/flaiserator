@@ -4,7 +4,6 @@ import com.coreos.monitoring.v1.PodMonitor
 import com.onepassword.v1.OnePasswordItem
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
-import java.time.Duration
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationSpec
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
