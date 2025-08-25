@@ -2,6 +2,10 @@ package no.fintlabs.application
 
 import io.mockk.every
 import io.mockk.spyk
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -15,10 +19,6 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.core.component.get
 import org.koin.test.KoinTest
 import org.koin.test.mock.declare
-import kotlin.test.Test
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class ApplicationReconcilerTest : KoinTest {
 

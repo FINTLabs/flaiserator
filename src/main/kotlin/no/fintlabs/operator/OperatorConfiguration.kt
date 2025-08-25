@@ -13,13 +13,13 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource
 import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResourceFactory
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition
+import java.time.Duration
 import no.fintlabs.operator.dependent.ReadyCondition
 import no.fintlabs.operator.dependent.ReconcileCondition
 import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
-import java.time.Duration
 
 typealias KCondition = Condition<*, *>
 
@@ -47,7 +47,7 @@ class OperatorConfiguration :
   }
 
   override fun reconciliationTerminationTimeout(): Duration =
-    reconciliationTerminationTimeout ?: super.reconciliationTerminationTimeout()
+      reconciliationTerminationTimeout ?: super.reconciliationTerminationTimeout()
 
   override fun getKubernetesClient(): KubernetesClient = kubernetesClient ?: get()
 

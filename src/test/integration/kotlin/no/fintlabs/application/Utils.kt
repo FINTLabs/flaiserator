@@ -4,6 +4,7 @@ import com.coreos.monitoring.v1.PodMonitor
 import com.onepassword.v1.OnePasswordItem
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
+import java.time.Duration
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationSpec
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
@@ -19,7 +20,6 @@ import org.awaitility.kotlin.withPollInterval
 import org.koin.core.module.Module
 import org.koin.test.junit5.KoinTestExtension
 import us.containo.traefik.v1alpha1.IngressRoute
-import java.time.Duration
 
 object Utils {
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
@@ -49,19 +49,15 @@ object Utils {
   }
 
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.waitUntil(
-    resourceName: String,
-    timeout: Duration = Duration.ofMinutes(1),
-    pollInterval: Duration = Duration.ofMillis(50),
-    pollDelay: Duration? = null,
-    crossinline condition: (T) -> Boolean
+      resourceName: String,
+      timeout: Duration = Duration.ofMinutes(1),
+      pollInterval: Duration = Duration.ofMillis(50),
+      pollDelay: Duration? = null,
+      crossinline condition: (T) -> Boolean
   ) {
-    await
-      .withOptionalPollDelay(pollDelay)
-      .withPollInterval(pollInterval)
-      .atMost(timeout).until()
-            {
-              get<T>(resourceName)?.let { condition(it) } ?: false
-            }
+    await.withOptionalPollDelay(pollDelay).withPollInterval(pollInterval).atMost(timeout).until() {
+      get<T>(resourceName)?.let { condition(it) } ?: false
+    }
   }
 
   infix fun ConditionFactory.withOptionalPollDelay(delay: Duration?): ConditionFactory =

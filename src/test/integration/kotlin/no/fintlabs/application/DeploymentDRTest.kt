@@ -7,6 +7,10 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.github.netmikey.logunit.api.LogCapturer
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -22,10 +26,6 @@ import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 @KubernetesResources("deployment/kubernetes")
 class DeploymentDRTest {
@@ -43,8 +43,8 @@ class DeploymentDRTest {
     assertEquals("test", deployment.metadata.labels["fintlabs.no/team"])
 
     assertEquals(
-      "test",
-      deployment.spec.template.metadata.annotations["kubectl.kubernetes.io/default-container"],
+        "test",
+        deployment.spec.template.metadata.annotations["kubectl.kubernetes.io/default-container"],
     )
 
     assert(deployment.spec.selector.matchLabels.containsKey("app"))
@@ -86,27 +86,26 @@ class DeploymentDRTest {
     val flaisApplication = createTestFlaisApplication().apply { spec = spec.copy(replicas = -1) }
 
     val exception =
-      assertThrows<KubernetesClientException> { context.createAndGetDeployment(flaisApplication) }
+        assertThrows<KubernetesClientException> { context.createAndGetDeployment(flaisApplication) }
     assert("spec.replicas: Invalid value: -1" in exception.status.message)
   }
 
   @Test
   fun `should create deployment with rolling update strategy`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            strategy =
-              DeploymentStrategy().apply {
-                type = "RollingUpdate"
-                rollingUpdate =
-                  RollingUpdateDeployment().apply {
-                    maxSurge = IntOrString("25%")
-                    maxUnavailable = IntOrString("25%")
-                  }
-              }
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  strategy =
+                      DeploymentStrategy().apply {
+                        type = "RollingUpdate"
+                        rollingUpdate =
+                            RollingUpdateDeployment().apply {
+                              maxSurge = IntOrString("25%")
+                              maxUnavailable = IntOrString("25%")
+                            }
+                      })
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -118,9 +117,9 @@ class DeploymentDRTest {
   @Test
   fun `should create deployment with recreate strategy`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec = spec.copy(strategy = DeploymentStrategy().apply { type = "Recreate" })
-      }
+        createTestFlaisApplication().apply {
+          spec = spec.copy(strategy = DeploymentStrategy().apply { type = "Recreate" })
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -130,7 +129,7 @@ class DeploymentDRTest {
   @Test
   fun `should update deployment with correct image`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply { spec = spec.copy(image = "test-image:latest") }
+        createTestFlaisApplication().apply { spec = spec.copy(image = "test-image:latest") }
 
     var deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -148,9 +147,9 @@ class DeploymentDRTest {
   @Test
   fun `should create deployment with correct labels`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        metadata = metadata.apply { labels = labels.plus("test" to "test") }
-      }
+        createTestFlaisApplication().apply {
+          metadata = metadata.apply { labels = labels.plus("test" to "test") }
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -171,10 +170,10 @@ class DeploymentDRTest {
   // region Image
   @Test
   fun `should create deployment with correct container pull policy`(
-    context: KubernetesOperatorContext
+      context: KubernetesOperatorContext
   ) {
     val flaisApplication =
-      createTestFlaisApplication().apply { spec = spec.copy(image = "test-image:latest") }
+        createTestFlaisApplication().apply { spec = spec.copy(image = "test-image:latest") }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -183,23 +182,22 @@ class DeploymentDRTest {
 
   @Test
   fun `should create deployment with correct image pull secrets`(
-    context: KubernetesOperatorContext
+      context: KubernetesOperatorContext
   ) {
     context.create(
-      Secret().apply {
-        metadata =
-          ObjectMeta().apply {
-            name = "test-secret"
-            type = "kubernetes.io/dockerconfigjson"
-          }
-        stringData = mapOf(".dockerconfigjson" to "{}")
-      }
-    )
+        Secret().apply {
+          metadata =
+              ObjectMeta().apply {
+                name = "test-secret"
+                type = "kubernetes.io/dockerconfigjson"
+              }
+          stringData = mapOf(".dockerconfigjson" to "{}")
+        })
 
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec = spec.copy(imagePullSecrets = listOf("test-secret"))
-      }
+        createTestFlaisApplication().apply {
+          spec = spec.copy(imagePullSecrets = listOf("test-secret"))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -213,38 +211,37 @@ class DeploymentDRTest {
   @Test
   fun `should have correct resource limits`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            resources =
-              ResourceRequirementsBuilder()
-                .addToRequests("cpu", Quantity("500m"))
-                .addToRequests("memory", Quantity("512Mi"))
-                .addToLimits("cpu", Quantity("1"))
-                .addToLimits("memory", Quantity("1Gi"))
-                .build()
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  resources =
+                      ResourceRequirementsBuilder()
+                          .addToRequests("cpu", Quantity("500m"))
+                          .addToRequests("memory", Quantity("512Mi"))
+                          .addToLimits("cpu", Quantity("1"))
+                          .addToLimits("memory", Quantity("1Gi"))
+                          .build())
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     assertEquals(2, deployment.spec.template.spec.containers[0].resources.requests.size)
     assertEquals(
-      "500m",
-      deployment.spec.template.spec.containers[0].resources.requests["cpu"]?.toString(),
+        "500m",
+        deployment.spec.template.spec.containers[0].resources.requests["cpu"]?.toString(),
     )
     assertEquals(
-      "512Mi",
-      deployment.spec.template.spec.containers[0].resources.requests["memory"]?.toString(),
+        "512Mi",
+        deployment.spec.template.spec.containers[0].resources.requests["memory"]?.toString(),
     )
     assertEquals(2, deployment.spec.template.spec.containers[0].resources.limits.size)
     assertEquals(
-      "1",
-      deployment.spec.template.spec.containers[0].resources.limits["cpu"]?.toString(),
+        "1",
+        deployment.spec.template.spec.containers[0].resources.limits["cpu"]?.toString(),
     )
     assertEquals(
-      "1Gi",
-      deployment.spec.template.spec.containers[0].resources.limits["memory"]?.toString(),
+        "1Gi",
+        deployment.spec.template.spec.containers[0].resources.limits["memory"]?.toString(),
     )
   }
 
@@ -254,22 +251,21 @@ class DeploymentDRTest {
   @Test
   fun `should have additional env variables`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            env =
-              listOf(
-                EnvVar().apply {
-                  name = "key1"
-                  value = "value1"
-                },
-                EnvVar().apply {
-                  name = "key2"
-                  value = "value2"
-                },
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  env =
+                      listOf(
+                          EnvVar().apply {
+                            name = "key1"
+                            value = "value1"
+                          },
+                          EnvVar().apply {
+                            name = "key2"
+                            value = "value2"
+                          },
+                      ))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -287,22 +283,21 @@ class DeploymentDRTest {
   @Test
   fun `should not have overlapping env variables`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            env =
-              listOf(
-                EnvVar().apply {
-                  name = "fint.org-id"
-                  value = "value1"
-                },
-                EnvVar().apply {
-                  name = "key2"
-                  value = "value2"
-                },
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  env =
+                      listOf(
+                          EnvVar().apply {
+                            name = "fint.org-id"
+                            value = "value1"
+                          },
+                          EnvVar().apply {
+                            name = "key2"
+                            value = "value2"
+                          },
+                      ))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -318,18 +313,16 @@ class DeploymentDRTest {
   @Test
   fun `should nullify value in env with empty string value`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            env =
-              listOf(
-                EnvVar().apply {
-                  name = "fint.org-id"
-                  value = ""
-                }
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  env =
+                      listOf(
+                          EnvVar().apply {
+                            name = "fint.org-id"
+                            value = ""
+                          }))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -340,72 +333,69 @@ class DeploymentDRTest {
   @Test
   fun `should have additional envFrom variable from 1Password`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec = spec.copy(onePassword = OnePassword(itemPath = "test"))
-      }
+        createTestFlaisApplication().apply {
+          spec = spec.copy(onePassword = OnePassword(itemPath = "test"))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     assertEquals(1, deployment.spec.template.spec.containers[0].envFrom.size)
     assertEquals(
-      "${flaisApplication.metadata.name}-op",
-      deployment.spec.template.spec.containers[0].envFrom[0].secretRef.name,
+        "${flaisApplication.metadata.name}-op",
+        deployment.spec.template.spec.containers[0].envFrom[0].secretRef.name,
     )
   }
 
   @Test
   fun `should have additional envFrom variable from database`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply { spec = spec.copy(database = Database("test-db")) }
+        createTestFlaisApplication().apply { spec = spec.copy(database = Database("test-db")) }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     assertEquals(1, deployment.spec.template.spec.containers[0].envFrom.size)
     assertEquals(
-      "${flaisApplication.metadata.name}-db",
-      deployment.spec.template.spec.containers[0].envFrom[0].secretRef.name,
+        "${flaisApplication.metadata.name}-db",
+        deployment.spec.template.spec.containers[0].envFrom[0].secretRef.name,
     )
   }
 
   @Test
   fun `should have additional envFrom variable from Kafka`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            kafka =
-              Kafka(
-                acls =
-                  listOf(
-                    Acls().apply {
-                      topic = "test-topic"
-                      permission = "write"
-                    }
-                  )
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  kafka =
+                      Kafka(
+                          acls =
+                              listOf(
+                                  Acls().apply {
+                                    topic = "test-topic"
+                                    permission = "write"
+                                  })))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     assertEquals(1, deployment.spec.template.spec.containers[0].envFrom.size)
     assertEquals(
-      "${flaisApplication.metadata.name}-kafka",
-      deployment.spec.template.spec.containers[0].envFrom[0].secretRef.name,
+        "${flaisApplication.metadata.name}-kafka",
+        deployment.spec.template.spec.containers[0].envFrom[0].secretRef.name,
     )
   }
 
   @Test
   fun `should have correct path env vars`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply { spec = spec.copy(url = Url(basePath = "/test")) }
+        createTestFlaisApplication().apply { spec = spec.copy(url = Url(basePath = "/test")) }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     assertEquals(4, deployment.spec.template.spec.containers[0].env.size)
     assertEquals(
-      "spring.webflux.base-path",
-      deployment.spec.template.spec.containers[0].env[2].name,
+        "spring.webflux.base-path",
+        deployment.spec.template.spec.containers[0].env[2].name,
     )
     assertEquals("/test", deployment.spec.template.spec.containers[0].env[2].value)
     assertEquals("spring.mvc.servlet.path", deployment.spec.template.spec.containers[0].env[3].name)
@@ -418,50 +408,44 @@ class DeploymentDRTest {
   @Test
   fun `should have volume for Kafka`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            kafka =
-              Kafka(
-                acls =
-                  listOf(
-                    Acls().apply {
-                      topic = "test-topic"
-                      permission = "write"
-                    }
-                  )
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  kafka =
+                      Kafka(
+                          acls =
+                              listOf(
+                                  Acls().apply {
+                                    topic = "test-topic"
+                                    permission = "write"
+                                  })))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     assertEquals(1, deployment.spec.template.spec.volumes.size)
     assertEquals("credentials", deployment.spec.template.spec.volumes[0].name)
     assertEquals(
-      "test-kafka-certificates",
-      deployment.spec.template.spec.volumes[0].secret.secretName,
+        "test-kafka-certificates",
+        deployment.spec.template.spec.volumes[0].secret.secretName,
     )
   }
 
   @Test
   fun `should have volume mounts for Kafka`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            kafka =
-              Kafka(
-                acls =
-                  listOf(
-                    Acls().apply {
-                      topic = "test-topic"
-                      permission = "write"
-                    }
-                  )
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  kafka =
+                      Kafka(
+                          acls =
+                              listOf(
+                                  Acls().apply {
+                                    topic = "test-topic"
+                                    permission = "write"
+                                  })))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -470,8 +454,8 @@ class DeploymentDRTest {
     assertEquals(1, deployment.spec.template.spec.containers[0].volumeMounts.size)
     assertEquals("credentials", deployment.spec.template.spec.containers[0].volumeMounts[0].name)
     assertEquals(
-      "/credentials",
-      deployment.spec.template.spec.containers[0].volumeMounts[0].mountPath,
+        "/credentials",
+        deployment.spec.template.spec.containers[0].volumeMounts[0].mountPath,
     )
     assertEquals(true, deployment.spec.template.spec.containers[0].volumeMounts[0].readOnly)
   }
@@ -491,9 +475,9 @@ class DeploymentDRTest {
   @Test
   fun `should have loki logging enabled`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec = spec.copy(observability = Observability(logging = Logging(loki = true)))
-      }
+        createTestFlaisApplication().apply {
+          spec = spec.copy(observability = Observability(logging = Logging(loki = true)))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -503,9 +487,9 @@ class DeploymentDRTest {
   @Test
   fun `should have loki logging disabled`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec = spec.copy(observability = Observability(logging = Logging(loki = false)))
-      }
+        createTestFlaisApplication().apply {
+          spec = spec.copy(observability = Observability(logging = Logging(loki = false)))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -514,16 +498,16 @@ class DeploymentDRTest {
 
   @Test
   fun `should have metric port open when metrics are enabled and app and metric port differ`(
-    context: KubernetesOperatorContext
+      context: KubernetesOperatorContext
   ) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            observability =
-              Observability(metrics = Metrics(enabled = true, port = "8081", path = "/metrics"))
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  observability =
+                      Observability(
+                          metrics = Metrics(enabled = true, port = "8081", path = "/metrics")))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -539,7 +523,7 @@ class DeploymentDRTest {
   // region PodSelector
   @Test
   fun `should recreate deployment on pod selector change selector`(
-    context: KubernetesOperatorContext
+      context: KubernetesOperatorContext
   ) {
     val flaisApplication = createTestFlaisApplication()
     var deployment = context.createAndGetDeployment(flaisApplication)
@@ -585,14 +569,14 @@ class DeploymentDRTest {
   @Test
   fun `should create default probes`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(probes = Probes(startup = Probe(), liveness = Probe(), readiness = Probe()))
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(probes = Probes(startup = Probe(), liveness = Probe(), readiness = Probe()))
+        }
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     val appContainer =
-      deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
     assertNotNull(appContainer)
 
     val startupProbe = appContainer.startupProbe
@@ -626,28 +610,26 @@ class DeploymentDRTest {
   @Test
   fun `should be able to set custom probe parameters`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            probes =
-              Probes(
-                liveness =
-                  Probe(
-                    path = "/liveness",
-                    port = IntOrString(8080),
-                    periodSeconds = 100,
-                    timeoutSeconds = 100,
-                    failureThreshold = 100,
-                    initialDelaySeconds = 100,
-                  )
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  probes =
+                      Probes(
+                          liveness =
+                              Probe(
+                                  path = "/liveness",
+                                  port = IntOrString(8080),
+                                  periodSeconds = 100,
+                                  timeoutSeconds = 100,
+                                  failureThreshold = 100,
+                                  initialDelaySeconds = 100,
+                              )))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     val appContainer =
-      deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
     assertNotNull(appContainer)
 
     val livenessProbe = appContainer.livenessProbe
@@ -664,13 +646,13 @@ class DeploymentDRTest {
   @Test
   fun `should add leading slash if missing`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec = spec.copy(probes = Probes(startup = Probe(path = "some/path")))
-      }
+        createTestFlaisApplication().apply {
+          spec = spec.copy(probes = Probes(startup = Probe(path = "some/path")))
+        }
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     val appContainer =
-      deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
     assertNotNull(appContainer)
 
     val startupProbe = appContainer.startupProbe
@@ -682,26 +664,24 @@ class DeploymentDRTest {
   @Test
   fun `should use kubernetes defaults if probe values are 0`(context: KubernetesOperatorContext) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            probes =
-              Probes(
-                liveness =
-                  Probe(
-                    initialDelaySeconds = 0,
-                    failureThreshold = 0,
-                    periodSeconds = 0,
-                    timeoutSeconds = 0,
-                  )
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  probes =
+                      Probes(
+                          liveness =
+                              Probe(
+                                  initialDelaySeconds = 0,
+                                  failureThreshold = 0,
+                                  periodSeconds = 0,
+                                  timeoutSeconds = 0,
+                              )))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     val appContainer =
-      deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
     assertNotNull(appContainer)
     val livenessProbe = appContainer.livenessProbe
     assertNotNull(livenessProbe)
@@ -713,29 +693,27 @@ class DeploymentDRTest {
 
   @Test
   fun `should use kubernetes defaults if probe values are null`(
-    context: KubernetesOperatorContext
+      context: KubernetesOperatorContext
   ) {
     val flaisApplication =
-      createTestFlaisApplication().apply {
-        spec =
-          spec.copy(
-            probes =
-              Probes(
-                liveness =
-                  Probe(
-                    initialDelaySeconds = null,
-                    failureThreshold = null,
-                    periodSeconds = null,
-                    timeoutSeconds = null,
-                  )
-              )
-          )
-      }
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  probes =
+                      Probes(
+                          liveness =
+                              Probe(
+                                  initialDelaySeconds = null,
+                                  failureThreshold = null,
+                                  periodSeconds = null,
+                                  timeoutSeconds = null,
+                              )))
+        }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
     val appContainer =
-      deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
+        deployment.spec.template.spec.containers.find { it.name == flaisApplication.metadata.name }
     assertNotNull(appContainer)
     val livenessProbe = appContainer.livenessProbe
     assertNotNull(livenessProbe)
@@ -748,7 +726,7 @@ class DeploymentDRTest {
   // endregion
 
   private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplicationCrd) =
-    createAndGetResource<Deployment>(app)
+      createAndGetResource<Deployment>(app)
 
   @RegisterExtension
   val logs: LogCapturer = LogCapturer.create().captureForType(DeploymentDR::class.java)
@@ -756,13 +734,13 @@ class DeploymentDRTest {
   companion object {
     @RegisterExtension
     val koinTestExtension =
-      createKoinTestExtension(
-        module {
-          single {
-            loadConfig(PropertySource.resource("/deployment/application.yaml", optional = false))
-          }
-        }
-      )
+        createKoinTestExtension(
+            module {
+              single {
+                loadConfig(
+                    PropertySource.resource("/deployment/application.yaml", optional = false))
+              }
+            })
 
     @RegisterExtension val kubernetesOperatorExtension = createKubernetesOperatorExtension()
   }
