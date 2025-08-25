@@ -11,9 +11,6 @@ import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.time.Duration
 import no.fintlabs.operator.OperatorConfigHandler
 import no.fintlabs.operator.OperatorPostConfigHandler
 import org.awaitility.kotlin.atMost
@@ -27,17 +24,18 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.testcontainers.k3s.K3sContainer
 import org.testcontainers.utility.DockerImageName
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.time.Duration
 
 class KubernetesOperatorExtension
-private constructor(
-    private val crdClass: List<Class<out CustomResource<*, *>>>,
-) :
-    BeforeEachCallback,
-    BeforeAllCallback,
-    AfterAllCallback,
-    AfterEachCallback,
-    ParameterResolver,
-    KoinComponent {
+private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>) :
+  BeforeEachCallback,
+  BeforeAllCallback,
+  AfterAllCallback,
+  AfterEachCallback,
+  ParameterResolver,
+  KoinComponent {
   private val k3s: K3sContainer
   private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
@@ -67,23 +65,19 @@ private constructor(
     prepareKubernetes(kubernetesClient, namespace)
     applyAdditionalResources(kubernetesClient, namespace)
 
+    val operatorContext = KubernetesOperatorContext(namespace, { get<KubernetesClient>() }, { get<Operator>() })
     context
-        .store()
-        .put(
-            KubernetesOperatorContext::class.simpleName,
-            KubernetesOperatorContext(namespace, kubernetesClient) { get<Operator>() },
-        )
+      .store()
+      .put(KubernetesOperatorContext::class.simpleName, operatorContext)
 
     if (!operatorConfig.explicitStart) {
-      val operator = get<Operator>()
-      operator.start()
+      operatorContext.operator.start()
     }
   }
 
   override fun afterEach(context: ExtensionContext) {
     val kubernetesOperatorContext =
-        context.store().get(KubernetesOperatorContext::class.simpleName)
-            as KubernetesOperatorContext
+      context.store().get(KubernetesOperatorContext::class.simpleName) as KubernetesOperatorContext
     val kubernetesClient = kubernetesOperatorContext.kubernetesClient
 
     cleanupKubernetes(kubernetesClient, kubernetesOperatorContext.namespace)
@@ -92,15 +86,11 @@ private constructor(
     kubernetesClient.close()
   }
 
-  override fun supportsParameter(
-      pContext: ParameterContext,
-      eContext: ExtensionContext,
-  ): Boolean = pContext.parameter.type == KubernetesOperatorContext::class.java
+  override fun supportsParameter(pContext: ParameterContext, eContext: ExtensionContext): Boolean =
+    pContext.parameter.type == KubernetesOperatorContext::class.java
 
-  override fun resolveParameter(
-      pContext: ParameterContext,
-      eContext: ExtensionContext,
-  ): Any = eContext.store().get(KubernetesOperatorContext::class.simpleName)
+  override fun resolveParameter(pContext: ParameterContext, eContext: ExtensionContext): Any =
+    eContext.store().get(KubernetesOperatorContext::class.simpleName)
 
   private fun ensureCRDs() {
     val crds = prepareCRDs()
@@ -109,10 +99,10 @@ private constructor(
       kubernetesClient.load(ByteArrayInputStream(crd.toByteArray())).serverSideApply()
     }
     await atMost
-        Duration.ofSeconds(30) until
-        {
-          crds.all { kubernetesClient.resource(it).get() != null }
-        }
+      Duration.ofSeconds(30) until
+      {
+        crds.all { kubernetesClient.resource(it).get() != null }
+      }
 
     kubernetesClient.close()
   }
@@ -120,10 +110,10 @@ private constructor(
   private fun prepareCRDs(): List<String> {
     val output = InMemoryCRDOutput()
     val crdGenerator =
-        CRDGenerator()
-            .customResourceClasses(*crdClass.toTypedArray())
-            .withOutput(output)
-            .forCRDVersions("v1")
+      CRDGenerator()
+        .customResourceClasses(*crdClass.toTypedArray())
+        .withOutput(output)
+        .forCRDVersions("v1")
     crdGenerator.generate()
     return output.getCRDs().also { output.close() }
   }
@@ -131,72 +121,66 @@ private constructor(
   private fun prepareKoin(kubernetesClient: KubernetesClient) {
     getKoin().apply {
       loadKoinModules(
-          module {
-            single { kubernetesClient }
-            single(named("test")) { OperatorConfigHandler { it.setCloseClientOnStop(false) } }
-            single {
-              OperatorPostConfigHandler { operator ->
-                getAll<Reconciler<*>>().forEach {
-                  operator.register(it) { config ->
-                    config.settingNamespace(kubernetesClient.namespace)
-                  }
+        module {
+          single { kubernetesClient }
+          single(named("test")) {
+            OperatorConfigHandler {
+              it.setCloseClientOnStop(false)
+              it.setReconciliationTerminationTimeout(Duration.ofMillis(100))
+            }
+          }
+          single {
+            OperatorPostConfigHandler { operator ->
+              getAll<Reconciler<*>>().forEach {
+                operator.register(it) { config ->
+                  config.settingNamespace(kubernetesClient.namespace)
                 }
               }
             }
-          },
+          }
+        }
       )
     }
   }
 
-  private fun prepareKubernetes(
-      kubernetesClient: KubernetesClient,
-      namespace: String,
-  ) {
+  private fun prepareKubernetes(kubernetesClient: KubernetesClient, namespace: String) {
     val namespaceResource =
-        Namespace().apply {
-          metadata = io.fabric8.kubernetes.api.model.ObjectMeta().apply { name = namespace }
-        }
+      Namespace().apply {
+        metadata = io.fabric8.kubernetes.api.model.ObjectMeta().apply { name = namespace }
+      }
     kubernetesClient.namespaces().resource(namespaceResource).create()
   }
 
-  private fun cleanupKubernetes(
-      kubernetesClient: KubernetesClient,
-      namespace: String,
-  ) {
+  private fun cleanupKubernetes(kubernetesClient: KubernetesClient, namespace: String) {
     kubernetesClient.namespaces().withName(namespace).delete()
   }
 
   private fun ExtensionContext.store(): ExtensionContext.Store =
-      this.getStore(KUBERNETES_OPERATOR_STORE)
+    this.getStore(KUBERNETES_OPERATOR_STORE)
 
   private fun createKubernetesClient(
-      namespace: String? = null,
-      serializer: ObjectMapper? = null,
+    namespace: String? = null,
+    serializer: ObjectMapper? = null,
   ): KubernetesClient =
-      KubernetesClientBuilder()
-          .apply {
-            withConfig(
-                Config.fromKubeconfig(k3s.kubeConfigYaml).apply { setNamespace(namespace) },
-            )
-            if (serializer != null) {
-              withKubernetesSerialization(KubernetesSerialization(serializer, true))
-            }
-          }
-          .build()
+    KubernetesClientBuilder()
+      .apply {
+        withConfig(Config.fromKubeconfig(k3s.kubeConfigYaml).apply { setNamespace(namespace) })
+        if (serializer != null) {
+          withKubernetesSerialization(KubernetesSerialization(serializer, true))
+        }
+      }
+      .build()
 
   private fun prepareAdditionalResources(context: ExtensionContext) {
     context.element.ifPresent {
       it.getAnnotation(KubernetesResources::class.java)?.let { kubernetesResource ->
         additionalResources =
-            KubernetesResourceSource.fromResources(kubernetesResource.paths.toList())
+          KubernetesResourceSource.fromResources(kubernetesResource.paths.toList())
       }
     }
   }
 
-  private fun applyAdditionalResources(
-      kubernetesClient: KubernetesClient,
-      namespace: String,
-  ) {
+  private fun applyAdditionalResources(kubernetesClient: KubernetesClient, namespace: String) {
     additionalResources.forEach { resource ->
       resource.open()?.use { inputStream ->
         kubernetesClient.load(inputStream).inNamespace(namespace).serverSideApply()
@@ -205,15 +189,14 @@ private constructor(
   }
 
   private fun getKubernetesOperatorConfig(context: ExtensionContext): KubernetesOperator =
-      context.requiredTestMethod.getAnnotation(KubernetesOperator::class.java)
-          ?: KubernetesOperator()
+    context.requiredTestMethod.getAnnotation(KubernetesOperator::class.java) ?: KubernetesOperator()
 
   companion object {
     fun create(crdClass: List<Class<out CustomResource<*, *>>> = emptyList()) =
-        KubernetesOperatorExtension(crdClass)
+      KubernetesOperatorExtension(crdClass)
 
     private val KUBERNETES_OPERATOR_STORE: ExtensionContext.Namespace =
-        ExtensionContext.Namespace.create("KUBERNETES_OPERATOR_STORE")
+      ExtensionContext.Namespace.create("KUBERNETES_OPERATOR_STORE")
   }
 }
 
@@ -221,7 +204,7 @@ class InMemoryCRDOutput : CRDGenerator.AbstractCRDOutput<ByteArrayOutputStream>(
   private val streams = mutableListOf<ByteArrayOutputStream>()
 
   override fun createStreamFor(crdName: String): ByteArrayOutputStream =
-      ByteArrayOutputStream().also { streams.add(it) }
+    ByteArrayOutputStream().also { streams.add(it) }
 
   fun getCRDs(): List<String> = streams.map { it.toString() }
 }

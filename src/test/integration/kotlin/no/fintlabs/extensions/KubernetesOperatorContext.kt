@@ -5,10 +5,13 @@ import io.fabric8.kubernetes.client.KubernetesClient
 import io.javaoperatorsdk.operator.Operator
 
 class KubernetesOperatorContext(
-    val namespace: String,
-    val kubernetesClient: KubernetesClient,
-    private val getOperator: () -> Operator
+  val namespace: String,
+  val getKubernetesClient: () -> KubernetesClient,
+  val getOperator: () -> Operator,
 ) {
+  val kubernetesClient
+    get() = getKubernetesClient()
+
   val operator
     get() = getOperator()
 
