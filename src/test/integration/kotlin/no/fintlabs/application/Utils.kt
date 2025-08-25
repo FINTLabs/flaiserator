@@ -14,13 +14,13 @@ import no.fintlabs.extensions.KubernetesOperatorExtension
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.PGUser
 import org.awaitility.core.ConditionFactory
-import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
-import org.awaitility.kotlin.until
 import org.awaitility.kotlin.withPollDelay
+import org.awaitility.kotlin.withPollInterval
 import org.koin.core.module.Module
 import org.koin.test.junit5.KoinTestExtension
 import us.containo.traefik.v1alpha1.IngressRoute
+import java.time.Duration
 
 object Utils {
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
@@ -50,17 +50,19 @@ object Utils {
   }
 
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.waitUntil(
-      resourceName: String,
-      timeout: Duration = Duration.ofSeconds(1000),
-      pollDelay: Duration? = null,
-      crossinline condition: (T) -> Boolean
+    resourceName: String,
+    timeout: Duration = Duration.ofMinutes(1),
+    pollInterval: Duration = Duration.ofMillis(50),
+    pollDelay: Duration? = null,
+    crossinline condition: (T) -> Boolean
   ) {
-    await withOptionalPollDelay
-        pollDelay atMost
-        timeout until
-        {
-          get<T>(resourceName)?.let { condition(it) } ?: false
-        }
+    await
+      .withOptionalPollDelay(pollDelay)
+      .withPollInterval(pollInterval)
+      .atMost(timeout).until()
+            {
+              get<T>(resourceName)?.let { condition(it) } ?: false
+            }
   }
 
   infix fun ConditionFactory.withOptionalPollDelay(delay: Duration?): ConditionFactory =
