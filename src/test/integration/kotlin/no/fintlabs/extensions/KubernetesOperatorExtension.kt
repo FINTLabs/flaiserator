@@ -14,6 +14,7 @@ import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.Duration
+import no.fintlabs.extensions.Utils.executeWithRetry
 import no.fintlabs.operator.OperatorConfigHandler
 import no.fintlabs.operator.OperatorPostConfigHandler
 import org.awaitility.kotlin.atMost
@@ -70,7 +71,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
     context.store().put(KubernetesOperatorContext::class.simpleName, operatorContext)
 
     if (!operatorConfig.explicitStart) {
-      operatorContext.operator.start()
+      startOperator(operatorContext.operator)
     }
   }
 
@@ -91,6 +92,10 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
   override fun resolveParameter(pContext: ParameterContext, eContext: ExtensionContext): Any =
       eContext.store().get(KubernetesOperatorContext::class.simpleName)
+
+  private fun startOperator(operator: Operator) {
+    executeWithRetry { operator.start() }
+  }
 
   private fun ensureCRDs() {
     val crds = prepareCRDs()
