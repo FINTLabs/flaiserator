@@ -12,6 +12,7 @@ import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.Utils.updateAndGetResource
+import no.fintlabs.application.Utils.waitUntil
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
 import no.fintlabs.application.api.v1alpha1.*
 import no.fintlabs.application.api.v1alpha1.Probe
@@ -541,8 +542,11 @@ class DeploymentDRTest {
     context.create(deployment)
     context.operator.start()
 
-    deployment = context.updateAndGetResource(flaisApplication.apply { status = null })
+    context.waitUntil<Deployment>(deployment.metadata.name) {
+      it.spec.selector.matchLabels.size == 1
+    }
 
+    deployment = context.get(deployment.metadata.name)
     assertNotNull(deployment)
     assertEquals(1, deployment.spec.selector.matchLabels.size)
     assert(deployment.spec.selector.matchLabels.containsKey("app"))
