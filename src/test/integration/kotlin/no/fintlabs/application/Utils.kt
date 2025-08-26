@@ -44,7 +44,8 @@ object Utils {
     waitUntil<FlaisApplicationCrd>(
         app.metadata.name,
     ) {
-      it.status?.state == FlaisApplicationState.DEPLOYED
+      it.status?.state == FlaisApplicationState.DEPLOYED &&
+          it.status?.observedGeneration == it.metadata.generation
     }
   }
 
