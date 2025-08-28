@@ -72,7 +72,8 @@ class OperatorConfiguration :
             override fun isExplicitInvocation(): Boolean = true
 
             override fun handleExceptionsInReconciler(): Boolean = false
-          })
+          }
+      )
     }
     return config
   }
@@ -80,7 +81,7 @@ class OperatorConfiguration :
   @Suppress("UNCHECKED_CAST")
   private fun dependentResources(
       workflow: Workflow,
-      controllerConfiguration: ControllerConfiguration<*>
+      controllerConfiguration: ControllerConfiguration<*>,
   ): List<DependentResourceSpec<*, *, *>> {
     val dependents = workflow.dependents
     return dependents
@@ -114,7 +115,10 @@ class OperatorConfiguration :
               )
               .also {
                 DependentResourceConfigurationResolver.configureSpecFromConfigured(
-                    it, controllerConfiguration, dependentType)
+                    it,
+                    controllerConfiguration,
+                    dependentType,
+                )
               }
         }
         .toList()

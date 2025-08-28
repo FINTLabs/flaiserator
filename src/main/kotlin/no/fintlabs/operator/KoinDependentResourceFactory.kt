@@ -9,14 +9,16 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.qualifier.Qualifier
 
 class KoinDependentResourceFactory<
-    C : ControllerConfiguration<*>, D : DependentResourceSpec<*, *, *>> :
-    DependentResourceFactory<C, D>, KoinComponent {
+    C : ControllerConfiguration<*>,
+    D : DependentResourceSpec<*, *, *>,
+> : DependentResourceFactory<C, D>, KoinComponent {
   private val knownDependents = mutableMapOf<Pair<KClass<*>, Qualifier?>, DependentResource<*, *>>()
 
   override fun createFrom(spec: D, controllerConfiguration: C): DependentResource<*, *> {
     if (spec !is KoinDependentResourceSpec<*, *>) {
       throw IllegalStateException(
-          "${spec.javaClass.canonicalName} cannot be instantiated. Not KoinDependentResourceSpec")
+          "${spec.javaClass.canonicalName} cannot be instantiated. Not KoinDependentResourceSpec"
+      )
     }
 
     val clazz = spec.dependentResourceClass.kotlin

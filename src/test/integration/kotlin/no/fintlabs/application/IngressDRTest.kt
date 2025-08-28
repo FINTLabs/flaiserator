@@ -22,7 +22,8 @@ class IngressDRTest {
         createTestFlaisApplication().apply {
           spec =
               spec.copy(
-                  ingress = Ingress(routes = listOf(Ingress.Route("test.example.com", "/test"))))
+                  ingress = Ingress(routes = listOf(Ingress.Route("test.example.com", "/test")))
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
@@ -30,7 +31,9 @@ class IngressDRTest {
     assertEquals("test", ingressRoute.metadata.name)
     assertEquals("web", ingressRoute.spec.entryPoints[0])
     assertEquals(
-        "Host(`test.example.com`) && PathPrefix(`/test`)", ingressRoute.spec.routes[0].match)
+        "Host(`test.example.com`) && PathPrefix(`/test`)",
+        ingressRoute.spec.routes[0].match,
+    )
     assertEquals(8080, ingressRoute.spec.routes[0].services[0].port.intVal)
     assertEquals("test", ingressRoute.spec.routes[0].services[0].name)
     assertEquals(context.namespace, ingressRoute.spec.routes[0].services[0].namespace)
@@ -51,8 +54,12 @@ class IngressDRTest {
                                       path = "/test",
                                       queries = mapOf("key" to "value"),
                                       headers = mapOf("header" to "value"),
-                                      middlewares = setOf("middleware_2"))),
-                          middlewares = setOf("middleware_1")))
+                                      middlewares = setOf("middleware_2"),
+                                  )
+                              ),
+                          middlewares = setOf("middleware_1"),
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
@@ -61,7 +68,8 @@ class IngressDRTest {
     assertEquals("web", ingressRoute.spec.entryPoints[0])
     assertEquals(
         "Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`) && Headers(`header`, `value`)",
-        ingressRoute.spec.routes[0].match)
+        ingressRoute.spec.routes[0].match,
+    )
     assertEquals(8080, ingressRoute.spec.routes[0].services[0].port.intVal)
     assertEquals("test", ingressRoute.spec.routes[0].services[0].name)
     assertEquals(context.namespace, ingressRoute.spec.routes[0].services[0].namespace)
@@ -82,20 +90,27 @@ class IngressDRTest {
                           routes =
                               listOf(
                                   Ingress.Route("test.example.com", "/test"),
-                                  Ingress.Route("test2.example.com", "/test2"))))
+                                  Ingress.Route("test2.example.com", "/test2"),
+                              )
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
 
     assertEquals(
-        "Host(`test.example.com`) && PathPrefix(`/test`)", ingressRoute.spec.routes[0].match)
+        "Host(`test.example.com`) && PathPrefix(`/test`)",
+        ingressRoute.spec.routes[0].match,
+    )
     assertEquals(8080, ingressRoute.spec.routes[0].services[0].port.intVal)
     assertEquals("test", ingressRoute.spec.routes[0].services[0].name)
     assertEquals(context.namespace, ingressRoute.spec.routes[0].services[0].namespace)
 
     assertEquals(
-        "Host(`test2.example.com`) && PathPrefix(`/test2`)", ingressRoute.spec.routes[1].match)
+        "Host(`test2.example.com`) && PathPrefix(`/test2`)",
+        ingressRoute.spec.routes[1].match,
+    )
     assertEquals(8080, ingressRoute.spec.routes[1].services[0].port.intVal)
     assertEquals("test", ingressRoute.spec.routes[1].services[0].name)
     assertEquals(context.namespace, ingressRoute.spec.routes[1].services[0].namespace)
@@ -114,8 +129,12 @@ class IngressDRTest {
                                   Ingress.Route(
                                       "test.example.com",
                                       "/test",
-                                      middlewares = setOf("middleware_2", "middleware_3"))),
-                          middlewares = setOf("middleware_1")))
+                                      middlewares = setOf("middleware_2", "middleware_3"),
+                                  )
+                              ),
+                          middlewares = setOf("middleware_1"),
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
@@ -153,14 +172,19 @@ class IngressDRTest {
                                   Ingress.Route(
                                       "test.example.com",
                                       "/test",
-                                      queries = mapOf("key" to "value", "key2" to "value2")))))
+                                      queries = mapOf("key" to "value", "key2" to "value2"),
+                                  )
+                              )
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
     assertEquals(
         "Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`, `key2=value2`)",
-        ingressRoute.spec.routes[0].match)
+        ingressRoute.spec.routes[0].match,
+    )
   }
 
   @Test
@@ -176,15 +200,19 @@ class IngressDRTest {
                                   Ingress.Route(
                                       "test.example.com",
                                       "/test",
-                                      headers =
-                                          mapOf("header" to "value", "header2" to "value2")))))
+                                      headers = mapOf("header" to "value", "header2" to "value2"),
+                                  )
+                              )
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
     assertEquals(
         "Host(`test.example.com`) && PathPrefix(`/test`) && Headers(`header`, `value`) && Headers(`header2`, `value2`)",
-        ingressRoute.spec.routes[0].match)
+        ingressRoute.spec.routes[0].match,
+    )
   }
 
   @Test
@@ -194,14 +222,16 @@ class IngressDRTest {
           spec =
               spec.copy(
                   ingress =
-                      Ingress(routes = listOf(Ingress.Route("test.example.com", "/{path:test.*}"))))
+                      Ingress(routes = listOf(Ingress.Route("test.example.com", "/{path:test.*}")))
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
     assertEquals(
         "Host(`test.example.com`) && PathPrefix(`/{path:test.*}`)",
-        ingressRoute.spec.routes[0].match)
+        ingressRoute.spec.routes[0].match,
+    )
   }
 
   @Test
@@ -217,14 +247,19 @@ class IngressDRTest {
                                   Ingress.Route(
                                       "test.example.com",
                                       "/test",
-                                      headers = mapOf("header" to "re:value.*")))))
+                                      headers = mapOf("header" to "re:value.*"),
+                                  )
+                              )
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
     assertEquals(
         "Host(`test.example.com`) && PathPrefix(`/test`) && HeadersRegexp(`header`, `value.*`)",
-        ingressRoute.spec.routes[0].match)
+        ingressRoute.spec.routes[0].match,
+    )
   }
 
   @Test
@@ -241,14 +276,19 @@ class IngressDRTest {
                                       "test.example.com",
                                       "/{name:test.*}",
                                       queries = mapOf("key" to "value"),
-                                      headers = mapOf("header" to "re:value.*")))))
+                                      headers = mapOf("header" to "re:value.*"),
+                                  )
+                              )
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
     assertEquals(
         "Host(`test.example.com`) && PathPrefix(`/{name:test.*}`) && Query(`key=value`) && HeadersRegexp(`header`, `value.*`)",
-        ingressRoute.spec.routes[0].match)
+        ingressRoute.spec.routes[0].match,
+    )
   }
 
   @Test
@@ -268,14 +308,19 @@ class IngressDRTest {
                                       "/test",
                                       queries = mapOf("key" to "value", "key2" to "value2"),
                                       headers =
-                                          mapOf("header" to "re:value.*", "header2" to "value2")))))
+                                          mapOf("header" to "re:value.*", "header2" to "value2"),
+                                  )
+                              )
+                      )
+              )
         }
 
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
     assertEquals(
         "Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`, `key2=value2`) && HeadersRegexp(`header`, `value.*`) && Headers(`header2`, `value2`)",
-        ingressRoute.spec.routes[0].match)
+        ingressRoute.spec.routes[0].match,
+    )
   }
 
   // endregion

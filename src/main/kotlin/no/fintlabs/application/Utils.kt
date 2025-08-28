@@ -21,7 +21,8 @@ fun createObjectMeta(source: FlaisApplicationCrd) =
       annotations =
           mutableMapOf(
               DEPLOYMENT_CORRELATION_ID_ANNOTATION to
-                  source.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION])
+                  source.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+          )
       ownerReferences = listOf(createOwnerReference(source))
     }
 

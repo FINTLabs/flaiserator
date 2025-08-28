@@ -17,7 +17,7 @@ class ServiceDR :
 
   override fun desired(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): Service =
       Service().apply {
         metadata = createObjectMeta(primary)
@@ -30,7 +30,8 @@ class ServiceDR :
                         name = "http"
                         protocol = "TCP"
                         port = primary.spec.port
-                      })
+                      }
+                  )
               selector = mapOf("app" to primary.metadata.name)
             }
       }

@@ -90,7 +90,8 @@ val baseModule = module {
                 true -> Response(Status.OK).body("Operator is ready.")
                 false -> Response(Status.SERVICE_UNAVAILABLE).body("Operator is not ready.")
               }
-            })
+            },
+    )
   }
 }
 

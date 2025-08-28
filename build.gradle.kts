@@ -139,7 +139,7 @@ tasks {
 
 spotless {
   kotlin {
-    ktfmt().metaStyle()
+    ktfmt("0.57").metaStyle()
   }
 }
 

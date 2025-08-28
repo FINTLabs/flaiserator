@@ -23,4 +23,5 @@ class KoinDependentResourceSpec<R, P : HasMetadata>(
         reconcileCondition,
         null,
         null,
-        null)
+        null,
+    )

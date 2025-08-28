@@ -19,7 +19,9 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.BeforeEach
 
 @EnableKubernetesMockClient(
-    crud = true, kubernetesClientBuilderCustomizer = CustomKubernetesClientBuilder::class)
+    crud = true,
+    kubernetesClientBuilderCustomizer = CustomKubernetesClientBuilder::class,
+)
 class FlaisApplicationCrdTest {
 
   private lateinit var client: KubernetesClient
@@ -63,7 +65,9 @@ class FlaisApplicationCrdTest {
     assertEquals(origFlaisApplication.spec.port, resFlaisApplication.spec.port)
     assertEquals(origFlaisApplication.spec.image, resFlaisApplication.spec.image)
     assertEquals(
-        origFlaisApplication.spec.imagePullPolicy, resFlaisApplication.spec.imagePullPolicy)
+        origFlaisApplication.spec.imagePullPolicy,
+        resFlaisApplication.spec.imagePullPolicy,
+    )
     assertEquals(origFlaisApplication.spec.port, resFlaisApplication.spec.port)
     assertEquals(origFlaisApplication.spec.restartPolicy, resFlaisApplication.spec.restartPolicy)
     assertEquals(origFlaisApplication.spec.replicas, resFlaisApplication.spec.replicas)
@@ -71,18 +75,23 @@ class FlaisApplicationCrdTest {
 
     assertThat(
         origFlaisApplication.spec.resources.claims,
-        isEqualTo(resFlaisApplication.spec.resources.claims))
+        isEqualTo(resFlaisApplication.spec.resources.claims),
+    )
     assertThat(
         origFlaisApplication.spec.resources.limits,
-        isEqualTo(resFlaisApplication.spec.resources.limits))
+        isEqualTo(resFlaisApplication.spec.resources.limits),
+    )
     assertThat(
         origFlaisApplication.spec.resources.requests,
-        isEqualTo(resFlaisApplication.spec.resources.requests))
+        isEqualTo(resFlaisApplication.spec.resources.requests),
+    )
 
     assertThat(origFlaisApplication.spec.strategy, isEqualTo(resFlaisApplication.spec.strategy))
     assertThat(origFlaisApplication.spec.prometheus, isEqualTo(resFlaisApplication.spec.prometheus))
     assertThat(
-        origFlaisApplication.spec.onePassword, isEqualTo(resFlaisApplication.spec.onePassword))
+        origFlaisApplication.spec.onePassword,
+        isEqualTo(resFlaisApplication.spec.onePassword),
+    )
     assertThat(origFlaisApplication.spec.kafka, isEqualTo(resFlaisApplication.spec.kafka))
     assertThat(origFlaisApplication.spec.database, isEqualTo(resFlaisApplication.spec.database))
     assertThat(origFlaisApplication.spec.url, isEqualTo(resFlaisApplication.spec.url))
@@ -102,7 +111,9 @@ class FlaisApplicationCrdTest {
                             maxSurge = IntOrString("25%")
                             maxUnavailable = IntOrString("25%")
                           }
-                    }))
+                    }
+            )
+        )
     val resFlaisApplication = getFlaisApplication()
     assertThat(origFlaisApplication.spec.strategy, isEqualTo(resFlaisApplication.spec.strategy))
   }
@@ -111,7 +122,9 @@ class FlaisApplicationCrdTest {
   fun `FlaisApplicationCrd should have correct prometheus`() {
     createAndApplyFlaisApplication(
         FlaisApplicationSpec(
-            prometheus = Metrics(enabled = true, path = "/metrics/nono", port = "8081")))
+            prometheus = Metrics(enabled = true, path = "/metrics/nono", port = "8081")
+        )
+    )
     val resFlaisApplication = getFlaisApplication()
     assertEquals(true, resFlaisApplication.spec.prometheus.enabled)
     assertEquals("/metrics/nono", resFlaisApplication.spec.prometheus.path)
@@ -138,7 +151,11 @@ class FlaisApplicationCrdTest {
                             Acls().apply {
                               topic = "test-resource"
                               permission = "test-permission"
-                            }))))
+                            }
+                        ),
+                )
+        )
+    )
     val resFlaisApplication = getFlaisApplication()
     assertEquals(true, resFlaisApplication.spec.kafka.enabled)
     assertEquals(1, resFlaisApplication.spec.kafka.acls.size)
@@ -157,7 +174,8 @@ class FlaisApplicationCrdTest {
   @Test
   fun `FlaisApplicationCrd should have correct url`() {
     createAndApplyFlaisApplication(
-        FlaisApplicationSpec(url = Url(basePath = "/test-path", hostname = "test-hostname")))
+        FlaisApplicationSpec(url = Url(basePath = "/test-path", hostname = "test-hostname"))
+    )
     val resFlaisApplication = getFlaisApplication()
     assertEquals("/test-path", resFlaisApplication.spec.url.basePath)
     assertEquals("test-hostname", resFlaisApplication.spec.url.hostname)
@@ -171,7 +189,10 @@ class FlaisApplicationCrdTest {
                 Ingress(
                     enabled = true,
                     basePath = "/test-path",
-                    middlewares = setOf("test-middleware"))))
+                    middlewares = setOf("test-middleware"),
+                )
+        )
+    )
     val resFlaisApplication = getFlaisApplication()
     assertEquals(true, resFlaisApplication.spec.ingress?.enabled)
     assertEquals("/test-path", resFlaisApplication.spec.ingress?.basePath)
@@ -192,8 +213,13 @@ class FlaisApplicationCrdTest {
                                 path = "/test-path",
                                 headers = mapOf("test-header" to "test-value"),
                                 queries = mapOf("test-query" to "test-value"),
-                                middlewares = setOf("test-middleware"))),
-                    middlewares = setOf("test-middleware"))))
+                                middlewares = setOf("test-middleware"),
+                            )
+                        ),
+                    middlewares = setOf("test-middleware"),
+                )
+        )
+    )
     val resFlaisApplication = getFlaisApplication()
     assertEquals(1, resFlaisApplication.spec.ingress?.routes?.size)
     val route = resFlaisApplication.spec.ingress?.routes?.first()
@@ -219,12 +245,16 @@ class FlaisApplicationCrdTest {
                             initialDelaySeconds = 10,
                             failureThreshold = 10,
                             periodSeconds = 10,
-                            timeoutSeconds = 10),
+                            timeoutSeconds = 10,
+                        ),
                     liveness =
                         Probe(
                             path = "test-path",
                             port = IntOrString("3000"),
-                        ))))
+                        ),
+                )
+        )
+    )
 
     val resFlaisApplication = getFlaisApplication()
     val startupProbe = resFlaisApplication.spec.probes?.startup
@@ -264,7 +294,9 @@ class FlaisApplicationCrdTest {
                             failureThreshold = 100,
                             initialDelaySeconds = 100,
                         ),
-                )))
+                )
+        )
+    )
 
     val resFlaisApplication = getFlaisApplication()
     val startupProbe = resFlaisApplication.spec.probes?.startup

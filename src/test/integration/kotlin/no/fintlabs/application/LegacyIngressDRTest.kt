@@ -33,7 +33,9 @@ class LegacyIngressDRTest {
     assertEquals("test", ingressRoute.metadata.name)
     assertEquals("web", ingressRoute.spec.entryPoints[0])
     assertEquals(
-        "Host(`test.example.com`) && PathPrefix(`/test`)", ingressRoute.spec.routes[0].match)
+        "Host(`test.example.com`) && PathPrefix(`/test`)",
+        ingressRoute.spec.routes[0].match,
+    )
     assertEquals(8080, ingressRoute.spec.routes[0].services[0].port.intVal)
     assertEquals("test", ingressRoute.spec.routes[0].services[0].name)
     assertEquals(context.namespace, ingressRoute.spec.routes[0].services[0].namespace)
@@ -85,7 +87,8 @@ class LegacyIngressDRTest {
           spec =
               spec.copy(
                   url = Url("test.example.com", "notAValidPath/&%=##dfnjkdkjn44"),
-                  ingress = Ingress(true))
+                  ingress = Ingress(true),
+              )
         }
 
     try {
@@ -122,7 +125,9 @@ class LegacyIngressDRTest {
     val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
     assertNotNull(ingressRoute)
     assertEquals(
-        "Host(`test.example.com`) && PathPrefix(`/test`)", ingressRoute.spec.routes[0].match)
+        "Host(`test.example.com`) && PathPrefix(`/test`)",
+        ingressRoute.spec.routes[0].match,
+    )
   }
 
   // endregion

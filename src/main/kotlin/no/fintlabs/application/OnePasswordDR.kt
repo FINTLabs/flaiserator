@@ -13,7 +13,8 @@ import no.fintlabs.operator.dependent.ReconcileCondition
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class OnePasswordDR :
     CRUDKubernetesDependentResource<OnePasswordItem, FlaisApplicationCrd>(
-        OnePasswordItem::class.java),
+        OnePasswordItem::class.java
+    ),
     ReconcileCondition<FlaisApplicationCrd> {
   override fun name(): String = "onepassword"
 
@@ -25,6 +26,6 @@ class OnePasswordDR :
 
   override fun shouldReconcile(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): Boolean = primary.spec.onePassword != null && primary.spec.onePassword!!.itemPath.isNotEmpty()
 }

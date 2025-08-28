@@ -24,7 +24,7 @@ import us.containo.traefik.v1alpha1.IngressRoute
 object Utils {
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
       app: FlaisApplicationCrd,
-      nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name }
+      nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name },
   ): T? {
     create(app)
     waitUntilIsDeployed(app)
@@ -33,7 +33,7 @@ object Utils {
 
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.updateAndGetResource(
       app: FlaisApplicationCrd,
-      nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name }
+      nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name },
   ): T? {
     update(app)
     waitUntilIsDeployed(app)
@@ -54,7 +54,7 @@ object Utils {
       timeout: Duration = Duration.ofMinutes(1),
       pollInterval: Duration = Duration.ofMillis(50),
       pollDelay: Duration? = null,
-      crossinline condition: (T) -> Boolean
+      crossinline condition: (T) -> Boolean,
   ) {
     await.withOptionalPollDelay(pollDelay).withPollInterval(pollInterval).atMost(timeout).until() {
       get<T>(resourceName)?.let { condition(it) } ?: false
@@ -88,7 +88,9 @@ object Utils {
               PGUser::class.java,
               KafkaUserAndAcl::class.java,
               OnePasswordItem::class.java,
-              PodMonitor::class.java))
+              PodMonitor::class.java,
+          )
+      )
 
   fun createKoinTestExtension(additionalModule: Module? = null) =
       KoinTestExtension.create {

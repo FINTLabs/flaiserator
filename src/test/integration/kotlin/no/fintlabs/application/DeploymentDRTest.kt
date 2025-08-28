@@ -121,7 +121,8 @@ class DeploymentDRTest {
                               maxSurge = IntOrString("25%")
                               maxUnavailable = IntOrString("25%")
                             }
-                      })
+                      }
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -209,7 +210,8 @@ class DeploymentDRTest {
                 type = "kubernetes.io/dockerconfigjson"
               }
           stringData = mapOf(".dockerconfigjson" to "{}")
-        })
+        }
+    )
 
     val flaisApplication =
         createTestFlaisApplication().apply {
@@ -237,7 +239,8 @@ class DeploymentDRTest {
                           .addToRequests("memory", Quantity("512Mi"))
                           .addToLimits("cpu", Quantity("1"))
                           .addToLimits("memory", Quantity("1Gi"))
-                          .build())
+                          .build()
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -281,7 +284,8 @@ class DeploymentDRTest {
                             name = "key2"
                             value = "value2"
                           },
-                      ))
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -313,7 +317,8 @@ class DeploymentDRTest {
                             name = "key2"
                             value = "value2"
                           },
-                      ))
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -338,7 +343,9 @@ class DeploymentDRTest {
                           EnvVar().apply {
                             name = "fint.org-id"
                             value = ""
-                          }))
+                          }
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -390,7 +397,10 @@ class DeploymentDRTest {
                                   Acls().apply {
                                     topic = "test-topic"
                                     permission = "write"
-                                  })))
+                                  }
+                              )
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -435,7 +445,10 @@ class DeploymentDRTest {
                                   Acls().apply {
                                     topic = "test-topic"
                                     permission = "write"
-                                  })))
+                                  }
+                              )
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -461,7 +474,10 @@ class DeploymentDRTest {
                                   Acls().apply {
                                     topic = "test-topic"
                                     permission = "write"
-                                  })))
+                                  }
+                              )
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -523,7 +539,9 @@ class DeploymentDRTest {
               spec.copy(
                   observability =
                       Observability(
-                          metrics = Metrics(enabled = true, port = "8081", path = "/metrics")))
+                          metrics = Metrics(enabled = true, port = "8081", path = "/metrics")
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -637,7 +655,9 @@ class DeploymentDRTest {
                                   timeoutSeconds = 100,
                                   failureThreshold = 100,
                                   initialDelaySeconds = 100,
-                              )))
+                              )
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -689,7 +709,9 @@ class DeploymentDRTest {
                                   failureThreshold = 0,
                                   periodSeconds = 0,
                                   timeoutSeconds = 0,
-                              )))
+                              )
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -721,7 +743,9 @@ class DeploymentDRTest {
                                   failureThreshold = null,
                                   periodSeconds = null,
                                   timeoutSeconds = null,
-                              )))
+                              )
+                      )
+              )
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -752,9 +776,11 @@ class DeploymentDRTest {
             module {
               single {
                 loadConfig(
-                    PropertySource.resource("/deployment/application.yaml", optional = false))
+                    PropertySource.resource("/deployment/application.yaml", optional = false)
+                )
               }
-            })
+            }
+        )
 
     @RegisterExtension val kubernetesOperatorExtension = createKubernetesOperatorExtension()
   }

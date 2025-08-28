@@ -48,7 +48,7 @@ class DeploymentDR :
       actual: Deployment,
       desired: Deployment,
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): Deployment {
     val kubernetesSerialization = context.client.kubernetesSerialization
     val desiredSelector =
@@ -84,7 +84,7 @@ class DeploymentDR :
 
   private fun createAppContainer(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ) =
       Container().apply {
         name = primary.metadata.name
@@ -109,7 +109,8 @@ class DeploymentDR :
               name = "http"
               containerPort = primary.spec.port
               protocol = "TCP"
-            })
+            }
+        )
 
     val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
     if (metrics.enabled && metrics.port.toInt() != primary.spec.port) {
@@ -118,7 +119,8 @@ class DeploymentDR :
             name = "metrics"
             containerPort = metrics.port.toInt()
             protocol = "TCP"
-          })
+          }
+      )
     }
 
     return ports
@@ -150,7 +152,7 @@ class DeploymentDR :
 
   private fun createContainerEnvFrom(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): List<EnvFromSource> {
     val envFromSources =
         listOfNotNull(
@@ -168,7 +170,8 @@ class DeploymentDR :
                 .apply {
                   secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-kafka" }
                 }
-                .takeIf { kafkaDR.shouldReconcile(primary, context) })
+                .takeIf { kafkaDR.shouldReconcile(primary, context) },
+        )
 
     return primary.spec.envFrom.toMutableSet().plus(envFromSources).toList()
   }
@@ -205,7 +208,7 @@ class DeploymentDR :
   // Volumes and volume mounts
   private fun createPodVolumes(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ) =
       listOfNotNull(
           Volume()
@@ -216,11 +219,12 @@ class DeploymentDR :
                       secretName = "${primary.metadata.name}-kafka-certificates"
                     }
               }
-              .takeIf { kafkaDR.shouldReconcile(primary, context) })
+              .takeIf { kafkaDR.shouldReconcile(primary, context) }
+      )
 
   private fun createContainerVolumeMounts(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ) =
       listOfNotNull(
           VolumeMount()
@@ -229,5 +233,6 @@ class DeploymentDR :
                 mountPath = "/credentials"
                 readOnly = true
               }
-              .takeIf { kafkaDR.shouldReconcile(primary, context) })
+              .takeIf { kafkaDR.shouldReconcile(primary, context) }
+      )
 }

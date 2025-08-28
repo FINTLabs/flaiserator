@@ -20,7 +20,7 @@ class PodMetricsDR :
 
   override fun desired(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): PodMonitor =
       PodMonitor().apply {
         val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
@@ -37,14 +37,15 @@ class PodMetricsDR :
                         port = portName
                         path = metrics.path
                         honorLabels = false
-                      })
+                      }
+                  )
               selector = Selector().apply { matchLabels = mapOf("app" to primary.metadata.name) }
             }
       }
 
   override fun shouldReconcile(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): Boolean {
     val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
     return metrics.enabled

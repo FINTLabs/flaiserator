@@ -47,7 +47,8 @@ class IngressDR :
                   port = IntOrString(primary.spec.port)
                   name = primary.metadata.name
                   namespace = primary.metadata.namespace
-                })
+                }
+            )
         middlewares =
             route.allMiddlewares
                 .map {
@@ -80,7 +81,8 @@ class IngressDR :
           append(" && ")
           append(
               if (value.isRegex()) "HeadersRegexp(`$key`, `${value.stripRegexPrefix().toRegex()}`)"
-              else "Headers(`$key`, `$value`)")
+              else "Headers(`$key`, `$value`)"
+          )
         }
   }
 
@@ -99,7 +101,8 @@ class IngressDR :
                   port = IntOrString(primary.spec.port)
                   name = primary.metadata.name
                   namespace = primary.metadata.namespace
-                })
+                }
+            )
         middlewares =
             primary.spec.ingress?.middlewares?.map {
               Middlewares().apply {
@@ -112,7 +115,8 @@ class IngressDR :
   private fun createLegacyMatch(primary: FlaisApplicationCrd) =
       listOfNotNull(
               "Host(`${primary.spec.url.hostname}`)",
-              legacyBasePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" })
+              legacyBasePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
+          )
           .joinToString(" && ")
 
   private fun legacyBasePath(primary: FlaisApplicationCrd) =
@@ -121,7 +125,7 @@ class IngressDR :
 
   override fun shouldReconcile(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): Boolean {
     return primary.spec.isIngressEnabled()
   }

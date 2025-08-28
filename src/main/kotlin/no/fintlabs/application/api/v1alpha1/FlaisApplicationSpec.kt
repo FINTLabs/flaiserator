@@ -12,7 +12,8 @@ data class FlaisApplicationSpec(
     @Required val image: String = "",
     @ValidationRule(
         "self in ['IfNotPresent', 'Always', 'Never']",
-        message = "Invalid imagePullPolicy, must be one of IfNotPresent, Always, Never")
+        message = "Invalid imagePullPolicy, must be one of IfNotPresent, Always, Never",
+    )
     val imagePullPolicy: String? = null,
     val imagePullSecrets: List<String> = emptyList(),
     val env: List<EnvVar> = emptyList(),
@@ -29,7 +30,8 @@ data class FlaisApplicationSpec(
     @Deprecated("Does not exist on when applied on DeploymentSpec")
     @ValidationRule(
         "self in ['Always', 'OnFailure', 'Never']",
-        message = "Invalid restartPolicy, must be one of Always, OnFailure, Never")
+        message = "Invalid restartPolicy, must be one of Always, OnFailure, Never",
+    )
     val restartPolicy: String = "Always",
     val strategy: DeploymentStrategy? = null,
     @Deprecated("Use metrics in observability instead. Will be removed in future versions.")
@@ -39,5 +41,5 @@ data class FlaisApplicationSpec(
     val database: Database = Database(),
     val url: Url = Url(),
     val ingress: Ingress? = null,
-    val observability: Observability? = null
+    val observability: Observability? = null,
 )

@@ -69,7 +69,8 @@ class CustomGenericKubernetesResourceMatcherTest {
         loadResource<PersistentVolume>("/resource-matcher/kubernetes/simple-persistent-volume.yaml")
     val desired =
         loadResource<PersistentVolume>(
-            "/resource-matcher/kubernetes/simple-persistent-volume-desired.yaml")
+            "/resource-matcher/kubernetes/simple-persistent-volume-desired.yaml"
+        )
     val match = matcher.matches(actual, desired, context)
 
     assertTrue(match)

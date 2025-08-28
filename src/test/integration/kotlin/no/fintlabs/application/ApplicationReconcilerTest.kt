@@ -31,7 +31,9 @@ class ApplicationReconcilerTest : KoinTest {
     assertContains(app.metadata.annotations, "fintlabs.no/deployment-correlation-id")
     assertNotNull(app.status.correlationId)
     assertEquals(
-        app.metadata.annotations["fintlabs.no/deployment-correlation-id"], app.status.correlationId)
+        app.metadata.annotations["fintlabs.no/deployment-correlation-id"],
+        app.status.correlationId,
+    )
   }
 
   @Test

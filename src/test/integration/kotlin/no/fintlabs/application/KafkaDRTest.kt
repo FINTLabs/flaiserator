@@ -30,7 +30,10 @@ class KafkaDRTest {
                               Acls().apply {
                                 topic = "test-topic"
                                 permission = "write"
-                              })))
+                              }
+                          ),
+                      )
+              )
         }
 
     val kafkaUserAndAcl = context.createAndKafkaUserAndAcl(flaisApplication)
@@ -57,7 +60,10 @@ class KafkaDRTest {
                               Acls().apply {
                                 topic = "test-topic-2"
                                 permission = "read"
-                              })))
+                              },
+                          ),
+                      )
+              )
         }
 
     val kafkaUserAndAcl = context.createAndKafkaUserAndAcl(flaisApplication)

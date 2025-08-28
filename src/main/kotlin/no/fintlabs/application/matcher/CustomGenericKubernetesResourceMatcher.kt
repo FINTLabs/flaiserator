@@ -66,7 +66,11 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
     val prunedActual = HashMap<String, Any>(actualMap.size)
     keepOnlyManagedFields(
-        prunedActual, actualMap, managedFieldsEntry.fieldsV1.additionalProperties, objectMapper)
+        prunedActual,
+        actualMap,
+        managedFieldsEntry.fieldsV1.additionalProperties,
+        objectMapper,
+    )
 
     removeIrrelevantValues(desiredMap)
 
@@ -85,12 +89,21 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
         for (i in 0 until claims) {
           if (desiredStatefulSet.spec.volumeClaimTemplates[i].spec?.volumeMode == null) {
             GenericKubernetesResource.get<MutableMap<String, Any>?>(
-                    actualMap, "spec", "volumeClaimTemplates", i, "spec")
+                    actualMap,
+                    "spec",
+                    "volumeClaimTemplates",
+                    i,
+                    "spec",
+                )
                 ?.remove("volumeMode")
           }
           if (desiredStatefulSet.spec.volumeClaimTemplates[i].status == null) {
             GenericKubernetesResource.get<MutableMap<String, Any>?>(
-                    actualMap, "spec", "volumeClaimTemplates", i)
+                    actualMap,
+                    "spec",
+                    "volumeClaimTemplates",
+                    i,
+                )
                 ?.remove("status")
           }
         }
@@ -108,7 +121,13 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
         resource.spec.template.spec.containers.normalizeContainers(resourceMap)
         resource.spec.volumeClaimTemplates.forEachIndexed { i, pvc ->
           pvc.spec.resources?.normalizeResources(
-              resourceMap, "spec", "volumeClaimTemplates", i, "spec", "resources")
+              resourceMap,
+              "spec",
+              "volumeClaimTemplates",
+              i,
+              "spec",
+              "resources",
+          )
         }
       }
       is PersistentVolumeClaim ->
@@ -121,13 +140,20 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
   private fun List<Container>.normalizeContainers(map: MutableMap<String, Any>) {
     this.forEachIndexed { i, container ->
       container.resources?.normalizeResources(
-          map, "spec", "template", "spec", "containers", i, "resources")
+          map,
+          "spec",
+          "template",
+          "spec",
+          "containers",
+          i,
+          "resources",
+      )
     }
   }
 
   private fun ResourceRequirements.normalizeResources(
       map: MutableMap<String, Any>,
-      vararg path: Any
+      vararg path: Any,
   ) {
     this.limits?.normalizeQuantity(map, *path, "limits")
     this.requests?.normalizeQuantity(map, *path, "requests")
@@ -135,7 +161,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
   private fun VolumeResourceRequirements.normalizeResources(
       map: MutableMap<String, Any>,
-      vararg path: Any
+      vararg path: Any,
   ) {
     this.limits?.normalizeQuantity(map, *path, "limits")
     this.requests?.normalizeQuantity(map, *path, "requests")
@@ -143,7 +169,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
   private fun Map<String, Quantity>.normalizeQuantity(
       map: MutableMap<String, Any>,
-      vararg path: Any
+      vararg path: Any,
   ) {
     GenericKubernetesResource.get<MutableMap<String, Any>?>(map, *path)?.let { resourceMap ->
       this.forEach { (key, value) -> resourceMap[key] = value.numericalAmount.stripTrailingZeros() }
@@ -168,7 +194,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
       result: MutableMap<String, Any>,
       actualMap: Map<String, Any>,
       managedFields: Map<String, Any>,
-      objectMapper: KubernetesSerialization
+      objectMapper: KubernetesSerialization,
   ) {
     if (managedFields.isEmpty()) {
       result.putAll(actualMap)
@@ -187,7 +213,14 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
             handleSetValues(result, actualMap, objectMapper, keyInActual, managedEntrySet)
           } else {
             fillResultsAndTraverseFurther(
-                result, actualMap, managedFields, objectMapper, key, keyInActual, managedFieldValue)
+                result,
+                actualMap,
+                managedFields,
+                objectMapper,
+                key,
+                keyInActual,
+                managedFieldValue,
+            )
           }
         } else {
           result[keyInActual] = actualMap[keyInActual] ?: ""
@@ -206,7 +239,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
       objectMapper: KubernetesSerialization,
       key: String,
       keyInActual: String,
-      managedFieldValue: Any
+      managedFieldValue: Any,
   ) {
     val emptyMapValue = HashMap<String, Any>()
     result[keyInActual] = emptyMapValue
@@ -214,7 +247,11 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
         actualMap.getOrDefault(keyInActual, emptyMap<String, Any>()) as Map<String, Any>
 
     keepOnlyManagedFields(
-        emptyMapValue, actualMapValue, managedFields[key] as Map<String, Any>, objectMapper)
+        emptyMapValue,
+        actualMapValue,
+        managedFields[key] as Map<String, Any>,
+        objectMapper,
+    )
   }
 
   @Suppress("UNCHECKED_CAST")
@@ -223,7 +260,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
       actualMap: Map<String, Any>,
       objectMapper: KubernetesSerialization,
       keyInActual: String,
-      managedEntrySet: Set<Map.Entry<String, Any>>
+      managedEntrySet: Set<Map.Entry<String, Any>>,
   ) {
     val valueList = mutableListOf<Any>()
     result[keyInActual] = valueList
@@ -252,7 +289,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
       actualMap: Map<String, Any>,
       objectMapper: KubernetesSerialization,
       keyInActual: String,
-      managedEntrySet: Set<Map.Entry<String, Any>>
+      managedEntrySet: Set<Map.Entry<String, Any>>,
   ) {
     val valueList = mutableListOf<Any>()
     result[keyInActual] = valueList
@@ -271,7 +308,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
   fun parseKeyValue(
       stringValue: String,
       targetClass: Class<*>?,
-      objectMapper: KubernetesSerialization
+      objectMapper: KubernetesSerialization,
   ): Any {
     val trimmedValue = stringValue.trim()
     return targetClass?.let { objectMapper.unmarshal(trimmedValue, it) }
@@ -280,7 +317,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
   private fun checkIfFieldManagerExists(
       actual: R,
-      fieldManager: String
+      fieldManager: String,
   ): Optional<ManagedFieldsEntry> {
     val targetManagedFields =
         actual.metadata.managedFields
@@ -289,13 +326,15 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
     if (targetManagedFields.isEmpty()) {
       log.debug(
-          "No field manager exists for resource ${actual.kind} with name: ${actual.metadata.name} and operation Apply ")
+          "No field manager exists for resource ${actual.kind} with name: ${actual.metadata.name} and operation Apply "
+      )
       return Optional.empty()
     }
 
     if (targetManagedFields.size > 1) {
       throw OperatorException(
-          "More than one field manager exists with name: $fieldManager in resource: ${actual.kind} with name: ${actual.metadata.name}")
+          "More than one field manager exists with name: $fieldManager in resource: ${actual.kind} with name: ${actual.metadata.name}"
+      )
     }
 
     return Optional.of(targetManagedFields[0])
@@ -313,7 +352,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
   private fun isKeyPrefixedSkippingDotKey(
       managedEntrySet: Set<Map.Entry<String, Any>>,
-      prefix: String
+      prefix: String,
   ): Boolean {
     val iterator = managedEntrySet.iterator()
     var managedFieldEntry = iterator.next()
@@ -327,7 +366,7 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
   private fun selectListEntryBasedOnKey(
       key: String,
       values: List<Map<String, Any>>,
-      objectMapper: KubernetesSerialization
+      objectMapper: KubernetesSerialization,
   ): Map.Entry<Int, Map<String, Any>> {
     val ids = objectMapper.unmarshal(key, Map::class.java) as Map<String, Any>
     val possibleTargets = values.filter { it.entries.containsAll(ids.entries) }
@@ -335,11 +374,13 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
 
     if (possibleTargets.isEmpty()) {
       throw IllegalStateException(
-          "Cannot find list element for key: $key, in map: ${values.map { it.keys }}")
+          "Cannot find list element for key: $key, in map: ${values.map { it.keys }}"
+      )
     }
     if (possibleTargets.size > 1) {
       throw IllegalStateException(
-          "More targets found in list element for key: $key, in map: ${values.map { it.keys }}")
+          "More targets found in list element for key: $key, in map: ${values.map { it.keys }}"
+      )
     }
 
     return AbstractMap.SimpleEntry(index, possibleTargets[0])

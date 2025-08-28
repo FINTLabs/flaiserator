@@ -26,8 +26,9 @@ class PodMetricsDRTest {
                   observability =
                       Observability(
                           metrics =
-                              Metrics(
-                                  enabled = true, path = "/actuator/prometheus", port = "8080")))
+                              Metrics(enabled = true, path = "/actuator/prometheus", port = "8080")
+                      )
+              )
         }
 
     val podMonitor = context.createAndGetPodMonitor(flaisApplication)
@@ -46,7 +47,9 @@ class PodMetricsDRTest {
               spec.copy(
                   observability =
                       Observability(
-                          metrics = Metrics(enabled = true, path = "/metrics", port = "1234")))
+                          metrics = Metrics(enabled = true, path = "/metrics", port = "1234")
+                      )
+              )
         }
 
     val podMonitor = context.createAndGetPodMonitor(flaisApplication)
@@ -64,8 +67,9 @@ class PodMetricsDRTest {
                   observability =
                       Observability(
                           metrics =
-                              Metrics(
-                                  enabled = false, path = "/actuator/prometheus", port = "8080")))
+                              Metrics(enabled = false, path = "/actuator/prometheus", port = "8080")
+                      )
+              )
         }
 
     val podMonitor = context.createAndGetPodMonitor(flaisApplication)

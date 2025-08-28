@@ -22,14 +22,16 @@ import org.slf4j.MDC
         Dependent(IngressDR::class),
         Dependent(OnePasswordDR::class),
         Dependent(PostgresUserDR::class),
-        Dependent(KafkaDR::class)])
+        Dependent(KafkaDR::class),
+    ]
+)
 class ApplicationReconciler :
     Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, KoinComponent {
   private val logger = getLogger()
 
   override fun reconcile(
       resource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): UpdateControl<FlaisApplicationCrd> {
     if (context.isNextReconciliationImminent) {
       return UpdateControl.noUpdate()
@@ -55,7 +57,7 @@ class ApplicationReconciler :
 
   override fun cleanup(
       resource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): DeleteControl {
     return DeleteControl.defaultDelete()
   }
@@ -63,7 +65,7 @@ class ApplicationReconciler :
   override fun updateErrorStatus(
       resource: FlaisApplicationCrd,
       context: Context<FlaisApplicationCrd>,
-      e: Exception?
+      e: Exception?,
   ): ErrorStatusUpdateControl<FlaisApplicationCrd> {
     setMDC(resource)
     val resourceUpdate = resource.clone().apply { status = determineNewStatus(resource, context) }
@@ -73,7 +75,7 @@ class ApplicationReconciler :
 
   private fun initReconciliation(
       origResource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): UpdateControl<FlaisApplicationCrd>? {
     val currentCorrelationId =
         origResource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
@@ -84,8 +86,10 @@ class ApplicationReconciler :
     val resourceUpdated = currentGen != observedGen
 
     val (correlationId, correlationIdUpdated) =
-        if (currentCorrelationId.isNullOrBlank() ||
-            (resourceUpdated && currentCorrelationId == observedCorrelationId)) {
+        if (
+            currentCorrelationId.isNullOrBlank() ||
+                (resourceUpdated && currentCorrelationId == observedCorrelationId)
+        ) {
           UUID.randomUUID().toString() to true
         } else currentCorrelationId to false
 
@@ -116,7 +120,7 @@ class ApplicationReconciler :
 
   private fun determineNewStatus(
       resource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): FlaisApplicationStatus {
     val workflowResult =
         context.managedWorkflowAndDependentResourceContext().workflowReconcileResult.get()
@@ -144,12 +148,15 @@ class ApplicationReconciler :
         errors =
             workflowResult.erroredDependents
                 .map { StatusError(it.value.message ?: "", it.key.name()) }
-                .takeIf { it.isNotEmpty() })
+                .takeIf { it.isNotEmpty() },
+    )
   }
 
   private fun setMDC(resource: FlaisApplicationCrd) {
     MDC.put(
-        "correlationId", resource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] ?: "")
+        "correlationId",
+        resource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] ?: "",
+    )
   }
 
   private fun removeMDC() {

@@ -18,7 +18,7 @@ class PostgresUserDR :
 
   override fun desired(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): PGUser =
       PGUser().apply {
         metadata = createObjectMeta(primary).apply { name = "${primary.metadata.name}-db" }
@@ -27,6 +27,6 @@ class PostgresUserDR :
 
   override fun shouldReconcile(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): Boolean = !primary.spec.database.database.isNullOrEmpty()
 }

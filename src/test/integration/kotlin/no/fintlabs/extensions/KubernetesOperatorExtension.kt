@@ -152,7 +152,8 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
                 }
               }
             }
-          })
+          }
+      )
     }
   }
 
@@ -200,7 +201,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
   private fun applyAdditionalResources(
       kubernetesClient: KubernetesClient,
       namespace: String,
-      testAdditionalResources: List<KubernetesResourceSource>
+      testAdditionalResources: List<KubernetesResourceSource>,
   ) {
     val additionalResources = testAdditionalResources + classAdditionalResources
     additionalResources.forEach { resource ->

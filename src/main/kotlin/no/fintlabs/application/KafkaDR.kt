@@ -14,7 +14,8 @@ import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class KafkaDR :
     CRUDKubernetesDependentResource<KafkaUserAndAcl, FlaisApplicationCrd>(
-        KafkaUserAndAcl::class.java),
+        KafkaUserAndAcl::class.java
+    ),
     ReconcileCondition<FlaisApplicationCrd> {
   override fun name(): String = "kafka"
 
@@ -37,6 +38,6 @@ class KafkaDR :
 
   override fun shouldReconcile(
       primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>
+      context: Context<FlaisApplicationCrd>,
   ): Boolean = primary.spec.kafka.acls.isNotEmpty() && primary.spec.kafka.enabled
 }
