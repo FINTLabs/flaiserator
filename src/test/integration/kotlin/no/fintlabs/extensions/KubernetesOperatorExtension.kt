@@ -14,6 +14,7 @@ import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.Duration
+import kotlin.jvm.optionals.getOrNull
 import no.fintlabs.application.getLogger
 import no.fintlabs.extensions.Utils.executeWithRetry
 import no.fintlabs.operator.OperatorConfigHandler
@@ -42,7 +43,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
   private val k3s: K3sContainer
   private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
-  private var additionalResources = emptyList<KubernetesResourceSource>()
+  private var classAdditionalResources = emptyList<KubernetesResourceSource>()
 
   init {
     val kubernetesVersion = System.getenv("TEST_KUBERNETES_VERSION") ?: "v1.33.3"
@@ -70,7 +71,8 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
     prepareKoin(kubernetesClient)
     prepareKubernetes(kubernetesClient, namespace)
-    applyAdditionalResources(kubernetesClient, namespace)
+    val testAdditionalResources = getAdditionalResources(context)
+    applyAdditionalResources(kubernetesClient, namespace, testAdditionalResources)
 
     val operatorContext =
         KubernetesOperatorContext(namespace, { get<KubernetesClient>() }, { get<Operator>() })
@@ -107,29 +109,28 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
   private fun ensureCRDs() {
     val crds = prepareCRDs()
-    val kubernetesClient = createKubernetesClient()
-    crds.forEach { crd ->
-      kubernetesClient.load(ByteArrayInputStream(crd.toByteArray())).serverSideApply()
+    createKubernetesClient().use { kubernetesClient ->
+      crds.forEach { crd ->
+        kubernetesClient.load(ByteArrayInputStream(crd.toByteArray())).serverSideApply()
+      }
+      await atMost
+          Duration.ofSeconds(30) until
+          {
+            crds.all { kubernetesClient.resource(it).get() != null }
+          }
     }
-    await atMost
-        Duration.ofSeconds(30) until
-        {
-          crds.all { kubernetesClient.resource(it).get() != null }
-        }
-
-    kubernetesClient.close()
   }
 
-  private fun prepareCRDs(): List<String> {
-    val output = InMemoryCRDOutput()
-    val crdGenerator =
-        CRDGenerator()
-            .customResourceClasses(*crdClass.toTypedArray())
-            .withOutput(output)
-            .forCRDVersions("v1")
-    crdGenerator.generate()
-    return output.getCRDs().also { output.close() }
-  }
+  private fun prepareCRDs(): List<String> =
+      InMemoryCRDOutput().use { output ->
+        val crdGenerator =
+            CRDGenerator()
+                .customResourceClasses(*crdClass.toTypedArray())
+                .withOutput(output)
+                .forCRDVersions("v1")
+        crdGenerator.generate()
+        return output.getCRDs()
+      }
 
   private fun prepareKoin(kubernetesClient: KubernetesClient) {
     getKoin().apply {
@@ -183,30 +184,31 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
           }
           .build()
 
-  private fun prepareAdditionalResources(context: ExtensionContext) {
-    context.element.ifPresent {
-      it.getAnnotation(KubernetesResources::class.java)?.let { kubernetesResource ->
-        additionalResources =
-            KubernetesResourceSource.fromResources(kubernetesResource.paths.toList())
+  private fun getKubernetesConfig() =
+      if (useLocalKubernetes()) {
+        logger.debug("Using local kubernetes config")
+        Config.autoConfigure(null)
+      } else {
+        Config.fromKubeconfig(k3s.kubeConfigYaml)
       }
-    }
-  }
 
-  private fun applyAdditionalResources(kubernetesClient: KubernetesClient, namespace: String) {
+  private fun getAdditionalResources(context: ExtensionContext) =
+      context.element.getOrNull()?.getAnnotation(KubernetesResources::class.java)?.paths?.let {
+        KubernetesResourceSource.fromResources(it.toList())
+      } ?: emptyList()
+
+  private fun applyAdditionalResources(
+      kubernetesClient: KubernetesClient,
+      namespace: String,
+      testAdditionalResources: List<KubernetesResourceSource>
+  ) {
+    val additionalResources = testAdditionalResources + classAdditionalResources
     additionalResources.forEach { resource ->
       resource.open()?.use { inputStream ->
         kubernetesClient.load(inputStream).inNamespace(namespace).serverSideApply()
       }
     }
   }
-
-  private fun getKubernetesConfig() =
-    if (useLocalKubernetes()) {
-      logger.debug("Using local kubernetes config")
-      Config.autoConfigure(null)
-    } else {
-      Config.fromKubeconfig(k3s.kubeConfigYaml)
-    }
 
   private fun getKubernetesOperatorConfig(context: ExtensionContext): KubernetesOperator =
       context.requiredTestMethod.getAnnotation(KubernetesOperator::class.java)
