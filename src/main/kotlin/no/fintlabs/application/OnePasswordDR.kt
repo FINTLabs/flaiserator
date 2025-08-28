@@ -10,21 +10,22 @@ import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.operator.dependent.ReconcileCondition
 
-@KubernetesDependent(
-    informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR)
-)
-class OnePasswordDR : CRUDKubernetesDependentResource<OnePasswordItem, FlaisApplicationCrd>(OnePasswordItem::class.java), ReconcileCondition<FlaisApplicationCrd> {
-    override fun name(): String = "onepassword"
+@KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
+class OnePasswordDR :
+    CRUDKubernetesDependentResource<OnePasswordItem, FlaisApplicationCrd>(
+        OnePasswordItem::class.java
+    ),
+    ReconcileCondition<FlaisApplicationCrd> {
+  override fun name(): String = "onepassword"
 
-    override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) = OnePasswordItem().apply {
-        metadata = createObjectMeta(primary).apply {
-            name = "${primary.metadata.name}-op"
-        }
-        spec = OnePasswordItemSpec().apply {
-            itemPath = primary.spec.onePassword?.itemPath
-        }
-    }
+  override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) =
+      OnePasswordItem().apply {
+        metadata = createObjectMeta(primary).apply { name = "${primary.metadata.name}-op" }
+        spec = OnePasswordItemSpec().apply { itemPath = primary.spec.onePassword?.itemPath }
+      }
 
-    override fun shouldReconcile(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>): Boolean
-        = primary.spec.onePassword != null && primary.spec.onePassword!!.itemPath.isNotEmpty()
+  override fun shouldReconcile(
+      primary: FlaisApplicationCrd,
+      context: Context<FlaisApplicationCrd>,
+  ): Boolean = primary.spec.onePassword != null && primary.spec.onePassword!!.itemPath.isNotEmpty()
 }

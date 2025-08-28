@@ -5,6 +5,7 @@ plugins {
   application
   kotlin("jvm")
   alias(libs.plugins.fabric8.generator)
+  alias(libs.plugins.spotless)
 }
 
 group = "no.fintlabs"
@@ -135,6 +136,13 @@ tasks {
     dependsOn(compileJava, compileKotlin)
   }
 }
+
+spotless {
+  kotlin {
+    ktfmt("0.57").metaStyle()
+  }
+}
+
 
 fun fetchNumCores(): Int =
   Runtime.getRuntime()

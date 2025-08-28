@@ -1,0 +1,71 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: Application
+metadata:
+  annotations:
+    fintlabs.no/deployment-correlation-id: a2549cca-18e1-4f73-ac88-859431fc6ca0
+  finalizers:
+    - applications.fintlabs.no/finalizer
+  labels:
+    fintlabs.no/org-id: test.org
+    fintlabs.no/team: test
+  name: test
+spec:
+  database:
+    enabled: true
+  env: []
+  envFrom: []
+  image: hello-world
+  imagePullSecrets: []
+  kafka:
+    acls: []
+    enabled: true
+  orgId: test.org
+  port: 8080
+  prometheus:
+    enabled: true
+    path: /actuator/prometheus
+    port: "8080"
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  restartPolicy: Always
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    fintlabs.no/deployment-correlation-id: a2549cca-18e1-4f73-ac88-859431fc6ca0
+    javaoperatorsdk.io/previous: c65760db-fc5d-4801-8d63-4b5dea250b15
+  labels:
+    app: test
+    app.kubernetes.io/managed-by: flaiserator
+    fintlabs.no/org-id: test.org
+    fintlabs.no/team: test
+  name: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      another: another
+      app: test
+  template:
+    metadata:
+      annotations:
+        fintlabs.no/deployment-correlation-id: a2549cca-18e1-4f73-ac88-859431fc6ca0
+      labels:
+        another: another
+        app: test
+        app.kubernetes.io/managed-by: flaiserator
+        fintlabs.no/org-id: test.org
+      name: test
+    spec:
+      containers:
+        - image: hello-world
+          name: test

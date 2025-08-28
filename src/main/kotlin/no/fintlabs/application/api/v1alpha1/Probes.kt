@@ -3,9 +3,9 @@ package no.fintlabs.application.api.v1alpha1
 import io.fabric8.kubernetes.api.model.IntOrString
 
 object ProbeDefaults {
-    const val FAILURE_THRESHOLD = 3
-    const val TIMEOUT_SECONDS = 1
-    const val PERIOD_SECONDS = 10
+  const val FAILURE_THRESHOLD = 3
+  const val TIMEOUT_SECONDS = 1
+  const val PERIOD_SECONDS = 10
 }
 
 data class Probes(

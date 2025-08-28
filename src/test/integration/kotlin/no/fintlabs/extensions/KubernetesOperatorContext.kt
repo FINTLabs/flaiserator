@@ -6,29 +6,32 @@ import io.javaoperatorsdk.operator.Operator
 
 class KubernetesOperatorContext(
     val namespace: String,
-    val kubernetesClient: KubernetesClient,
-    private val getOperator: () -> Operator
+    val getKubernetesClient: () -> KubernetesClient,
+    val getOperator: () -> Operator,
 ) {
-    val operator
-        get() = getOperator()
+  val kubernetesClient
+    get() = getKubernetesClient()
 
-    inline fun <reified T : HasMetadata> get(name: String): T? {
-        return get(T::class.java, name)
-    }
+  val operator
+    get() = getOperator()
 
-    fun <T : HasMetadata> get(clazz: Class<T>, name: String): T? {
-        return kubernetesClient.resources(clazz).inNamespace(namespace).withName(name).get()
-    }
+  inline fun <reified T : HasMetadata> get(name: String): T? {
+    return get(T::class.java, name)
+  }
 
-    fun <T : HasMetadata> create(resource: T): T {
-        return kubernetesClient.resource(resource).inNamespace(namespace).create()
-    }
+  fun <T : HasMetadata> get(clazz: Class<T>, name: String): T? {
+    return kubernetesClient.resources(clazz).inNamespace(namespace).withName(name).get()
+  }
 
-    fun <T : HasMetadata> update(resource: T): T {
-        return kubernetesClient.resource(resource).inNamespace(namespace).update()
-    }
+  fun <T : HasMetadata> create(resource: T): T {
+    return kubernetesClient.resource(resource).inNamespace(namespace).create()
+  }
 
-    fun <T : HasMetadata> delete(resource: T) {
-        kubernetesClient.resource(resource).inNamespace(namespace).delete()
-    }
+  fun <T : HasMetadata> update(resource: T): T {
+    return kubernetesClient.resource(resource).inNamespace(namespace).update()
+  }
+
+  fun <T : HasMetadata> delete(resource: T) {
+    kubernetesClient.resource(resource).inNamespace(namespace).delete()
+  }
 }
