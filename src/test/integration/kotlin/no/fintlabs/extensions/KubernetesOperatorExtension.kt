@@ -87,10 +87,12 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
             as KubernetesOperatorContext
     val kubernetesClient = kubernetesOperatorContext.kubernetesClient
 
-    cleanupKubernetes(kubernetesClient, kubernetesOperatorContext.namespace)
-
-    kubernetesOperatorContext.operator.stop()
-    kubernetesClient.close()
+    try {
+      cleanupKubernetes(kubernetesClient, kubernetesOperatorContext.namespace)
+      kubernetesOperatorContext.operator.stop()
+    } finally {
+      kubernetesClient.close()
+    }
   }
 
   override fun supportsParameter(pContext: ParameterContext, eContext: ExtensionContext): Boolean =
