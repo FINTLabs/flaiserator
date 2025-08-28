@@ -538,32 +538,26 @@ class DeploymentDRTest {
   // endregion
 
   // region PodSelector
+
   @Test
+  @KubernetesResources("deployment/custom-pod-selector.yaml")
+  @KubernetesOperator(explicitStart = true)
   fun `should recreate deployment on pod selector change selector`(
       context: KubernetesOperatorContext
   ) {
-    val flaisApplication = createTestFlaisApplication()
-    var deployment = context.createAndGetDeployment(flaisApplication)
-    assertNotNull(deployment)
+    val application = assertNotNull(context.get<FlaisApplicationCrd>("test"))
+    var deployment = assertNotNull(context.get<Deployment>("test"))
 
-    context.operator.stop()
-    context.delete(deployment)
+    deployment.metadata.ownerReferences.add(createOwnerReference(application))
 
-    deployment.spec.apply {
-      selector.matchLabels["another"] = "another"
-      template.metadata.labels["another"] = "another"
-    }
-    deployment.metadata.resourceVersion = null
-
-    context.create(deployment)
+    context.update(deployment)
     context.operator.start()
 
-    context.waitUntil<Deployment>(deployment.metadata.name) {
-      it.spec.selector.matchLabels.size == 1
+    context.waitUntil<FlaisApplicationCrd>(application.metadata.name) {
+      it.status?.state == FlaisApplicationState.DEPLOYED
     }
 
-    deployment = context.get(deployment.metadata.name)
-    assertNotNull(deployment)
+    deployment = assertNotNull(context.get<Deployment>(application.metadata.name))
     assertEquals(1, deployment.spec.selector.matchLabels.size)
     assert(deployment.spec.selector.matchLabels.containsKey("app"))
     assertEquals(deployment.metadata.name, deployment.spec.selector.matchLabels["app"])

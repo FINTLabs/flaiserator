@@ -76,7 +76,7 @@ object Utils {
                     "fintlabs.no/org-id" to "test.org",
                 )
           }
-      spec = FlaisApplicationSpec(orgId = "test.org", image = "test-image")
+      spec = FlaisApplicationSpec(orgId = "test.org", image = "hello-world")
     }
   }
 
