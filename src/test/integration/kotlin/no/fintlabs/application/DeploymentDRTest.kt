@@ -1,12 +1,21 @@
 package no.fintlabs.application
 
 import com.sksamuel.hoplite.PropertySource
-import io.fabric8.kubernetes.api.model.*
+import io.fabric8.kubernetes.api.model.EnvVar
+import io.fabric8.kubernetes.api.model.IntOrString
+import io.fabric8.kubernetes.api.model.ObjectMeta
+import io.fabric8.kubernetes.api.model.Quantity
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder
+import io.fabric8.kubernetes.api.model.Secret
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.github.netmikey.logunit.api.LogCapturer
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
@@ -14,8 +23,19 @@ import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.Utils.updateAndGetResource
 import no.fintlabs.application.Utils.waitUntil
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
-import no.fintlabs.application.api.v1alpha1.*
+import no.fintlabs.application.api.v1alpha1.Database
+import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
+import no.fintlabs.application.api.v1alpha1.Kafka
+import no.fintlabs.application.api.v1alpha1.Logging
+import no.fintlabs.application.api.v1alpha1.Metrics
+import no.fintlabs.application.api.v1alpha1.Observability
+import no.fintlabs.application.api.v1alpha1.OnePassword
 import no.fintlabs.application.api.v1alpha1.Probe
+import no.fintlabs.application.api.v1alpha1.ProbeDefaults
+import no.fintlabs.application.api.v1alpha1.Probes
+import no.fintlabs.application.api.v1alpha1.Url
+import no.fintlabs.extensions.KubernetesOperator
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesResources
 import no.fintlabs.loadConfig
@@ -23,10 +43,6 @@ import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 @KubernetesResources("deployment/kubernetes")
 class DeploymentDRTest {
@@ -59,7 +75,7 @@ class DeploymentDRTest {
 
     assertEquals(1, deployment.spec.template.spec.containers.size)
 
-    assertEquals("test-image", deployment.spec.template.spec.containers[0].image)
+    assertEquals("hello-world", deployment.spec.template.spec.containers[0].image)
     assertEquals("test", deployment.spec.template.spec.containers[0].name)
     assertEquals("Always", deployment.spec.template.spec.containers[0].imagePullPolicy)
 
@@ -130,16 +146,16 @@ class DeploymentDRTest {
   @Test
   fun `should update deployment with correct image`(context: KubernetesOperatorContext) {
     val flaisApplication =
-        createTestFlaisApplication().apply { spec = spec.copy(image = "test-image:latest") }
+        createTestFlaisApplication().apply { spec = spec.copy(image = "hello-world:latest") }
 
     var deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
-    assertEquals("test-image:latest", deployment.spec.template.spec.containers[0].image)
+    assertEquals("hello-world:latest", deployment.spec.template.spec.containers[0].image)
 
-    flaisApplication.spec = flaisApplication.spec.copy(image = "test-image:234567890")
+    flaisApplication.spec = flaisApplication.spec.copy(image = "hello-world:linux")
     deployment = context.updateAndGetResource(flaisApplication)
     assertNotNull(deployment)
-    assertEquals("test-image:234567890", deployment.spec.template.spec.containers[0].image)
+    assertEquals("hello-world:linux", deployment.spec.template.spec.containers[0].image)
   }
 
   // endregion
@@ -174,7 +190,7 @@ class DeploymentDRTest {
       context: KubernetesOperatorContext
   ) {
     val flaisApplication =
-        createTestFlaisApplication().apply { spec = spec.copy(image = "test-image:latest") }
+        createTestFlaisApplication().apply { spec = spec.copy(image = "hello-world:latest") }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
@@ -560,7 +576,7 @@ class DeploymentDRTest {
     var deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
 
-    flaisApplication.apply { spec = spec.copy(image = "test-image:234567890") }
+    flaisApplication.apply { spec = spec.copy(image = "hello-world:linux") }
 
     deployment = context.updateAndGetResource(flaisApplication)
     assertNotNull(deployment)
