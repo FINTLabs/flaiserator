@@ -14,6 +14,7 @@ import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.Duration
+import no.fintlabs.application.getLogger
 import no.fintlabs.extensions.Utils.executeWithRetry
 import no.fintlabs.operator.OperatorConfigHandler
 import no.fintlabs.operator.OperatorPostConfigHandler
@@ -37,6 +38,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
     AfterEachCallback,
     ParameterResolver,
     KoinComponent {
+  private val logger = getLogger()
   private val k3s: K3sContainer
   private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
@@ -48,13 +50,17 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
   }
 
   override fun beforeAll(context: ExtensionContext) {
-    prepareAdditionalResources(context)
-    k3s.start()
+    classAdditionalResources = getAdditionalResources(context)
+    if (!useLocalKubernetes()) {
+      k3s.start()
+    }
     ensureCRDs()
   }
 
   override fun afterAll(context: ExtensionContext) {
-    k3s.stop()
+    if (k3s.isRunning) {
+      k3s.stop()
+    }
   }
 
   override fun beforeEach(context: ExtensionContext) {
@@ -168,7 +174,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
   ): KubernetesClient =
       KubernetesClientBuilder()
           .apply {
-            withConfig(Config.fromKubeconfig(k3s.kubeConfigYaml).apply { setNamespace(namespace) })
+            withConfig(getKubernetesConfig().apply { setNamespace(namespace) })
             if (serializer != null) {
               withKubernetesSerialization(KubernetesSerialization(serializer, true))
             }
@@ -192,9 +198,19 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
     }
   }
 
+  private fun getKubernetesConfig() =
+    if (useLocalKubernetes()) {
+      logger.debug("Using local kubernetes config")
+      Config.autoConfigure(null)
+    } else {
+      Config.fromKubeconfig(k3s.kubeConfigYaml)
+    }
+
   private fun getKubernetesOperatorConfig(context: ExtensionContext): KubernetesOperator =
       context.requiredTestMethod.getAnnotation(KubernetesOperator::class.java)
           ?: KubernetesOperator()
+
+  private fun useLocalKubernetes() = System.getenv("TEST_KUBERNETES_LOCAL").toBoolean()
 
   companion object {
     fun create(crdClass: List<Class<out CustomResource<*, *>>> = emptyList()) =

@@ -6,12 +6,16 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import no.fintlabs.application.getLogger
 
 class KubernetesResourceSource(private val file: File) {
+  val logger = getLogger()
+
   fun open(): InputStream? =
       try {
         file.inputStream()
-      } catch (e: IOException) {
+      } catch (_: IOException) {
+        logger.error("Error while opening $file")
         null
       }
 
