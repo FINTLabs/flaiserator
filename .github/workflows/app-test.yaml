@@ -69,18 +69,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Download setup-envtest
-        uses: robinraju/release-downloader@v1.12
-        with:
-          repository: 'kubernetes-sigs/controller-runtime'
-          latest: true
-          fileName: 'setup-envtest-linux-amd64'
-
-      - name: Setup kube test API
-        run: |
-          chmod +x setup-envtest-linux-amd64
-          ./setup-envtest-linux-amd64 use --bin-dir ~/.kubeapitest
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
