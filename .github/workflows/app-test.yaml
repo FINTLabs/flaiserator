@@ -68,7 +68,11 @@ jobs:
 
   integration-tests:
     name: Run Integration Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-8-cores
+    strategy:
+      fail-fast: false
+      matrix:
+        kubernetes: [v1.33.0,v1.32.4]
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -84,13 +88,13 @@ jobs:
 
       - name: Run Integration Tests
         env:
-          KUBE_API_TEST_OFFLINE_MODE: true
+          TEST_KUBERNETES_VERSION: ${{ matrix.kubernetes }}
         run: ./gradlew :integrationTest --stacktrace --configuration-cache
 
       - name: Integration Test Reports
         uses: dorny/test-reporter@v2.1.1
         if: always()
         with:
-          name: Integration Test Reports
+          name: Integration Test Reports - Kubernetes ${{ matrix.kubernetes }}
           path: 'build/test-results/integrationTest/*.xml'
           reporter: java-junit
