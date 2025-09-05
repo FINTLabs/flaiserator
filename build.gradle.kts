@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  application
   kotlin("jvm")
+  application
   alias(libs.plugins.fabric8.generator)
   alias(libs.plugins.spotless)
 }
@@ -47,7 +47,6 @@ testing {
     @Suppress("UnstableApiUsage", "unused")
     val test by
       getting(JvmTestSuite::class) {
-        testType.set(TestSuiteType.UNIT_TEST)
         sources {
           kotlin { srcDirs(layout.projectDirectory.dir("src/test/unit/kotlin")) }
           resources { setSrcDirs(listOf("src/test/unit/resources")) }
@@ -57,7 +56,6 @@ testing {
     @Suppress("UnstableApiUsage", "unused")
     val integrationTest by
       registering(JvmTestSuite::class) {
-        testType.set(TestSuiteType.INTEGRATION_TEST)
         sources {
           kotlin { srcDirs(layout.projectDirectory.dir("src/test/integration/kotlin")) }
           resources { setSrcDirs(listOf("src/test/integration/resources")) }
@@ -75,7 +73,7 @@ testing {
 }
 
 tasks {
-  withType<Wrapper> { gradleVersion = "8.12" }
+  withType<Wrapper> { gradleVersion = "9.0" }
 
   java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
