@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -44,6 +46,11 @@ dependencies {
 
 testing {
   suites {
+    @Suppress("UnstableApiUsage")
+    withType<JvmTestSuite> {
+      useJUnitJupiter()
+    }
+
     @Suppress("UnstableApiUsage", "unused")
     val test by
       getting(JvmTestSuite::class) {
@@ -62,11 +69,15 @@ testing {
         }
 
         dependencies {
-          // We can replace direct dependency on test's runtimeClasspath with
-          // implementation(project())
-          // once https://github.com/gradle/gradle/issues/25269 is resolved
-          implementation(sourceSets.test.get().runtimeClasspath)
-          implementation(sourceSets.test.get().output)
+          implementation(project())
+
+
+        }
+
+        configurations {
+          named("${name}Implementation").configure {
+            this.extendsFrom(configurations.testImplementation.get())
+          }
         }
       }
   }
@@ -112,15 +123,6 @@ tasks {
 
   compileKotlin { dependsOn(crd2java) }
 
-  withType<Test> {
-    useJUnitPlatform()
-
-    maxParallelForks = fetchNumCores()
-    forkEvery = 1
-
-    testLogging { exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
-  }
-
   register<GenerateCrdsTask>("generateCrds") {
     description =
       "Generate CRDs from the compiled custom resource class `no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd`"
@@ -132,6 +134,16 @@ tasks {
       project.layout.projectDirectory.dir("charts/flaiserator-crd/charts/crds/templates")
 
     dependsOn(compileJava, compileKotlin)
+  }
+
+  withType<Test> {
+    maxParallelForks = fetchNumCores()
+    forkEvery = 1
+
+    testLogging {
+      events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+      exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
   }
 }
 
