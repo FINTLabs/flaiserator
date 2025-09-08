@@ -46,8 +46,8 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
   private var classAdditionalResources = emptyList<KubernetesResourceSource>()
 
   init {
-    val kubernetesVersion = System.getenv("TEST_KUBERNETES_VERSION") ?: "v1.33.3"
-    k3s = K3sContainer(DockerImageName.parse("rancher/k3s:$kubernetesVersion-k3s1")).withReuse(true)
+    val kubernetesVersion = System.getenv("TEST_KUBERNETES_VERSION")?.let { "$it-k3s1" } ?: "latest"
+    k3s = K3sContainer(DockerImageName.parse("rancher/k3s:$kubernetesVersion")).withReuse(true)
   }
 
   override fun beforeAll(context: ExtensionContext) {
