@@ -138,7 +138,6 @@ tasks {
 
   withType<Test> {
     maxParallelForks = fetchNumCores()
-    forkEvery = 1
 
     testLogging {
       events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
