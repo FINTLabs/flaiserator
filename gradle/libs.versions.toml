@@ -10,7 +10,7 @@ logstashEncoder = "8.1"
 jackson = "2.20.0"
 logunit = "2.0.0"
 http4k = "5.47.0.0"
-micrometer = "1.15.3"
+micrometer = "1.15.4"
 
 [libraries]
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
