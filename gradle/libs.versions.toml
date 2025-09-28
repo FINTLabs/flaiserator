@@ -48,7 +48,7 @@ koin-test = { module = "io.insert-koin:koin-test" }
 koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.10"}
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.2.20"}
 fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" }
 spotless = { id = "com.diffplug.spotless", version="7.2.1" }
 
