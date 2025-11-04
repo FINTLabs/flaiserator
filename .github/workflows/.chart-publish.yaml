@@ -37,7 +37,7 @@ jobs:
             yq e -i '.appVersion = "${{ inputs.app-version }}"' ./charts/${{ inputs.chart-name }}/Chart.yaml
 
       - name: Save Chart Meta
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ inputs.chart-name }}-chart-metadata
           path: ./charts/${{ inputs.chart-name }}/Chart.yaml
@@ -56,7 +56,7 @@ jobs:
           fetch-depth: 0
 
       - name: Restore Chart Metadata
-        uses: actions/download-artifact@v5.0.0
+        uses: actions/download-artifact@v6.0.0
         with:
           name: ${{ inputs.chart-name }}-chart-metadata
           path: ./charts/${{ inputs.chart-name }}
