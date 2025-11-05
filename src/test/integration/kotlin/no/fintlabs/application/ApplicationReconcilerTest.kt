@@ -11,8 +11,8 @@ import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.Utils.waitUntil
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.common.api.v1alpha1.FlaisResourceState
 import no.fintlabs.extensions.KubernetesOperator
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -65,18 +65,18 @@ class ApplicationReconcilerTest : KoinTest {
 
     val flaisApplication = createTestFlaisApplication()
     context.create(flaisApplication)
-    context.waitUntil<FlaisApplicationCrd>(flaisApplication.metadata.name) {
-      it.status !== null && it.status?.state != FlaisApplicationState.PENDING
+    context.waitUntil<FlaisApplication>(flaisApplication.metadata.name) {
+      it.status !== null && it.status?.state != FlaisResourceState.PENDING
     }
-    val app = context.get<FlaisApplicationCrd>(flaisApplication.metadata.name)
+    val app = context.get<FlaisApplication>(flaisApplication.metadata.name)
 
     assertNotNull(app)
     assertEquals(1, app.status.errors?.size)
     assertEquals("test", app.status.errors?.find { it.dependent == service.name() }?.message)
   }
 
-  private fun KubernetesOperatorContext.createAndGetApplication(app: FlaisApplicationCrd) =
-      createAndGetResource<FlaisApplicationCrd>(app)
+  private fun KubernetesOperatorContext.createAndGetApplication(app: FlaisApplication) =
+      createAndGetResource<FlaisApplication>(app)
 
   companion object {
     @RegisterExtension val koinTestExtension = createKoinTestExtension()

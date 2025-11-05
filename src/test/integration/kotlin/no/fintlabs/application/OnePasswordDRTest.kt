@@ -9,8 +9,8 @@ import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
-import no.fintlabs.application.api.v1alpha1.OnePassword
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.common.api.v1alpha1.OnePassword
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -52,7 +52,7 @@ class OnePasswordDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndGetOnePasswordItem(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndGetOnePasswordItem(app: FlaisApplication) =
       createAndGetResource<OnePasswordItem>(app) { "${it.metadata.name}-op" }
 
   companion object {

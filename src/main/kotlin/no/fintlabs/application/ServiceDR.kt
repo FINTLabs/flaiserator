@@ -8,16 +8,16 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class ServiceDR :
-    CRUDKubernetesDependentResource<Service, FlaisApplicationCrd>(Service::class.java) {
+    CRUDKubernetesDependentResource<Service, FlaisApplication>(Service::class.java) {
   override fun name(): String = "service"
 
   override fun desired(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ): Service =
       Service().apply {
         metadata = createObjectMeta(primary)

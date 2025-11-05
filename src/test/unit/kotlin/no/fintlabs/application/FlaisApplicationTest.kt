@@ -13,6 +13,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import no.fintlabs.CustomKubernetesClientBuilder
 import no.fintlabs.application.api.v1alpha1.*
+import no.fintlabs.common.api.v1alpha1.Kafka
+import no.fintlabs.common.api.v1alpha1.OnePassword
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.hamcrest.CoreMatchers.`is` as isEqualTo
 import org.hamcrest.MatcherAssert.assertThat
@@ -22,14 +24,14 @@ import org.junit.jupiter.api.BeforeEach
     crud = true,
     kubernetesClientBuilderCustomizer = CustomKubernetesClientBuilder::class,
 )
-class FlaisApplicationCrdTest {
+class FlaisApplicationTest {
 
   private lateinit var client: KubernetesClient
   private lateinit var crd: CustomResourceDefinition
 
   @BeforeEach
   fun beforeEach() {
-    CustomResourceDefinitionContext.v1CRDFromCustomResourceType(FlaisApplicationCrd::class.java)
+    CustomResourceDefinitionContext.v1CRDFromCustomResourceType(FlaisApplication::class.java)
         .build()
         .let {
           crd = it
@@ -144,16 +146,16 @@ class FlaisApplicationCrdTest {
     createAndApplyFlaisApplication(
         FlaisApplicationSpec(
             kafka =
-                Kafka(
-                    enabled = true,
-                    acls =
-                        listOf(
-                            Acls().apply {
-                              topic = "test-resource"
-                              permission = "test-permission"
-                            }
-                        ),
-                )
+              Kafka(
+                enabled = true,
+                acls =
+                  listOf(
+                    Acls().apply {
+                      topic = "test-resource"
+                      permission = "test-permission"
+                    }
+                  ),
+              )
         )
     )
     val resFlaisApplication = getFlaisApplication()
@@ -310,7 +312,7 @@ class FlaisApplicationCrdTest {
   }
 
   private fun createAndApplyFlaisApplication(spec: FlaisApplicationSpec = FlaisApplicationSpec()) =
-      FlaisApplicationCrd()
+    FlaisApplication()
           .apply {
             metadata.name = "test-application"
             metadata.namespace = "default"
@@ -323,9 +325,9 @@ class FlaisApplicationCrdTest {
           }
           .also { client.resource(it).create() }
 
-  private fun getFlaisApplication(): FlaisApplicationCrd {
+  private fun getFlaisApplication(): FlaisApplication {
     return client
-        .resources(FlaisApplicationCrd::class.java)
+        .resources(FlaisApplication::class.java)
         .inNamespace("default")
         .withName("test-application")
         .get()

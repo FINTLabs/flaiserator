@@ -6,7 +6,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Ingress.Route
 import no.fintlabs.application.api.v1alpha1.isIngressEnabled
 import no.fintlabs.application.api.v1alpha1.isLegacy
@@ -19,11 +19,11 @@ import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class IngressDR :
-    CRUDKubernetesDependentResource<IngressRoute, FlaisApplicationCrd>(IngressRoute::class.java),
-    ReconcileCondition<FlaisApplicationCrd> {
+    CRUDKubernetesDependentResource<IngressRoute, FlaisApplication>(IngressRoute::class.java),
+    ReconcileCondition<FlaisApplication> {
   override fun name(): String = "ingress"
 
-  override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) =
+  override fun desired(primary: FlaisApplication, context: Context<FlaisApplication>) =
       IngressRoute().apply {
         metadata = createObjectMeta(primary)
         spec =
@@ -37,7 +37,7 @@ class IngressDR :
             }
       }
 
-  private fun createAppRoute(route: Route, primary: FlaisApplicationCrd) =
+  private fun createAppRoute(route: Route, primary: FlaisApplication) =
       Routes().apply {
         kind = Routes.Kind.RULE
         match = createMatch(route)
@@ -91,7 +91,7 @@ class IngressDR :
   private fun String.stripRegexPrefix() = this.removePrefix("re:")
 
   // region Legacy
-  private fun createLegacyAppRoute(primary: FlaisApplicationCrd) =
+  private fun createLegacyAppRoute(primary: FlaisApplication) =
       Routes().apply {
         kind = Routes.Kind.RULE
         match = createLegacyMatch(primary)
@@ -112,20 +112,20 @@ class IngressDR :
             }
       }
 
-  private fun createLegacyMatch(primary: FlaisApplicationCrd) =
+  private fun createLegacyMatch(primary: FlaisApplication) =
       listOfNotNull(
               "Host(`${primary.spec.url.hostname}`)",
               legacyBasePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
           )
           .joinToString(" && ")
 
-  private fun legacyBasePath(primary: FlaisApplicationCrd) =
+  private fun legacyBasePath(primary: FlaisApplication) =
       primary.spec.ingress?.basePath.takeUnless { it.isNullOrEmpty() }
           ?: primary.spec.url.basePath.orEmpty()
 
   override fun shouldReconcile(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ): Boolean {
     return primary.spec.isIngressEnabled()
   }

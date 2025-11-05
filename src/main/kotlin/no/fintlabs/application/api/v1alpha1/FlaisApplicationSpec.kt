@@ -5,6 +5,10 @@ import io.fabric8.generator.annotation.Required
 import io.fabric8.generator.annotation.ValidationRule
 import io.fabric8.kubernetes.api.model.*
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
+import no.fintlabs.common.WithKafka
+import no.fintlabs.common.WithOnePassword
+import no.fintlabs.common.api.v1alpha1.Kafka
+import no.fintlabs.common.api.v1alpha1.OnePassword
 
 data class FlaisApplicationSpec(
     @Required val orgId: String = "",
@@ -36,10 +40,10 @@ data class FlaisApplicationSpec(
     val strategy: DeploymentStrategy? = null,
     @Deprecated("Use metrics in observability instead. Will be removed in future versions.")
     val prometheus: Metrics = Metrics(),
-    val onePassword: OnePassword? = null,
-    val kafka: Kafka = Kafka(),
+    override val onePassword: OnePassword? = null,
+    override val kafka: Kafka = Kafka(),
     val database: Database = Database(),
     val url: Url = Url(),
     val ingress: Ingress? = null,
     val observability: Observability? = null,
-)
+) : WithOnePassword, WithKafka

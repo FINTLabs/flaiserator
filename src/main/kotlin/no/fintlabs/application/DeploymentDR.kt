@@ -1,6 +1,20 @@
 package no.fintlabs.application
 
-import io.fabric8.kubernetes.api.model.*
+import io.fabric8.kubernetes.api.model.Container
+import io.fabric8.kubernetes.api.model.ContainerPort
+import io.fabric8.kubernetes.api.model.EnvFromSource
+import io.fabric8.kubernetes.api.model.EnvVar
+import io.fabric8.kubernetes.api.model.HTTPGetAction
+import io.fabric8.kubernetes.api.model.IntOrString
+import io.fabric8.kubernetes.api.model.LabelSelector
+import io.fabric8.kubernetes.api.model.LocalObjectReference
+import io.fabric8.kubernetes.api.model.PodSpec
+import io.fabric8.kubernetes.api.model.PodTemplateSpec
+import io.fabric8.kubernetes.api.model.Probe
+import io.fabric8.kubernetes.api.model.SecretEnvSource
+import io.fabric8.kubernetes.api.model.SecretVolumeSource
+import io.fabric8.kubernetes.api.model.Volume
+import io.fabric8.kubernetes.api.model.VolumeMount
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec
 import io.javaoperatorsdk.operator.api.config.informer.Informer
@@ -10,25 +24,27 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDep
 import no.fintlabs.Config
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.application.api.ORG_ID_LABEL
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
-import no.fintlabs.application.api.v1alpha1.Probe as FlaisProbe
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.common.KafkaDR
+import no.fintlabs.common.OnePasswordDR
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import no.fintlabs.application.api.v1alpha1.Probe as FlaisProbe
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class DeploymentDR :
-    CRUDKubernetesDependentResource<Deployment, FlaisApplicationCrd>(Deployment::class.java),
+    CRUDKubernetesDependentResource<Deployment, FlaisApplication>(Deployment::class.java),
     KoinComponent {
   private val config: Config by inject()
   private val logger = getLogger()
 
-  private val kafkaDR by inject<KafkaDR>()
+  private val kafkaDR by inject<KafkaDR<FlaisApplication>>()
   private val postgresUserDR by inject<PostgresUserDR>()
-  private val onePasswordDR by inject<OnePasswordDR>()
+  private val onePasswordDR by inject<OnePasswordDR<FlaisApplication>>()
 
   override fun name() = "deployment"
 
-  override fun desired(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) =
+  override fun desired(primary: FlaisApplication, context: Context<FlaisApplication>) =
       Deployment().apply {
         metadata = createObjectMeta(primary)
         spec =
@@ -47,8 +63,8 @@ class DeploymentDR :
   override fun handleUpdate(
       actual: Deployment,
       desired: Deployment,
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ): Deployment {
     val kubernetesSerialization = context.client.kubernetesSerialization
     val desiredSelector =
@@ -63,28 +79,28 @@ class DeploymentDR :
     return handleCreate(desired, primary, context)
   }
 
-  private fun cretePodMetadata(primary: FlaisApplicationCrd) =
+  private fun cretePodMetadata(primary: FlaisApplication) =
       createObjectMeta(primary).apply {
         annotations["kubectl.kubernetes.io/default-container"] = primary.metadata.name
         labels["observability.fintlabs.no/loki"] =
             primary.spec.observability?.logging?.loki?.toString() ?: "true"
       }
 
-  private fun createPodSpec(primary: FlaisApplicationCrd, context: Context<FlaisApplicationCrd>) =
+  private fun createPodSpec(primary: FlaisApplication, context: Context<FlaisApplication>) =
       PodSpec().apply {
         volumes = createPodVolumes(primary, context)
         containers = listOf(createAppContainer(primary, context))
         imagePullSecrets = createImagePullSecrets(primary)
       }
 
-  private fun createImagePullSecrets(primary: FlaisApplicationCrd) =
+  private fun createImagePullSecrets(primary: FlaisApplication) =
       mutableSetOf<String>().plus(primary.spec.imagePullSecrets).plus(config.imagePullSecrets).map {
         LocalObjectReference(it)
       }
 
   private fun createAppContainer(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ) =
       Container().apply {
         name = primary.metadata.name
@@ -102,7 +118,7 @@ class DeploymentDR :
         livenessProbe = primary.spec.probes?.liveness?.let { createPodProbe(it, primary.spec.port) }
       }
 
-  private fun createContainerPorts(primary: FlaisApplicationCrd): List<ContainerPort> {
+  private fun createContainerPorts(primary: FlaisApplication): List<ContainerPort> {
     val ports =
         mutableListOf(
             ContainerPort().apply {
@@ -126,7 +142,7 @@ class DeploymentDR :
     return ports
   }
 
-  private fun createContainerEnv(primary: FlaisApplicationCrd): List<EnvVar> {
+  private fun createContainerEnv(primary: FlaisApplication): List<EnvVar> {
     val envVars =
         primary.spec.env
             .map {
@@ -151,8 +167,8 @@ class DeploymentDR :
   }
 
   private fun createContainerEnvFrom(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ): List<EnvFromSource> {
     val envFromSources =
         listOfNotNull(
@@ -207,8 +223,8 @@ class DeploymentDR :
 
   // Volumes and volume mounts
   private fun createPodVolumes(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ) =
       listOfNotNull(
           Volume()
@@ -223,8 +239,8 @@ class DeploymentDR :
       )
 
   private fun createContainerVolumeMounts(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ) =
       listOfNotNull(
           VolumeMount()

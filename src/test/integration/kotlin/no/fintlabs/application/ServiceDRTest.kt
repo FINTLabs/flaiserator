@@ -8,7 +8,7 @@ import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -39,7 +39,7 @@ class ServiceDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndGetService(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndGetService(app: FlaisApplication) =
       createAndGetResource<Service>(app)
 
   companion object {

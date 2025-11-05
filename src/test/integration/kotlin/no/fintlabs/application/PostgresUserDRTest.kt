@@ -9,7 +9,7 @@ import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.api.v1alpha1.Database
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.v1alpha1.PGUser
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -38,7 +38,7 @@ class PostgresUserDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndGetPGUser(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndGetPGUser(app: FlaisApplication) =
       createAndGetResource<PGUser>(app) { "${it.metadata.name}-db" }
 
   companion object {

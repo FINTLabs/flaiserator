@@ -1,12 +1,24 @@
 package no.fintlabs.application
 
-import io.javaoperatorsdk.operator.api.reconciler.*
+import io.javaoperatorsdk.operator.api.reconciler.Cleaner
+import io.javaoperatorsdk.operator.api.reconciler.Context
+import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration
+import io.javaoperatorsdk.operator.api.reconciler.DeleteControl
+import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler
+import io.javaoperatorsdk.operator.api.reconciler.UpdateControl
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry
 import java.time.Duration
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import no.fintlabs.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
-import no.fintlabs.application.api.v1alpha1.*
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.application.api.v1alpha1.clone
+import no.fintlabs.common.KafkaDR
+import no.fintlabs.common.OnePasswordDR
+import no.fintlabs.common.api.v1alpha1.FlaisResourceState
+import no.fintlabs.common.api.v1alpha1.FlaisResourceStatus
+import no.fintlabs.common.api.v1alpha1.StatusError
 import no.fintlabs.operator.workflow.Dependent
 import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent
@@ -20,19 +32,19 @@ import org.slf4j.MDC
         Dependent(ServiceDR::class),
         Dependent(PodMetricsDR::class),
         Dependent(IngressDR::class),
-        Dependent(OnePasswordDR::class),
         Dependent(PostgresUserDR::class),
+        Dependent(OnePasswordDR::class),
         Dependent(KafkaDR::class),
     ]
 )
 class ApplicationReconciler :
-    Reconciler<FlaisApplicationCrd>, Cleaner<FlaisApplicationCrd>, KoinComponent {
+    Reconciler<FlaisApplication>, Cleaner<FlaisApplication>, KoinComponent {
   private val logger = getLogger()
 
   override fun reconcile(
-      resource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
-  ): UpdateControl<FlaisApplicationCrd> {
+    resource: FlaisApplication,
+    context: Context<FlaisApplication>,
+  ): UpdateControl<FlaisApplication> {
     if (context.isNextReconciliationImminent) {
       return UpdateControl.noUpdate()
     }
@@ -56,17 +68,17 @@ class ApplicationReconciler :
   }
 
   override fun cleanup(
-      resource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      resource: FlaisApplication,
+      context: Context<FlaisApplication>,
   ): DeleteControl {
     return DeleteControl.defaultDelete()
   }
 
   override fun updateErrorStatus(
-      resource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      resource: FlaisApplication,
+      context: Context<FlaisApplication>,
       e: Exception?,
-  ): ErrorStatusUpdateControl<FlaisApplicationCrd> {
+  ): ErrorStatusUpdateControl<FlaisApplication> {
     setMDC(resource)
     val resourceUpdate = resource.clone().apply { status = determineNewStatus(resource, context) }
 
@@ -74,9 +86,9 @@ class ApplicationReconciler :
   }
 
   private fun initReconciliation(
-      origResource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
-  ): UpdateControl<FlaisApplicationCrd>? {
+      origResource: FlaisApplication,
+      context: Context<FlaisApplication>,
+  ): UpdateControl<FlaisApplication>? {
     val currentCorrelationId =
         origResource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
     val observedCorrelationId = origResource.status?.correlationId
@@ -103,9 +115,9 @@ class ApplicationReconciler :
 
           if (updateStatus) {
             status =
-                FlaisApplicationStatus(
+              FlaisResourceStatus(
                     observedGeneration = origResource.metadata.generation,
-                    state = FlaisApplicationState.PENDING,
+                    state = FlaisResourceState.PENDING,
                     correlationId = correlationId,
                 )
           }
@@ -119,9 +131,9 @@ class ApplicationReconciler :
   }
 
   private fun determineNewStatus(
-      resource: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
-  ): FlaisApplicationStatus {
+      resource: FlaisApplication,
+      context: Context<FlaisApplication>,
+  ): FlaisResourceStatus {
     val workflowResult =
         context.managedWorkflowAndDependentResourceContext().workflowReconcileResult.get()
     val ready = workflowResult.allDependentResourcesReady()
@@ -141,9 +153,9 @@ class ApplicationReconciler :
     return resource.status.copy(
         state =
             when {
-              isLastAttempt && failed -> FlaisApplicationState.FAILED
-              ready && !failed -> FlaisApplicationState.DEPLOYED
-              else -> FlaisApplicationState.PENDING
+              isLastAttempt && failed -> FlaisResourceState.FAILED
+              ready && !failed -> FlaisResourceState.DEPLOYED
+              else -> FlaisResourceState.PENDING
             },
         errors =
             workflowResult.erroredDependents
@@ -152,7 +164,7 @@ class ApplicationReconciler :
     )
   }
 
-  private fun setMDC(resource: FlaisApplicationCrd) {
+  private fun setMDC(resource: FlaisApplication) {
     MDC.put(
         "correlationId",
         resource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] ?: "",

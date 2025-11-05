@@ -70,8 +70,6 @@ testing {
 
         dependencies {
           implementation(project())
-
-
         }
 
         configurations {

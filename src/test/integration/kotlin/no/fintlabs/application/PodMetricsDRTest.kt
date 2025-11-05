@@ -9,7 +9,7 @@ import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Metrics
 import no.fintlabs.application.api.v1alpha1.Observability
 import no.fintlabs.extensions.KubernetesOperatorContext
@@ -78,7 +78,7 @@ class PodMetricsDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndGetPodMonitor(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndGetPodMonitor(app: FlaisApplication) =
       createAndGetResource<PodMonitor>(app) { it.metadata.name }
 
   companion object {

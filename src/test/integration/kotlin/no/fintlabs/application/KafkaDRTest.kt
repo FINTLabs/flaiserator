@@ -8,8 +8,8 @@ import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
-import no.fintlabs.application.api.v1alpha1.Kafka
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.common.api.v1alpha1.Kafka
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
@@ -99,7 +99,7 @@ class KafkaDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndKafkaUserAndAcl(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndKafkaUserAndAcl(app: FlaisApplication) =
       createAndGetResource<KafkaUserAndAcl>(app)
 
   companion object {

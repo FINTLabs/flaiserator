@@ -4,11 +4,11 @@ import com.coreos.monitoring.v1.PodMonitor
 import com.onepassword.v1.OnePasswordItem
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import java.time.Duration
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationSpec
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
 import no.fintlabs.baseModule
+import no.fintlabs.common.api.v1alpha1.FlaisResourceState
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesOperatorExtension
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
@@ -23,8 +23,8 @@ import us.containo.traefik.v1alpha1.IngressRoute
 
 object Utils {
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
-      app: FlaisApplicationCrd,
-      nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name },
+    app: FlaisApplication,
+    nameSelector: (FlaisApplication) -> String = { it.metadata.name },
   ): T? {
     create(app)
     waitUntilIsDeployed(app)
@@ -32,19 +32,19 @@ object Utils {
   }
 
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.updateAndGetResource(
-      app: FlaisApplicationCrd,
-      nameSelector: (FlaisApplicationCrd) -> String = { it.metadata.name },
+      app: FlaisApplication,
+      nameSelector: (FlaisApplication) -> String = { it.metadata.name },
   ): T? {
     update(app)
     waitUntilIsDeployed(app)
     return get<T>(nameSelector(app))
   }
 
-  fun KubernetesOperatorContext.waitUntilIsDeployed(app: FlaisApplicationCrd) {
-    waitUntil<FlaisApplicationCrd>(
+  fun KubernetesOperatorContext.waitUntilIsDeployed(app: FlaisApplication) {
+    waitUntil<FlaisApplication>(
         app.metadata.name,
     ) {
-      it.status?.state == FlaisApplicationState.DEPLOYED &&
+      it.status?.state == FlaisResourceState.DEPLOYED &&
           it.status?.observedGeneration == it.metadata.generation
     }
   }
@@ -64,8 +64,8 @@ object Utils {
   infix fun ConditionFactory.withOptionalPollDelay(delay: Duration?): ConditionFactory =
       delay?.let { withPollDelay(it) } ?: this
 
-  fun createTestFlaisApplication(): FlaisApplicationCrd {
-    return FlaisApplicationCrd().apply {
+  fun createTestFlaisApplication(): FlaisApplication {
+    return FlaisApplication().apply {
       metadata =
           ObjectMeta().apply {
             name = "test"
@@ -83,7 +83,7 @@ object Utils {
   fun createKubernetesOperatorExtension() =
       KubernetesOperatorExtension.create(
           listOf(
-              FlaisApplicationCrd::class.java,
+              FlaisApplication::class.java,
               IngressRoute::class.java,
               PGUser::class.java,
               KafkaUserAndAcl::class.java,

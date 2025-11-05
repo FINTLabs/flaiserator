@@ -4,11 +4,11 @@ import io.fabric8.kubernetes.api.model.ObjectMeta
 import io.fabric8.kubernetes.api.model.OwnerReference
 import no.fintlabs.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_LABEL
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.common.api.v1alpha1.FlaisResource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-fun createObjectMeta(source: FlaisApplicationCrd) =
+fun createObjectMeta(source: FlaisResource<*>) =
     ObjectMeta().apply {
       name = source.metadata.name
       namespace = source.metadata.namespace
@@ -26,7 +26,7 @@ fun createObjectMeta(source: FlaisApplicationCrd) =
       ownerReferences = listOf(createOwnerReference(source))
     }
 
-fun createOwnerReference(source: FlaisApplicationCrd) =
+fun createOwnerReference(source: FlaisResource<*>) =
     OwnerReference().apply {
       apiVersion = source.apiVersion
       kind = source.kind
