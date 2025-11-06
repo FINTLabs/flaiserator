@@ -15,7 +15,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
-import no.fintlabs.application.getLogger
+import no.fintlabs.common.getLogger
 import no.fintlabs.extensions.Utils.executeWithRetry
 import no.fintlabs.operator.OperatorConfigHandler
 import no.fintlabs.operator.OperatorPostConfigHandler

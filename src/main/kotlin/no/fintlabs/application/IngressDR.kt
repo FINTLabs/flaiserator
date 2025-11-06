@@ -10,6 +10,7 @@ import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Ingress.Route
 import no.fintlabs.application.api.v1alpha1.isIngressEnabled
 import no.fintlabs.application.api.v1alpha1.isLegacy
+import no.fintlabs.common.createObjectMeta
 import no.fintlabs.operator.dependent.ReconcileCondition
 import us.containo.traefik.v1alpha1.IngressRoute
 import us.containo.traefik.v1alpha1.IngressRouteSpec

@@ -6,7 +6,7 @@ import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import no.fintlabs.application.getLogger
+import no.fintlabs.common.getLogger
 
 class KubernetesResourceSource(private val file: File) {
   val logger = getLogger()

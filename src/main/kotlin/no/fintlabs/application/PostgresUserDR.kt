@@ -6,6 +6,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernete
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.common.createObjectMeta
 import no.fintlabs.operator.dependent.ReconcileCondition
 import no.fintlabs.v1alpha1.PGUser
 import no.fintlabs.v1alpha1.PGUserSpec

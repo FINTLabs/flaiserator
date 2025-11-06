@@ -27,6 +27,8 @@ import no.fintlabs.application.api.ORG_ID_LABEL
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
+import no.fintlabs.common.createObjectMeta
+import no.fintlabs.common.getLogger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import no.fintlabs.application.api.v1alpha1.Probe as FlaisProbe

@@ -10,13 +10,3 @@ import no.fintlabs.common.api.v1alpha1.FlaisResource
 @Version("v1alpha1")
 @Kind("Application")
 class FlaisApplication : FlaisResource<FlaisApplicationSpec>()
-
-fun FlaisApplication.clone() =
-  FlaisApplication().apply {
-      metadata =
-          ObjectMeta().apply {
-            name = this@clone.metadata.name
-            namespace = this@clone.metadata.namespace
-            managedFields = null
-          }
-    }
