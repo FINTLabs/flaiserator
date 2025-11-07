@@ -13,8 +13,11 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import no.fintlabs.CustomKubernetesClientBuilder
 import no.fintlabs.application.api.v1alpha1.*
+import no.fintlabs.common.api.v1alpha1.Database
 import no.fintlabs.common.api.v1alpha1.Kafka
 import no.fintlabs.common.api.v1alpha1.OnePassword
+import no.fintlabs.common.api.v1alpha1.Probe
+import no.fintlabs.common.api.v1alpha1.Probes
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.hamcrest.CoreMatchers.`is` as isEqualTo
 import org.hamcrest.MatcherAssert.assertThat
@@ -240,21 +243,21 @@ class FlaisApplicationTest {
     createAndApplyFlaisApplication(
         FlaisApplicationSpec(
             probes =
-                Probes(
-                    startup = Probe(),
-                    readiness =
-                        Probe(
-                            initialDelaySeconds = 10,
-                            failureThreshold = 10,
-                            periodSeconds = 10,
-                            timeoutSeconds = 10,
-                        ),
-                    liveness =
-                        Probe(
-                            path = "test-path",
-                            port = IntOrString("3000"),
-                        ),
-                )
+              Probes(
+                startup = Probe(),
+                readiness =
+                  Probe(
+                    initialDelaySeconds = 10,
+                    failureThreshold = 10,
+                    periodSeconds = 10,
+                    timeoutSeconds = 10,
+                  ),
+                liveness =
+                  Probe(
+                    path = "test-path",
+                    port = IntOrString("3000"),
+                  ),
+              )
         )
     )
 
@@ -286,17 +289,17 @@ class FlaisApplicationTest {
     createAndApplyFlaisApplication(
         FlaisApplicationSpec(
             probes =
-                Probes(
-                    startup =
-                        Probe(
-                            port = IntOrString(1234),
-                            path = "/test-path",
-                            timeoutSeconds = 100,
-                            periodSeconds = 100,
-                            failureThreshold = 100,
-                            initialDelaySeconds = 100,
-                        ),
-                )
+              Probes(
+                startup =
+                  Probe(
+                    port = IntOrString(1234),
+                    path = "/test-path",
+                    timeoutSeconds = 100,
+                    periodSeconds = 100,
+                    failureThreshold = 100,
+                    initialDelaySeconds = 100,
+                  ),
+              )
         )
     )
 

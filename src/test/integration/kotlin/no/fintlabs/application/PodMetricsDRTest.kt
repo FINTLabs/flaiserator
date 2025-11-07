@@ -11,7 +11,7 @@ import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Metrics
-import no.fintlabs.application.api.v1alpha1.Observability
+import no.fintlabs.application.api.v1alpha1.ApplicationObservability
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -24,7 +24,7 @@ class PodMetricsDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics =
                               Metrics(enabled = true, path = "/actuator/prometheus", port = "8080")
                       )
@@ -46,7 +46,7 @@ class PodMetricsDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics = Metrics(enabled = true, path = "/metrics", port = "1234")
                       )
               )
@@ -65,7 +65,7 @@ class PodMetricsDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics =
                               Metrics(enabled = false, path = "/actuator/prometheus", port = "8080")
                       )

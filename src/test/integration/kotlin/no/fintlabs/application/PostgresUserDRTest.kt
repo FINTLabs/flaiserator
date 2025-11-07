@@ -8,7 +8,7 @@ import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createKoinTestExtension
 import no.fintlabs.application.Utils.createKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.api.v1alpha1.Database
+import no.fintlabs.common.api.v1alpha1.Database
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.v1alpha1.PGUser

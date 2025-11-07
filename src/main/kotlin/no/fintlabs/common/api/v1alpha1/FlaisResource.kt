@@ -4,7 +4,7 @@ import io.fabric8.kubernetes.api.model.Namespaced
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import io.fabric8.kubernetes.client.CustomResource
 
-abstract class FlaisResource<T> : CustomResource<T, FlaisResourceStatus>(), Namespaced
+abstract class FlaisResource<T : FlaisResourceSpec> : CustomResource<T, FlaisResourceStatus>(), Namespaced
 
 fun <T : FlaisResource<*>> T.clone() : T {
   val resource = this.javaClass.getConstructor().newInstance()

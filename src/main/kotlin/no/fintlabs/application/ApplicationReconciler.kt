@@ -6,6 +6,7 @@ import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.common.FlaisResourceReconciler
 import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
+import no.fintlabs.common.PostgresUserDR
 import no.fintlabs.operator.workflow.Dependent
 import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent

@@ -2,19 +2,11 @@ package no.fintlabs.application
 
 import io.fabric8.kubernetes.api.model.Container
 import io.fabric8.kubernetes.api.model.ContainerPort
-import io.fabric8.kubernetes.api.model.EnvFromSource
 import io.fabric8.kubernetes.api.model.EnvVar
 import io.fabric8.kubernetes.api.model.HTTPGetAction
 import io.fabric8.kubernetes.api.model.IntOrString
 import io.fabric8.kubernetes.api.model.LabelSelector
-import io.fabric8.kubernetes.api.model.LocalObjectReference
-import io.fabric8.kubernetes.api.model.PodSpec
-import io.fabric8.kubernetes.api.model.PodTemplateSpec
 import io.fabric8.kubernetes.api.model.Probe
-import io.fabric8.kubernetes.api.model.SecretEnvSource
-import io.fabric8.kubernetes.api.model.SecretVolumeSource
-import io.fabric8.kubernetes.api.model.Volume
-import io.fabric8.kubernetes.api.model.VolumeMount
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec
 import io.javaoperatorsdk.operator.api.config.informer.Informer
@@ -23,15 +15,17 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernete
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.Config
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
-import no.fintlabs.application.api.ORG_ID_LABEL
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
+import no.fintlabs.common.PostgresUserDR
 import no.fintlabs.common.createObjectMeta
 import no.fintlabs.common.getLogger
+import no.fintlabs.common.pod.PodBuilder
+import no.fintlabs.common.pod.PodBuilderContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import no.fintlabs.application.api.v1alpha1.Probe as FlaisProbe
+import no.fintlabs.common.api.v1alpha1.Probe as FlaisProbe
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class DeploymentDR :
@@ -41,26 +35,35 @@ class DeploymentDR :
   private val logger = getLogger()
 
   private val kafkaDR by inject<KafkaDR<FlaisApplication>>()
-  private val postgresUserDR by inject<PostgresUserDR>()
+  private val postgresUserDR by inject<PostgresUserDR<FlaisApplication>>()
   private val onePasswordDR by inject<OnePasswordDR<FlaisApplication>>()
+  private val podBuilder = PodBuilder.create(
+    config,
+    kafkaDR,
+    postgresUserDR,
+    onePasswordDR
+  )
 
   override fun name() = "deployment"
 
-  override fun desired(primary: FlaisApplication, context: Context<FlaisApplication>) =
-      Deployment().apply {
-        metadata = createObjectMeta(primary)
-        spec =
-            DeploymentSpec().apply {
-              replicas = primary.spec.replicas
-              selector = LabelSelector(null, mapOf("app" to primary.metadata.name))
-              template =
-                  PodTemplateSpec().apply {
-                    metadata = cretePodMetadata(primary)
-                    spec = createPodSpec(primary, context)
-                  }
-              strategy = primary.spec.strategy
-            }
-      }
+  override fun desired(primary: FlaisApplication, context: Context<FlaisApplication>): Deployment {
+    val podTemplate = podBuilder.build(
+      primary, context,
+      { builderContext -> cretePodMetadata(primary, builderContext) },
+      { builderContext -> configurePodSpec(primary, builderContext) }
+    )
+
+    return Deployment().apply {
+      metadata = createObjectMeta(primary)
+      spec =
+        DeploymentSpec().apply {
+          replicas = primary.spec.replicas
+          selector = LabelSelector(null, mapOf("app" to primary.metadata.name))
+          template = podTemplate
+          strategy = primary.spec.strategy
+        }
+    }
+  }
 
   override fun handleUpdate(
       actual: Deployment,
@@ -81,44 +84,34 @@ class DeploymentDR :
     return handleCreate(desired, primary, context)
   }
 
-  private fun cretePodMetadata(primary: FlaisApplication) =
+  private fun cretePodMetadata(primary: FlaisApplication, builderContext: PodBuilderContext) =
       createObjectMeta(primary).apply {
+        annotations.putAll(builderContext.annotations)
+        labels.putAll(builderContext.labels)
+
         annotations["kubectl.kubernetes.io/default-container"] = primary.metadata.name
         labels["observability.fintlabs.no/loki"] =
             primary.spec.observability?.logging?.loki?.toString() ?: "true"
       }
 
-  private fun createPodSpec(primary: FlaisApplication, context: Context<FlaisApplication>) =
-      PodSpec().apply {
-        volumes = createPodVolumes(primary, context)
-        containers = listOf(createAppContainer(primary, context))
-        imagePullSecrets = createImagePullSecrets(primary)
-      }
+  private fun configurePodSpec(primary: FlaisApplication, builderContext: PodBuilderContext) {
+    createContainerEnv(primary, builderContext)
+    builderContext.envFrom.addAll(primary.spec.envFrom)
 
-  private fun createImagePullSecrets(primary: FlaisApplication) =
-      mutableSetOf<String>().plus(primary.spec.imagePullSecrets).plus(config.imagePullSecrets).map {
-        LocalObjectReference(it)
-      }
-
-  private fun createAppContainer(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ) =
-      Container().apply {
-        name = primary.metadata.name
-        image = primary.spec.image
-        imagePullPolicy = primary.spec.imagePullPolicy
-        resources = primary.spec.resources
-        ports = createContainerPorts(primary)
-        env = createContainerEnv(primary)
-        envFrom = createContainerEnvFrom(primary, context)
-        ports = createContainerPorts(primary)
-        volumeMounts = createContainerVolumeMounts(primary, context)
-        startupProbe = primary.spec.probes?.startup?.let { createPodProbe(it, primary.spec.port) }
-        readinessProbe =
-            primary.spec.probes?.readiness?.let { createPodProbe(it, primary.spec.port) }
-        livenessProbe = primary.spec.probes?.liveness?.let { createPodProbe(it, primary.spec.port) }
-      }
+    builderContext.containers += Container().apply {
+      name = primary.metadata.name
+      image = primary.spec.image
+      imagePullPolicy = primary.spec.imagePullPolicy
+      resources = primary.spec.resources
+      ports = createContainerPorts(primary)
+      env = builderContext.env
+      envFrom = builderContext.envFrom
+      volumeMounts = builderContext.volumeMounts
+      startupProbe = primary.spec.probes?.startup?.let { createPodProbe(it, primary.spec.port) }
+      readinessProbe = primary.spec.probes?.readiness?.let { createPodProbe(it, primary.spec.port) }
+      livenessProbe = primary.spec.probes?.liveness?.let { createPodProbe(it, primary.spec.port) }
+    }
+  }
 
   private fun createContainerPorts(primary: FlaisApplication): List<ContainerPort> {
     val ports =
@@ -144,54 +137,13 @@ class DeploymentDR :
     return ports
   }
 
-  private fun createContainerEnv(primary: FlaisApplication): List<EnvVar> {
-    val envVars =
-        primary.spec.env
-            .map {
-              if (it.value?.isEmpty() == true) {
-                it.value = null
-              }
-              it
-            }
-            .toMutableList()
-
-    envVars.add(EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null))
-    envVars.add(EnvVar("TZ", "Europe/Oslo", null))
-
+  private fun createContainerEnv(primary: FlaisApplication, builderContext: PodBuilderContext) {
     primary.spec.url.basePath
         ?.takeIf { it.isNotBlank() }
         ?.let { basePath ->
-          envVars.add(EnvVar("spring.webflux.base-path", basePath, null))
-          envVars.add(EnvVar("spring.mvc.servlet.path", basePath, null))
+          builderContext.env.add(EnvVar("spring.webflux.base-path", basePath, null))
+          builderContext.env.add(EnvVar("spring.mvc.servlet.path", basePath, null))
         }
-
-    return envVars.distinctBy { it.name }
-  }
-
-  private fun createContainerEnvFrom(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ): List<EnvFromSource> {
-    val envFromSources =
-        listOfNotNull(
-            EnvFromSource()
-                .apply {
-                  secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-op" }
-                }
-                .takeIf { onePasswordDR.shouldReconcile(primary, context) },
-            EnvFromSource()
-                .apply {
-                  secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-db" }
-                }
-                .takeIf { postgresUserDR.shouldReconcile(primary, context) },
-            EnvFromSource()
-                .apply {
-                  secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-kafka" }
-                }
-                .takeIf { kafkaDR.shouldReconcile(primary, context) },
-        )
-
-    return primary.spec.envFrom.toMutableSet().plus(envFromSources).toList()
   }
 
   private fun createPodProbe(probe: FlaisProbe, appPort: Int) =
@@ -222,35 +174,4 @@ class DeploymentDR :
         startsWith("/") -> this
         else -> "/$this"
       }
-
-  // Volumes and volume mounts
-  private fun createPodVolumes(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ) =
-      listOfNotNull(
-          Volume()
-              .apply {
-                name = "credentials"
-                secret =
-                    SecretVolumeSource().apply {
-                      secretName = "${primary.metadata.name}-kafka-certificates"
-                    }
-              }
-              .takeIf { kafkaDR.shouldReconcile(primary, context) }
-      )
-
-  private fun createContainerVolumeMounts(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ) =
-      listOfNotNull(
-          VolumeMount()
-              .apply {
-                name = "credentials"
-                mountPath = "/credentials"
-                readOnly = true
-              }
-              .takeIf { kafkaDR.shouldReconcile(primary, context) }
-      )
 }

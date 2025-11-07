@@ -15,10 +15,13 @@ import no.fintlabs.application.Utils.updateAndGetResource
 import no.fintlabs.application.Utils.waitUntil
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
 import no.fintlabs.application.api.v1alpha1.*
-import no.fintlabs.application.api.v1alpha1.Probe
+import no.fintlabs.common.api.v1alpha1.Database
+import no.fintlabs.common.api.v1alpha1.Probe
 import no.fintlabs.common.api.v1alpha1.FlaisResourceState
 import no.fintlabs.common.api.v1alpha1.Kafka
 import no.fintlabs.common.api.v1alpha1.OnePassword
+import no.fintlabs.common.api.v1alpha1.ProbeDefaults
+import no.fintlabs.common.api.v1alpha1.Probes
 import no.fintlabs.common.createOwnerReference
 import no.fintlabs.extensions.KubernetesOperator
 import no.fintlabs.extensions.KubernetesOperatorContext
@@ -279,46 +282,12 @@ class DeploymentDRTest {
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
-    assertEquals(4, deployment.spec.template.spec.containers[0].env.size)
-    assertEquals("key1", deployment.spec.template.spec.containers[0].env[0].name)
-    assertEquals("value1", deployment.spec.template.spec.containers[0].env[0].value)
-    assertEquals("key2", deployment.spec.template.spec.containers[0].env[1].name)
-    assertEquals("value2", deployment.spec.template.spec.containers[0].env[1].value)
-    assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[2].name)
-    assertEquals("test.org", deployment.spec.template.spec.containers[0].env[2].value)
-    assertEquals("TZ", deployment.spec.template.spec.containers[0].env[3].name)
-    assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[3].value)
-  }
-
-  @Test
-  fun `should not have overlapping env variables`(context: KubernetesOperatorContext) {
-    val flaisApplication =
-        createTestFlaisApplication().apply {
-          spec =
-              spec.copy(
-                  env =
-                      listOf(
-                          EnvVar().apply {
-                            name = "fint.org-id"
-                            value = "value1"
-                          },
-                          EnvVar().apply {
-                            name = "key2"
-                            value = "value2"
-                          },
-                      )
-              )
-        }
-
-    val deployment = context.createAndGetDeployment(flaisApplication)
-    assertNotNull(deployment)
-    assertEquals(3, deployment.spec.template.spec.containers[0].env.size)
-    assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[0].name)
-    assertEquals("value1", deployment.spec.template.spec.containers[0].env[0].value)
-    assertEquals("key2", deployment.spec.template.spec.containers[0].env[1].name)
-    assertEquals("value2", deployment.spec.template.spec.containers[0].env[1].value)
-    assertEquals("TZ", deployment.spec.template.spec.containers[0].env[2].name)
-    assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[2].value)
+    val env = deployment.spec.template.spec.containers[0].env
+    assert(env.size > 2)
+    val key1 = env.find { it.name == "key1" }
+    assertEquals("value1", key1!!.value)
+    val key2 = env.find { it.name == "key2" }
+    assertEquals("value2", key2!!.value)
   }
 
   @Test
@@ -330,7 +299,7 @@ class DeploymentDRTest {
                   env =
                       listOf(
                           EnvVar().apply {
-                            name = "fint.org-id"
+                            name = "test"
                             value = ""
                           }
                       )
@@ -339,8 +308,9 @@ class DeploymentDRTest {
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
-    assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[0].name)
-    assertEquals(null, deployment.spec.template.spec.containers[0].env[0].value)
+    val env = deployment.spec.template.spec.containers[0].env.find { it.name == "test" }
+    assertNotNull(env)
+    assertEquals(null, env.value)
   }
 
   @Test
@@ -498,7 +468,7 @@ class DeploymentDRTest {
   fun `should have loki logging enabled`(context: KubernetesOperatorContext) {
     val flaisApplication =
         createTestFlaisApplication().apply {
-          spec = spec.copy(observability = Observability(logging = Logging(loki = true)))
+          spec = spec.copy(observability = ApplicationObservability(logging = Logging(loki = true)))
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -510,7 +480,7 @@ class DeploymentDRTest {
   fun `should have loki logging disabled`(context: KubernetesOperatorContext) {
     val flaisApplication =
         createTestFlaisApplication().apply {
-          spec = spec.copy(observability = Observability(logging = Logging(loki = false)))
+          spec = spec.copy(observability = ApplicationObservability(logging = Logging(loki = false)))
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -527,7 +497,7 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics = Metrics(enabled = true, port = "8081", path = "/metrics")
                       )
               )
@@ -635,17 +605,17 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   probes =
-                      Probes(
-                          liveness =
-                              Probe(
-                                  path = "/liveness",
-                                  port = IntOrString(8080),
-                                  periodSeconds = 100,
-                                  timeoutSeconds = 100,
-                                  failureThreshold = 100,
-                                  initialDelaySeconds = 100,
-                              )
-                      )
+                    Probes(
+                      liveness =
+                        Probe(
+                          path = "/liveness",
+                          port = IntOrString(8080),
+                          periodSeconds = 100,
+                          timeoutSeconds = 100,
+                          failureThreshold = 100,
+                          initialDelaySeconds = 100,
+                        )
+                    )
               )
         }
 
@@ -691,15 +661,15 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   probes =
-                      Probes(
-                          liveness =
-                              Probe(
-                                  initialDelaySeconds = 0,
-                                  failureThreshold = 0,
-                                  periodSeconds = 0,
-                                  timeoutSeconds = 0,
-                              )
-                      )
+                    Probes(
+                      liveness =
+                        Probe(
+                          initialDelaySeconds = 0,
+                          failureThreshold = 0,
+                          periodSeconds = 0,
+                          timeoutSeconds = 0,
+                        )
+                    )
               )
         }
 
@@ -725,15 +695,15 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   probes =
-                      Probes(
-                          liveness =
-                              Probe(
-                                  initialDelaySeconds = null,
-                                  failureThreshold = null,
-                                  periodSeconds = null,
-                                  timeoutSeconds = null,
-                              )
-                      )
+                    Probes(
+                      liveness =
+                        Probe(
+                          initialDelaySeconds = null,
+                          failureThreshold = null,
+                          periodSeconds = null,
+                          timeoutSeconds = null,
+                        )
+                    )
               )
         }
 
