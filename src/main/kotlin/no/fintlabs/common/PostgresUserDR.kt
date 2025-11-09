@@ -7,7 +7,6 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
-import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.common.api.v1alpha1.Database
 import no.fintlabs.common.api.v1alpha1.FlaisResource
 import no.fintlabs.common.api.v1alpha1.FlaisResourceSpec
@@ -24,12 +23,13 @@ interface WithPostgres : FlaisResourceSpec {
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class PostgresUserDR<P : FlaisResource<out WithPostgres>> :
     CRUDKubernetesDependentResource<PGUser, P>(PGUser::class.java),
-  ReconcileCondition<P>, PodCustomizer<P> {
+    ReconcileCondition<P>,
+    PodCustomizer<P> {
   override fun name(): String = "postgres-user"
 
   override fun desired(
-    primary: P,
-    context: Context<P>,
+      primary: P,
+      context: Context<P>,
   ): PGUser =
       PGUser().apply {
         metadata = createObjectMeta(primary).apply { name = "${primary.metadata.name}-db" }
@@ -37,20 +37,16 @@ class PostgresUserDR<P : FlaisResource<out WithPostgres>> :
       }
 
   override fun shouldReconcile(
-    primary: P,
-    context: Context<P>,
+      primary: P,
+      context: Context<P>,
   ): Boolean = !primary.spec.database.database.isNullOrEmpty()
 
-  override fun customizePod(
-    primary: P,
-    builderContext: PodBuilderContext,
-    context: Context<P>
-  ) {
+  override fun customizePod(primary: P, builderContext: PodBuilderContext, context: Context<P>) {
     if (!shouldReconcile(primary, context)) return
 
-    builderContext.envFrom += EnvFromSource()
-      .apply {
-        secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-db" }
-      }
+    builderContext.envFrom +=
+        EnvFromSource().apply {
+          secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-db" }
+        }
   }
 }

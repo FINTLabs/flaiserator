@@ -1,7 +1,6 @@
 package no.fintlabs.application.api.v1alpha1
 
 import io.fabric8.generator.annotation.Min
-import io.fabric8.generator.annotation.ValidationRule
 import io.fabric8.kubernetes.api.model.EnvFromSource
 import io.fabric8.kubernetes.api.model.EnvVar
 import io.fabric8.kubernetes.api.model.Quantity
@@ -19,8 +18,7 @@ import no.fintlabs.common.api.v1alpha1.Probes
 
 data class FlaisApplicationSpec(
     override val orgId: String = "",
-    @get:Min(0.0)
-    val replicas: Int = 1,
+    @get:Min(0.0) val replicas: Int = 1,
     override val image: String = "",
     override val imagePullPolicy: String? = null,
     override val imagePullSecrets: List<String> = emptyList(),

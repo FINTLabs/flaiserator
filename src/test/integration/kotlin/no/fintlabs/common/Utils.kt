@@ -5,35 +5,34 @@ import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import no.fintlabs.Utils.createAndGetResource
-import org.koin.core.qualifier.named
-import org.koin.dsl.module
 import no.fintlabs.Utils.createKoinTestExtension
-import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesOperatorExtension
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.PGUser
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 
 object Utils {
-  fun createTestResource() = FlaisTestResource().apply {
-    metadata =
-      ObjectMeta().apply {
-        name = "test"
+  fun createTestResource() =
+      FlaisTestResource().apply {
+        metadata =
+            ObjectMeta().apply {
+              name = "test"
 
-        labels =
-          mutableMapOf(
-            "fintlabs.no/team" to "test",
-            "fintlabs.no/org-id" to "test.org",
-          )
+              labels =
+                  mutableMapOf(
+                      "fintlabs.no/team" to "test",
+                      "fintlabs.no/org-id" to "test.org",
+                  )
+            }
+        spec = FlaisTestResourceSpec()
       }
-    spec = FlaisTestResourceSpec()
-  }
 
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
-    source: FlaisTestResource,
-    nameSelector: (FlaisTestResource) -> String = { it.metadata.name },
+      source: FlaisTestResource,
+      nameSelector: (FlaisTestResource) -> String = { it.metadata.name },
   ): T? = createAndGetResource<FlaisTestResource, T>(source, nameSelector)
-
 
   val testModule = module {
     single<Reconciler<*>>(named("test-reconciler")) { TestReconciler() }
@@ -45,12 +44,13 @@ object Utils {
 
   fun createKoinTestExtension() = createKoinTestExtension(testModule)
 
-  fun createKubernetesOperatorExtension() = KubernetesOperatorExtension.create(
-    listOf(
-      FlaisTestResource::class.java,
-      KafkaUserAndAcl::class.java,
-      PGUser::class.java,
-      OnePasswordItem::class.java
-    )
-  )
+  fun createKubernetesOperatorExtension() =
+      KubernetesOperatorExtension.create(
+          listOf(
+              FlaisTestResource::class.java,
+              KafkaUserAndAcl::class.java,
+              PGUser::class.java,
+              OnePasswordItem::class.java,
+          )
+      )
 }

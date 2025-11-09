@@ -1,5 +1,9 @@
 package no.fintlabs.common
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.common.Utils.createAndGetResource
 import no.fintlabs.common.Utils.createKoinTestExtension
 import no.fintlabs.common.Utils.createKubernetesOperatorExtension
@@ -9,17 +13,13 @@ import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.extension.RegisterExtension
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class KafkaDRTest {
   // region General
   @Test
   fun `should create KafkaUserAndAcl`(context: KubernetesOperatorContext) {
     val testResource =
-      createTestResource().apply {
+        createTestResource().apply {
           spec =
               spec.copy(
                   kafka =
@@ -45,7 +45,7 @@ class KafkaDRTest {
   @Test
   fun `should create KafkaUserAndAcl with multiple acls`(context: KubernetesOperatorContext) {
     val testResource =
-      createTestResource().apply {
+        createTestResource().apply {
           spec =
               spec.copy(
                   kafka =
@@ -78,8 +78,7 @@ class KafkaDRTest {
   fun `should not create KafkaUserAndAcl since enabled is false`(
       context: KubernetesOperatorContext
   ) {
-    val testResource =
-      createTestResource().apply { spec = spec.copy(kafka = Kafka(false)) }
+    val testResource = createTestResource().apply { spec = spec.copy(kafka = Kafka(false)) }
 
     val kafkaUserAndAcl = context.createAndKafkaUserAndAcl(testResource)
     assertNull(kafkaUserAndAcl)
@@ -89,8 +88,7 @@ class KafkaDRTest {
   fun `should not create KafkaUserAndAcl since acls is not set`(
       context: KubernetesOperatorContext
   ) {
-    val testResource =
-      createTestResource().apply { spec = spec.copy(kafka = Kafka(true)) }
+    val testResource = createTestResource().apply { spec = spec.copy(kafka = Kafka(true)) }
 
     val kafkaUserAndAcl = context.createAndKafkaUserAndAcl(testResource)
     assertNull(kafkaUserAndAcl)

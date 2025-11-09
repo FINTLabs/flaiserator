@@ -1,6 +1,10 @@
 package no.fintlabs.application
 
 import com.coreos.monitoring.v1.PodMonitor
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createApplicationKoinTestExtension
 import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
@@ -10,10 +14,6 @@ import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Metrics
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class PodMetricsDRTest {
   // region General
@@ -84,6 +84,7 @@ class PodMetricsDRTest {
   companion object {
     @RegisterExtension val koinTestExtension = createApplicationKoinTestExtension()
 
-    @RegisterExtension val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

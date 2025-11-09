@@ -19,13 +19,13 @@ import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
 import no.fintlabs.common.PostgresUserDR
+import no.fintlabs.common.api.v1alpha1.Probe as FlaisProbe
 import no.fintlabs.common.createObjectMeta
 import no.fintlabs.common.getLogger
 import no.fintlabs.common.pod.PodBuilder
 import no.fintlabs.common.pod.PodBuilderContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import no.fintlabs.common.api.v1alpha1.Probe as FlaisProbe
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class DeploymentDR :
@@ -37,31 +37,28 @@ class DeploymentDR :
   private val kafkaDR by inject<KafkaDR<FlaisApplication>>()
   private val postgresUserDR by inject<PostgresUserDR<FlaisApplication>>()
   private val onePasswordDR by inject<OnePasswordDR<FlaisApplication>>()
-  private val podBuilder = PodBuilder.create(
-    config,
-    kafkaDR,
-    postgresUserDR,
-    onePasswordDR
-  )
+  private val podBuilder = PodBuilder.create(config, kafkaDR, postgresUserDR, onePasswordDR)
 
   override fun name() = "deployment"
 
   override fun desired(primary: FlaisApplication, context: Context<FlaisApplication>): Deployment {
-    val podTemplate = podBuilder.build(
-      primary, context,
-      { builderContext -> cretePodMetadata(primary, builderContext) },
-      { builderContext -> configurePodSpec(primary, builderContext) }
-    )
+    val podTemplate =
+        podBuilder.build(
+            primary,
+            context,
+            { builderContext -> cretePodMetadata(primary, builderContext) },
+            { builderContext -> configurePodSpec(primary, builderContext) },
+        )
 
     return Deployment().apply {
       metadata = createObjectMeta(primary)
       spec =
-        DeploymentSpec().apply {
-          replicas = primary.spec.replicas
-          selector = LabelSelector(null, mapOf("app" to primary.metadata.name))
-          template = podTemplate
-          strategy = primary.spec.strategy
-        }
+          DeploymentSpec().apply {
+            replicas = primary.spec.replicas
+            selector = LabelSelector(null, mapOf("app" to primary.metadata.name))
+            template = podTemplate
+            strategy = primary.spec.strategy
+          }
     }
   }
 
@@ -98,19 +95,22 @@ class DeploymentDR :
     createContainerEnv(primary, builderContext)
     builderContext.envFrom.addAll(primary.spec.envFrom)
 
-    builderContext.containers += Container().apply {
-      name = primary.metadata.name
-      image = primary.spec.image
-      imagePullPolicy = primary.spec.imagePullPolicy
-      resources = primary.spec.resources
-      ports = createContainerPorts(primary)
-      env = builderContext.env
-      envFrom = builderContext.envFrom
-      volumeMounts = builderContext.volumeMounts
-      startupProbe = primary.spec.probes?.startup?.let { createPodProbe(it, primary.spec.port) }
-      readinessProbe = primary.spec.probes?.readiness?.let { createPodProbe(it, primary.spec.port) }
-      livenessProbe = primary.spec.probes?.liveness?.let { createPodProbe(it, primary.spec.port) }
-    }
+    builderContext.containers +=
+        Container().apply {
+          name = primary.metadata.name
+          image = primary.spec.image
+          imagePullPolicy = primary.spec.imagePullPolicy
+          resources = primary.spec.resources
+          ports = createContainerPorts(primary)
+          env = builderContext.env
+          envFrom = builderContext.envFrom
+          volumeMounts = builderContext.volumeMounts
+          startupProbe = primary.spec.probes?.startup?.let { createPodProbe(it, primary.spec.port) }
+          readinessProbe =
+              primary.spec.probes?.readiness?.let { createPodProbe(it, primary.spec.port) }
+          livenessProbe =
+              primary.spec.probes?.liveness?.let { createPodProbe(it, primary.spec.port) }
+        }
   }
 
   private fun createContainerPorts(primary: FlaisApplication): List<ContainerPort> {

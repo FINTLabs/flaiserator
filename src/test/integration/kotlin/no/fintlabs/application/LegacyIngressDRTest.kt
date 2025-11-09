@@ -1,6 +1,10 @@
 package no.fintlabs.application
 
 import io.fabric8.kubernetes.client.KubernetesClientException
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createApplicationKoinTestExtension
 import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
@@ -13,10 +17,6 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Tags
 import org.junit.jupiter.api.extension.RegisterExtension
 import us.containo.traefik.v1alpha1.IngressRoute
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class LegacyIngressDRTest {
   // region General
@@ -138,6 +138,7 @@ class LegacyIngressDRTest {
   companion object {
     @RegisterExtension val koinTestExtension = createApplicationKoinTestExtension()
 
-    @RegisterExtension val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

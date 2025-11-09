@@ -5,7 +5,6 @@ import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
 import no.fintlabs.common.PostgresUserDR
-import no.fintlabs.common.pod.PodBuilder
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 

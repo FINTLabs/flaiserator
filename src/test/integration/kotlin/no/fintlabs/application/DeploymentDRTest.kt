@@ -12,6 +12,10 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.github.netmikey.logunit.api.LogCapturer
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.Utils.waitUntil
 import no.fintlabs.application.Utils.createAndGetResource
@@ -40,10 +44,6 @@ import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 @KubernetesResources("deployment/kubernetes")
 class DeploymentDRTest {
@@ -436,15 +436,15 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   kafka =
-                    Kafka(
-                      acls =
-                        listOf(
-                          Acls().apply {
-                            topic = "test-topic"
-                            permission = "write"
-                          }
-                        )
-                    )
+                      Kafka(
+                          acls =
+                              listOf(
+                                  Acls().apply {
+                                    topic = "test-topic"
+                                    permission = "write"
+                                  }
+                              )
+                      )
               )
         }
 
@@ -489,7 +489,8 @@ class DeploymentDRTest {
   fun `should have loki logging disabled`(context: KubernetesOperatorContext) {
     val flaisApplication =
         createTestFlaisApplication().apply {
-          spec = spec.copy(observability = ApplicationObservability(logging = Logging(loki = false)))
+          spec =
+              spec.copy(observability = ApplicationObservability(logging = Logging(loki = false)))
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -506,9 +507,9 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   observability =
-                    ApplicationObservability(
-                      metrics = Metrics(enabled = true, port = "8081", path = "/metrics")
-                    )
+                      ApplicationObservability(
+                          metrics = Metrics(enabled = true, port = "8081", path = "/metrics")
+                      )
               )
         }
 
@@ -614,17 +615,17 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   probes =
-                    Probes(
-                      liveness =
-                        Probe(
-                          path = "/liveness",
-                          port = IntOrString(8080),
-                          periodSeconds = 100,
-                          timeoutSeconds = 100,
-                          failureThreshold = 100,
-                          initialDelaySeconds = 100,
-                        )
-                    )
+                      Probes(
+                          liveness =
+                              Probe(
+                                  path = "/liveness",
+                                  port = IntOrString(8080),
+                                  periodSeconds = 100,
+                                  timeoutSeconds = 100,
+                                  failureThreshold = 100,
+                                  initialDelaySeconds = 100,
+                              )
+                      )
               )
         }
 
@@ -670,15 +671,15 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   probes =
-                    Probes(
-                      liveness =
-                        Probe(
-                          initialDelaySeconds = 0,
-                          failureThreshold = 0,
-                          periodSeconds = 0,
-                          timeoutSeconds = 0,
-                        )
-                    )
+                      Probes(
+                          liveness =
+                              Probe(
+                                  initialDelaySeconds = 0,
+                                  failureThreshold = 0,
+                                  periodSeconds = 0,
+                                  timeoutSeconds = 0,
+                              )
+                      )
               )
         }
 
@@ -704,15 +705,15 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   probes =
-                    Probes(
-                      liveness =
-                        Probe(
-                          initialDelaySeconds = null,
-                          failureThreshold = null,
-                          periodSeconds = null,
-                          timeoutSeconds = null,
-                        )
-                    )
+                      Probes(
+                          liveness =
+                              Probe(
+                                  initialDelaySeconds = null,
+                                  failureThreshold = null,
+                                  periodSeconds = null,
+                                  timeoutSeconds = null,
+                              )
+                      )
               )
         }
 
@@ -750,6 +751,7 @@ class DeploymentDRTest {
             }
         )
 
-    @RegisterExtension val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

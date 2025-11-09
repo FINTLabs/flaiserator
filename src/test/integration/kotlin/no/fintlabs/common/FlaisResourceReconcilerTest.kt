@@ -4,6 +4,10 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry
 import io.mockk.every
 import io.mockk.spyk
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import no.fintlabs.Utils.waitUntil
 import no.fintlabs.common.Utils.createAndGetResource
 import no.fintlabs.common.Utils.createKoinTestExtension
@@ -17,11 +21,6 @@ import org.koin.core.component.get
 import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.mock.declare
-import kotlin.test.Test
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-
 
 class FlaisResourceReconcilerTest : KoinTest {
   @Test
@@ -32,18 +31,21 @@ class FlaisResourceReconcilerTest : KoinTest {
     assertContains(testResource.metadata.annotations, "fintlabs.no/deployment-correlation-id")
     assertNotNull(testResource.status.correlationId)
     assertEquals(
-      testResource.metadata.annotations["fintlabs.no/deployment-correlation-id"],
-      testResource.status.correlationId,
+        testResource.metadata.annotations["fintlabs.no/deployment-correlation-id"],
+        testResource.status.correlationId,
     )
   }
 
   @Test
   fun `should not set correlation id on FlaisResource if exists`(
-    context: KubernetesOperatorContext
+      context: KubernetesOperatorContext
   ) {
-    val testResource = context.createAndGetTestResource(createTestResource().apply {
-      metadata.annotations["fintlabs.no/deployment-correlation-id"] = "123"
-    })
+    val testResource =
+        context.createAndGetTestResource(
+            createTestResource().apply {
+              metadata.annotations["fintlabs.no/deployment-correlation-id"] = "123"
+            }
+        )
 
     assertNotNull(testResource)
     assertContains(testResource.metadata.annotations, "fintlabs.no/deployment-correlation-id")
@@ -61,9 +63,7 @@ class FlaisResourceReconcilerTest : KoinTest {
     declare<TestConfigDR> { service }
 
     val testReconciler = get<Reconciler<*>>(named("test-reconciler")) as TestReconciler
-    context.registerReconciler(testReconciler) {
-      it.withRetry(GenericRetry.noRetry())
-    }
+    context.registerReconciler(testReconciler) { it.withRetry(GenericRetry.noRetry()) }
 
     context.operator.start()
 
@@ -77,12 +77,15 @@ class FlaisResourceReconcilerTest : KoinTest {
     val actualTestResource = context.get<FlaisTestResource>(testResource.metadata.name)
     assertNotNull(actualTestResource)
     assertEquals(1, actualTestResource.status.errors?.size)
-    assertEquals("error", actualTestResource.status.errors?.find { it.dependent == service.name() }?.message)
+    assertEquals(
+        "error",
+        actualTestResource.status.errors?.find { it.dependent == service.name() }?.message,
+    )
   }
 
   companion object {
     private fun KubernetesOperatorContext.createAndGetTestResource(resource: FlaisTestResource) =
-      createAndGetResource<FlaisTestResource>(resource)
+        createAndGetResource<FlaisTestResource>(resource)
 
     @RegisterExtension val koinTestExtension = createKoinTestExtension()
 

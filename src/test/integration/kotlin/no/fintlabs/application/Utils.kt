@@ -33,23 +33,22 @@ object Utils {
   }
 
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
-    source: FlaisApplication,
-    nameSelector: (FlaisApplication) -> String = { it.metadata.name },
+      source: FlaisApplication,
+      nameSelector: (FlaisApplication) -> String = { it.metadata.name },
   ): T? = createAndGetResource<FlaisApplication, T>(source, nameSelector)
 
-  fun createApplicationKoinTestExtension(vararg additionalModules: Module) = createKoinTestExtension(
-    applicationReconcilerModule(),
-    *additionalModules
-  )
+  fun createApplicationKoinTestExtension(vararg additionalModules: Module) =
+      createKoinTestExtension(applicationReconcilerModule(), *additionalModules)
 
-  fun createApplicationKubernetesOperatorExtension() = KubernetesOperatorExtension.create(
-    listOf(
-      FlaisApplication::class.java,
-      IngressRoute::class.java,
-      PGUser::class.java,
-      KafkaUserAndAcl::class.java,
-      OnePasswordItem::class.java,
-      PodMonitor::class.java,
-    )
-  )
+  fun createApplicationKubernetesOperatorExtension() =
+      KubernetesOperatorExtension.create(
+          listOf(
+              FlaisApplication::class.java,
+              IngressRoute::class.java,
+              PGUser::class.java,
+              KafkaUserAndAcl::class.java,
+              OnePasswordItem::class.java,
+              PodMonitor::class.java,
+          )
+      )
 }

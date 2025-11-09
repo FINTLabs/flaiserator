@@ -149,16 +149,16 @@ class FlaisApplicationTest {
     createAndApplyFlaisApplication(
         FlaisApplicationSpec(
             kafka =
-              Kafka(
-                enabled = true,
-                acls =
-                  listOf(
-                    Acls().apply {
-                      topic = "test-resource"
-                      permission = "test-permission"
-                    }
-                  ),
-              )
+                Kafka(
+                    enabled = true,
+                    acls =
+                        listOf(
+                            Acls().apply {
+                              topic = "test-resource"
+                              permission = "test-permission"
+                            }
+                        ),
+                )
         )
     )
     val resFlaisApplication = getFlaisApplication()
@@ -243,21 +243,21 @@ class FlaisApplicationTest {
     createAndApplyFlaisApplication(
         FlaisApplicationSpec(
             probes =
-              Probes(
-                startup = Probe(),
-                readiness =
-                  Probe(
-                    initialDelaySeconds = 10,
-                    failureThreshold = 10,
-                    periodSeconds = 10,
-                    timeoutSeconds = 10,
-                  ),
-                liveness =
-                  Probe(
-                    path = "test-path",
-                    port = IntOrString("3000"),
-                  ),
-              )
+                Probes(
+                    startup = Probe(),
+                    readiness =
+                        Probe(
+                            initialDelaySeconds = 10,
+                            failureThreshold = 10,
+                            periodSeconds = 10,
+                            timeoutSeconds = 10,
+                        ),
+                    liveness =
+                        Probe(
+                            path = "test-path",
+                            port = IntOrString("3000"),
+                        ),
+                )
         )
     )
 
@@ -289,17 +289,17 @@ class FlaisApplicationTest {
     createAndApplyFlaisApplication(
         FlaisApplicationSpec(
             probes =
-              Probes(
-                startup =
-                  Probe(
-                    port = IntOrString(1234),
-                    path = "/test-path",
-                    timeoutSeconds = 100,
-                    periodSeconds = 100,
-                    failureThreshold = 100,
-                    initialDelaySeconds = 100,
-                  ),
-              )
+                Probes(
+                    startup =
+                        Probe(
+                            port = IntOrString(1234),
+                            path = "/test-path",
+                            timeoutSeconds = 100,
+                            periodSeconds = 100,
+                            failureThreshold = 100,
+                            initialDelaySeconds = 100,
+                        ),
+                )
         )
     )
 
@@ -315,7 +315,7 @@ class FlaisApplicationTest {
   }
 
   private fun createAndApplyFlaisApplication(spec: FlaisApplicationSpec = FlaisApplicationSpec()) =
-    FlaisApplication()
+      FlaisApplication()
           .apply {
             metadata.name = "test-application"
             metadata.namespace = "default"

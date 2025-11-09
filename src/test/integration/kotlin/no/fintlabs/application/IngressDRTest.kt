@@ -1,5 +1,9 @@
 package no.fintlabs.application
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createApplicationKoinTestExtension
 import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
@@ -9,10 +13,6 @@ import no.fintlabs.application.api.v1alpha1.Ingress
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
 import us.containo.traefik.v1alpha1.IngressRoute
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class IngressDRTest {
   // region General
@@ -331,6 +331,7 @@ class IngressDRTest {
   companion object {
     @RegisterExtension val koinTestExtension = createApplicationKoinTestExtension()
 
-    @RegisterExtension val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

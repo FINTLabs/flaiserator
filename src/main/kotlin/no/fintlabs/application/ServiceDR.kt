@@ -12,8 +12,7 @@ import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.common.createObjectMeta
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
-class ServiceDR :
-    CRUDKubernetesDependentResource<Service, FlaisApplication>(Service::class.java) {
+class ServiceDR : CRUDKubernetesDependentResource<Service, FlaisApplication>(Service::class.java) {
   override fun name(): String = "service"
 
   override fun desired(

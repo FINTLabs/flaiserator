@@ -14,36 +14,36 @@ import no.fintlabs.v1alpha1.PGUser
 import org.koin.core.module.Module
 
 object Utils {
-  fun createTestFlaisJob() = FlaisJob().apply {
-      metadata =
-        ObjectMeta().apply {
-          name = "test"
+  fun createTestFlaisJob() =
+      FlaisJob().apply {
+        metadata =
+            ObjectMeta().apply {
+              name = "test"
 
-          labels =
-            mutableMapOf(
-              "fintlabs.no/team" to "test",
-              "fintlabs.no/org-id" to "test.org",
-            )
-        }
-      spec = FlaisJobSpec(orgId = "test.org", image = "hello-world", schedule = "0 0 1 1 *")
-    }
+              labels =
+                  mutableMapOf(
+                      "fintlabs.no/team" to "test",
+                      "fintlabs.no/org-id" to "test.org",
+                  )
+            }
+        spec = FlaisJobSpec(orgId = "test.org", image = "hello-world", schedule = "0 0 1 1 *")
+      }
 
   inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
-    source: FlaisJob,
-    nameSelector: (FlaisJob) -> String = { it.metadata.name },
+      source: FlaisJob,
+      nameSelector: (FlaisJob) -> String = { it.metadata.name },
   ): T? = createAndGetResource<FlaisJob, T>(source, nameSelector)
 
-  fun createJobKoinTestExtension(vararg additionalModules: Module) = createKoinTestExtension(
-    jobReconcilerModule(),
-    *additionalModules
-  )
+  fun createJobKoinTestExtension(vararg additionalModules: Module) =
+      createKoinTestExtension(jobReconcilerModule(), *additionalModules)
 
-  fun createJobKubernetesOperatorExtension() = KubernetesOperatorExtension.create(
-    listOf(
-      FlaisJob::class.java,
-      PGUser::class.java,
-      KafkaUserAndAcl::class.java,
-      OnePasswordItem::class.java,
-    )
-  )
+  fun createJobKubernetesOperatorExtension() =
+      KubernetesOperatorExtension.create(
+          listOf(
+              FlaisJob::class.java,
+              PGUser::class.java,
+              KafkaUserAndAcl::class.java,
+              OnePasswordItem::class.java,
+          )
+      )
 }

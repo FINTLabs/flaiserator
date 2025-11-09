@@ -1,6 +1,9 @@
 package no.fintlabs.application
 
 import io.fabric8.kubernetes.api.model.Service
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import no.fintlabs.application.Utils.createAndGetResource
 import no.fintlabs.application.Utils.createApplicationKoinTestExtension
 import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
@@ -8,9 +11,6 @@ import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class ServiceDRTest {
   // region General
@@ -45,6 +45,7 @@ class ServiceDRTest {
   companion object {
     @RegisterExtension val koinTestExtension = createApplicationKoinTestExtension()
 
-    @RegisterExtension val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

@@ -5,10 +5,12 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.Creator
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResource
 
-class TestConfigDR : KubernetesDependentResource<ConfigMap, FlaisTestResource>(ConfigMap::class.java),
-  Creator<ConfigMap, FlaisTestResource> {
-  override fun desired(primary: FlaisTestResource, context: Context<FlaisTestResource>): ConfigMap = ConfigMap().apply {
-    metadata = createObjectMeta(primary)
-    data = mapOf("name" to primary.metadata.name)
-  }
+class TestConfigDR :
+    KubernetesDependentResource<ConfigMap, FlaisTestResource>(ConfigMap::class.java),
+    Creator<ConfigMap, FlaisTestResource> {
+  override fun desired(primary: FlaisTestResource, context: Context<FlaisTestResource>): ConfigMap =
+      ConfigMap().apply {
+        metadata = createObjectMeta(primary)
+        data = mapOf("name" to primary.metadata.name)
+      }
 }

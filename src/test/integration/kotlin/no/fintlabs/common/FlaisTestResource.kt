@@ -14,17 +14,17 @@ import no.fintlabs.common.api.v1alpha1.Observability
 import no.fintlabs.common.api.v1alpha1.OnePassword
 
 data class FlaisTestResourceSpec(
-  override val orgId: String = "flais.no",
-  override val image: String = "hello-world",
-  override val imagePullPolicy: String? = null,
-  override val imagePullSecrets: List<String> = emptyList(),
-  override val env: List<EnvVar> = emptyList(),
-  override val envFrom: List<EnvFromSource> = emptyList(),
-  override val resources: ResourceRequirements = ResourceRequirements(),
-  override val observability: Observability? = null,
-  override val kafka: Kafka = Kafka(),
-  override val database: Database = Database(),
-  override val onePassword: OnePassword? = null,
+    override val orgId: String = "flais.no",
+    override val image: String = "hello-world",
+    override val imagePullPolicy: String? = null,
+    override val imagePullSecrets: List<String> = emptyList(),
+    override val env: List<EnvVar> = emptyList(),
+    override val envFrom: List<EnvFromSource> = emptyList(),
+    override val resources: ResourceRequirements = ResourceRequirements(),
+    override val observability: Observability? = null,
+    override val kafka: Kafka = Kafka(),
+    override val database: Database = Database(),
+    override val onePassword: OnePassword? = null,
 ) : FlaisResourceSpec, WithKafka, WithPostgres, WithOnePassword
 
 @Group("fintlabs.no")

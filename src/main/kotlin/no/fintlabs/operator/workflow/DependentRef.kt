@@ -1,10 +1,10 @@
 package no.fintlabs.operator.workflow
 
 import io.javaoperatorsdk.operator.api.reconciler.dependent.DependentResource
-import org.koin.core.qualifier.QualifierValue
 import kotlin.reflect.KClass
+import org.koin.core.qualifier.QualifierValue
 
 annotation class DependentRef(
-  val dependentClass: KClass<out DependentResource<*, *>>,
-  val qualifier: QualifierValue = ""
+    val dependentClass: KClass<out DependentResource<*, *>>,
+    val qualifier: QualifierValue = "",
 )

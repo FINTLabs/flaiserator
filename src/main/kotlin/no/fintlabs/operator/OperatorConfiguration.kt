@@ -21,7 +21,6 @@ import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
-import kotlin.reflect.KClass
 
 typealias KCondition = Condition<*, *>
 
@@ -116,7 +115,7 @@ class OperatorConfiguration :
                   dependentInstance.name(),
                   readyCondition,
                   reconcileCondition,
-                  dependsOn
+                  dependsOn,
               )
               .also {
                 DependentResourceConfigurationResolver.configureSpecFromConfigured(
@@ -129,11 +128,18 @@ class OperatorConfiguration :
         .toList()
   }
 
-  private fun getDependsOn(dependsOn: Array<DependentRef>) = dependsOn.map { dependentRef ->
-      val qualifier = dependentRef.qualifier.takeIf { it.isNotEmpty() }?.let { named(it) }
-      val dependent = getKoin()
-          .get<DependentResource<Any, HasMetadata>>(dependentRef.dependentClass, qualifier)
+  private fun getDependsOn(dependsOn: Array<DependentRef>) =
+      dependsOn
+          .map { dependentRef ->
+            val qualifier = dependentRef.qualifier.takeIf { it.isNotEmpty() }?.let { named(it) }
+            val dependent =
+                getKoin()
+                    .get<DependentResource<Any, HasMetadata>>(
+                        dependentRef.dependentClass,
+                        qualifier,
+                    )
 
-      dependent.name()
-    }.toSet()
-  }
+            dependent.name()
+          }
+          .toSet()
+}

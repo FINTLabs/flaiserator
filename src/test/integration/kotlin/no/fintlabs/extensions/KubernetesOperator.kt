@@ -1,6 +1,6 @@
 package no.fintlabs.extensions
 
 annotation class KubernetesOperator(
-  val explicitStart: Boolean = false,
-  val registerReconcilers: Boolean = true,
+    val explicitStart: Boolean = false,
+    val registerReconcilers: Boolean = true,
 )

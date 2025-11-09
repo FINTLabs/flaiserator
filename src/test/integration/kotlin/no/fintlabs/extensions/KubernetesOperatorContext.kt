@@ -38,8 +38,9 @@ class KubernetesOperatorContext(
   }
 
   fun <T : Reconciler<*>> registerReconciler(
-    reconciler: T,
-    configuration: ((ControllerConfigurationOverrider<*>) -> Unit)? = null) {
+      reconciler: T,
+      configuration: ((ControllerConfigurationOverrider<*>) -> Unit)? = null,
+  ) {
     operator.register(reconciler) {
       it.settingNamespace(kubernetesClient.namespace)
       configuration?.invoke(it)

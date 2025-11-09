@@ -10,9 +10,9 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
-import no.fintlabs.common.api.v1alpha1.Kafka
 import no.fintlabs.common.api.v1alpha1.FlaisResource
 import no.fintlabs.common.api.v1alpha1.FlaisResourceSpec
+import no.fintlabs.common.api.v1alpha1.Kafka
 import no.fintlabs.common.pod.PodBuilderContext
 import no.fintlabs.common.pod.PodCustomizer
 import no.fintlabs.operator.dependent.ReconcileCondition
@@ -26,8 +26,9 @@ interface WithKafka : FlaisResourceSpec {
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class KafkaDR<P : FlaisResource<out WithKafka>> :
-  CRUDKubernetesDependentResource<KafkaUserAndAcl, P>(KafkaUserAndAcl::class.java),
-  ReconcileCondition<P>, PodCustomizer<P> {
+    CRUDKubernetesDependentResource<KafkaUserAndAcl, P>(KafkaUserAndAcl::class.java),
+    ReconcileCondition<P>,
+    PodCustomizer<P> {
   override fun name(): String = "kafka"
 
   override fun desired(primary: P, context: Context<P>) =
@@ -48,36 +49,32 @@ class KafkaDR<P : FlaisResource<out WithKafka>> :
       }
 
   override fun shouldReconcile(
-    primary: P,
-    context: Context<P>,
+      primary: P,
+      context: Context<P>,
   ): Boolean = primary.spec.kafka.acls.isNotEmpty() && primary.spec.kafka.enabled
 
-  override fun customizePod(
-    primary: P,
-    builderContext: PodBuilderContext,
-    context: Context<P>
-  ) {
+  override fun customizePod(primary: P, builderContext: PodBuilderContext, context: Context<P>) {
     if (!shouldReconcile(primary, context)) return
 
-    builderContext.volumes += Volume()
-      .apply {
-        name = "credentials"
-        secret =
-          SecretVolumeSource().apply {
-            secretName = "${primary.metadata.name}-kafka-certificates"
-          }
-      }
+    builderContext.volumes +=
+        Volume().apply {
+          name = "credentials"
+          secret =
+              SecretVolumeSource().apply {
+                secretName = "${primary.metadata.name}-kafka-certificates"
+              }
+        }
 
-    builderContext.volumeMounts += VolumeMount()
-      .apply {
-        name = "credentials"
-        mountPath = "/credentials"
-        readOnly = true
-      }
+    builderContext.volumeMounts +=
+        VolumeMount().apply {
+          name = "credentials"
+          mountPath = "/credentials"
+          readOnly = true
+        }
 
-    builderContext.envFrom += EnvFromSource()
-      .apply {
-        secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-kafka" }
-      }
+    builderContext.envFrom +=
+        EnvFromSource().apply {
+          secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-kafka" }
+        }
   }
 }

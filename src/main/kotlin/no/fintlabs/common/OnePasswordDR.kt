@@ -23,7 +23,8 @@ interface WithOnePassword : FlaisResourceSpec {
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class OnePasswordDR<P : FlaisResource<out WithOnePassword>> :
     CRUDKubernetesDependentResource<OnePasswordItem, P>(OnePasswordItem::class.java),
-    ReconcileCondition<P>, PodCustomizer<P> {
+    ReconcileCondition<P>,
+    PodCustomizer<P> {
   override fun name(): String = "onepassword"
 
   override fun desired(primary: P, context: Context<P>) =
@@ -37,16 +38,12 @@ class OnePasswordDR<P : FlaisResource<out WithOnePassword>> :
       context: Context<P>,
   ): Boolean = primary.spec.onePassword != null && primary.spec.onePassword!!.itemPath.isNotEmpty()
 
-  override fun customizePod(
-    primary: P,
-    builderContext: PodBuilderContext,
-    context: Context<P>
-  ) {
+  override fun customizePod(primary: P, builderContext: PodBuilderContext, context: Context<P>) {
     if (!shouldReconcile(primary, context)) return
 
-    builderContext.envFrom += EnvFromSource()
-      .apply {
-        secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-op" }
-      }
+    builderContext.envFrom +=
+        EnvFromSource().apply {
+          secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-op" }
+        }
   }
 }
