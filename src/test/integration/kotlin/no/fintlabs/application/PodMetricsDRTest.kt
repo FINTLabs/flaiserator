@@ -6,12 +6,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
-import no.fintlabs.application.Utils.createKoinTestExtension
-import no.fintlabs.application.Utils.createKubernetesOperatorExtension
+import no.fintlabs.application.Utils.createApplicationKoinTestExtension
+import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.ApplicationObservability
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Metrics
-import no.fintlabs.application.api.v1alpha1.Observability
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -24,7 +24,7 @@ class PodMetricsDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics =
                               Metrics(enabled = true, path = "/actuator/prometheus", port = "8080")
                       )
@@ -46,7 +46,7 @@ class PodMetricsDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics = Metrics(enabled = true, path = "/metrics", port = "1234")
                       )
               )
@@ -65,7 +65,7 @@ class PodMetricsDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics =
                               Metrics(enabled = false, path = "/actuator/prometheus", port = "8080")
                       )
@@ -78,12 +78,13 @@ class PodMetricsDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndGetPodMonitor(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndGetPodMonitor(app: FlaisApplication) =
       createAndGetResource<PodMonitor>(app) { it.metadata.name }
 
   companion object {
-    @RegisterExtension val koinTestExtension = createKoinTestExtension()
+    @RegisterExtension val koinTestExtension = createApplicationKoinTestExtension()
 
-    @RegisterExtension val kubernetesOperatorExtension = createKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

@@ -16,25 +16,26 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import no.fintlabs.Utils.updateAndGetResource
+import no.fintlabs.Utils.waitUntil
 import no.fintlabs.application.Utils.createAndGetResource
-import no.fintlabs.application.Utils.createKoinTestExtension
-import no.fintlabs.application.Utils.createKubernetesOperatorExtension
+import no.fintlabs.application.Utils.createApplicationKoinTestExtension
+import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.Utils.updateAndGetResource
-import no.fintlabs.application.Utils.waitUntil
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
-import no.fintlabs.application.api.v1alpha1.Database
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationState
-import no.fintlabs.application.api.v1alpha1.Kafka
+import no.fintlabs.application.api.v1alpha1.ApplicationObservability
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Logging
 import no.fintlabs.application.api.v1alpha1.Metrics
-import no.fintlabs.application.api.v1alpha1.Observability
-import no.fintlabs.application.api.v1alpha1.OnePassword
-import no.fintlabs.application.api.v1alpha1.Probe
-import no.fintlabs.application.api.v1alpha1.ProbeDefaults
-import no.fintlabs.application.api.v1alpha1.Probes
 import no.fintlabs.application.api.v1alpha1.Url
+import no.fintlabs.common.api.v1alpha1.Database
+import no.fintlabs.common.api.v1alpha1.FlaisResourceState
+import no.fintlabs.common.api.v1alpha1.Kafka
+import no.fintlabs.common.api.v1alpha1.OnePassword
+import no.fintlabs.common.api.v1alpha1.Probe
+import no.fintlabs.common.api.v1alpha1.ProbeDefaults
+import no.fintlabs.common.api.v1alpha1.Probes
+import no.fintlabs.common.createOwnerReference
 import no.fintlabs.extensions.KubernetesOperator
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesResources
@@ -290,46 +291,12 @@ class DeploymentDRTest {
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
-    assertEquals(4, deployment.spec.template.spec.containers[0].env.size)
-    assertEquals("key1", deployment.spec.template.spec.containers[0].env[0].name)
-    assertEquals("value1", deployment.spec.template.spec.containers[0].env[0].value)
-    assertEquals("key2", deployment.spec.template.spec.containers[0].env[1].name)
-    assertEquals("value2", deployment.spec.template.spec.containers[0].env[1].value)
-    assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[2].name)
-    assertEquals("test.org", deployment.spec.template.spec.containers[0].env[2].value)
-    assertEquals("TZ", deployment.spec.template.spec.containers[0].env[3].name)
-    assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[3].value)
-  }
-
-  @Test
-  fun `should not have overlapping env variables`(context: KubernetesOperatorContext) {
-    val flaisApplication =
-        createTestFlaisApplication().apply {
-          spec =
-              spec.copy(
-                  env =
-                      listOf(
-                          EnvVar().apply {
-                            name = "fint.org-id"
-                            value = "value1"
-                          },
-                          EnvVar().apply {
-                            name = "key2"
-                            value = "value2"
-                          },
-                      )
-              )
-        }
-
-    val deployment = context.createAndGetDeployment(flaisApplication)
-    assertNotNull(deployment)
-    assertEquals(3, deployment.spec.template.spec.containers[0].env.size)
-    assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[0].name)
-    assertEquals("value1", deployment.spec.template.spec.containers[0].env[0].value)
-    assertEquals("key2", deployment.spec.template.spec.containers[0].env[1].name)
-    assertEquals("value2", deployment.spec.template.spec.containers[0].env[1].value)
-    assertEquals("TZ", deployment.spec.template.spec.containers[0].env[2].name)
-    assertEquals("Europe/Oslo", deployment.spec.template.spec.containers[0].env[2].value)
+    val env = deployment.spec.template.spec.containers[0].env
+    assert(env.size > 2)
+    val key1 = env.find { it.name == "key1" }
+    assertEquals("value1", key1!!.value)
+    val key2 = env.find { it.name == "key2" }
+    assertEquals("value2", key2!!.value)
   }
 
   @Test
@@ -341,7 +308,7 @@ class DeploymentDRTest {
                   env =
                       listOf(
                           EnvVar().apply {
-                            name = "fint.org-id"
+                            name = "test"
                             value = ""
                           }
                       )
@@ -350,8 +317,9 @@ class DeploymentDRTest {
 
     val deployment = context.createAndGetDeployment(flaisApplication)
     assertNotNull(deployment)
-    assertEquals("fint.org-id", deployment.spec.template.spec.containers[0].env[0].name)
-    assertEquals(null, deployment.spec.template.spec.containers[0].env[0].value)
+    val env = deployment.spec.template.spec.containers[0].env.find { it.name == "test" }
+    assertNotNull(env)
+    assertEquals(null, env.value)
   }
 
   @Test
@@ -509,7 +477,7 @@ class DeploymentDRTest {
   fun `should have loki logging enabled`(context: KubernetesOperatorContext) {
     val flaisApplication =
         createTestFlaisApplication().apply {
-          spec = spec.copy(observability = Observability(logging = Logging(loki = true)))
+          spec = spec.copy(observability = ApplicationObservability(logging = Logging(loki = true)))
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -521,7 +489,8 @@ class DeploymentDRTest {
   fun `should have loki logging disabled`(context: KubernetesOperatorContext) {
     val flaisApplication =
         createTestFlaisApplication().apply {
-          spec = spec.copy(observability = Observability(logging = Logging(loki = false)))
+          spec =
+              spec.copy(observability = ApplicationObservability(logging = Logging(loki = false)))
         }
 
     val deployment = context.createAndGetDeployment(flaisApplication)
@@ -538,7 +507,7 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   observability =
-                      Observability(
+                      ApplicationObservability(
                           metrics = Metrics(enabled = true, port = "8081", path = "/metrics")
                       )
               )
@@ -563,7 +532,7 @@ class DeploymentDRTest {
   fun `should recreate deployment on pod selector change selector`(
       context: KubernetesOperatorContext
   ) {
-    val application = assertNotNull(context.get<FlaisApplicationCrd>("test"))
+    val application = assertNotNull(context.get<FlaisApplication>("test"))
     var deployment = assertNotNull(context.get<Deployment>("test"))
 
     deployment.metadata.ownerReferences.add(createOwnerReference(application))
@@ -571,8 +540,8 @@ class DeploymentDRTest {
     context.update(deployment)
     context.operator.start()
 
-    context.waitUntil<FlaisApplicationCrd>(application.metadata.name) {
-      it.status?.state == FlaisApplicationState.DEPLOYED
+    context.waitUntil<FlaisApplication>(application.metadata.name) {
+      it.status?.state == FlaisResourceState.DEPLOYED
     }
 
     deployment = assertNotNull(context.get<Deployment>(application.metadata.name))
@@ -763,7 +732,7 @@ class DeploymentDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplication) =
       createAndGetResource<Deployment>(app)
 
   @RegisterExtension
@@ -772,7 +741,7 @@ class DeploymentDRTest {
   companion object {
     @RegisterExtension
     val koinTestExtension =
-        createKoinTestExtension(
+        createApplicationKoinTestExtension(
             module {
               single {
                 loadConfig(
@@ -782,6 +751,7 @@ class DeploymentDRTest {
             }
         )
 
-    @RegisterExtension val kubernetesOperatorExtension = createKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

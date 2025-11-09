@@ -1,24 +1,35 @@
 package no.fintlabs.application.api.v1alpha1
 
 import io.fabric8.generator.annotation.Min
-import io.fabric8.generator.annotation.Required
 import io.fabric8.generator.annotation.ValidationRule
-import io.fabric8.kubernetes.api.model.*
+import io.fabric8.kubernetes.api.model.EnvFromSource
+import io.fabric8.kubernetes.api.model.EnvVar
+import io.fabric8.kubernetes.api.model.Quantity
+import io.fabric8.kubernetes.api.model.ResourceRequirements
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
+import no.fintlabs.common.WithKafka
+import no.fintlabs.common.WithOnePassword
+import no.fintlabs.common.WithPostgres
+import no.fintlabs.common.api.v1alpha1.Database
+import no.fintlabs.common.api.v1alpha1.FlaisResourceSpec
+import no.fintlabs.common.api.v1alpha1.Kafka
+import no.fintlabs.common.api.v1alpha1.OnePassword
+import no.fintlabs.common.api.v1alpha1.Probes
 
 data class FlaisApplicationSpec(
-    @Required val orgId: String = "",
-    @Min(0.0) val replicas: Int = 1,
-    @Required val image: String = "",
+    override val orgId: String = "",
+    @get:Min(0.0) val replicas: Int = 1,
+    override val image: String = "",
     @ValidationRule(
         "self in ['IfNotPresent', 'Always', 'Never']",
         message = "Invalid imagePullPolicy, must be one of IfNotPresent, Always, Never",
     )
-    val imagePullPolicy: String? = null,
-    val imagePullSecrets: List<String> = emptyList(),
-    val env: List<EnvVar> = emptyList(),
-    val envFrom: List<EnvFromSource> = emptyList(),
-    val resources: ResourceRequirements =
+    override val imagePullPolicy: String? = null,
+    override val imagePullSecrets: List<String> = emptyList(),
+    override val env: List<EnvVar> = emptyList(),
+    override val envFrom: List<EnvFromSource> = emptyList(),
+    override val resources: ResourceRequirements =
         ResourceRequirementsBuilder()
             .addToRequests("cpu", Quantity("250m"))
             .addToRequests("memory", Quantity("256Mi"))
@@ -28,18 +39,13 @@ data class FlaisApplicationSpec(
     val probes: Probes? = null,
     @Min(1.0) val port: Int = 8080,
     @Deprecated("Does not exist on when applied on DeploymentSpec")
-    @ValidationRule(
-        "self in ['Always', 'OnFailure', 'Never']",
-        message = "Invalid restartPolicy, must be one of Always, OnFailure, Never",
-    )
     val restartPolicy: String = "Always",
     val strategy: DeploymentStrategy? = null,
-    @Deprecated("Use metrics in observability instead. Will be removed in future versions.")
+    override val onePassword: OnePassword? = null,
+    override val kafka: Kafka = Kafka(),
+    override val database: Database = Database(),
     val prometheus: Metrics = Metrics(),
-    val onePassword: OnePassword? = null,
-    val kafka: Kafka = Kafka(),
-    val database: Database = Database(),
     val url: Url = Url(),
     val ingress: Ingress? = null,
-    val observability: Observability? = null,
-)
+    override val observability: ApplicationObservability? = null,
+) : FlaisResourceSpec, WithOnePassword, WithKafka, WithPostgres

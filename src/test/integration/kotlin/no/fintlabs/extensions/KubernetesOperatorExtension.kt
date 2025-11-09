@@ -15,7 +15,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.time.Duration
 import kotlin.jvm.optionals.getOrNull
-import no.fintlabs.application.getLogger
+import no.fintlabs.common.getLogger
 import no.fintlabs.extensions.Utils.executeWithRetry
 import no.fintlabs.operator.OperatorConfigHandler
 import no.fintlabs.operator.OperatorPostConfigHandler
@@ -69,7 +69,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
     val namespace = namespaceSupplier.apply(context)
     val kubernetesClient = createKubernetesClient(namespace, get())
 
-    prepareKoin(kubernetesClient)
+    prepareKoin(kubernetesClient, operatorConfig.registerReconcilers)
     prepareKubernetes(kubernetesClient, namespace)
     val testAdditionalResources = getAdditionalResources(context)
     applyAdditionalResources(kubernetesClient, namespace, testAdditionalResources)
@@ -132,7 +132,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
         return output.getCRDs()
       }
 
-  private fun prepareKoin(kubernetesClient: KubernetesClient) {
+  private fun prepareKoin(kubernetesClient: KubernetesClient, registerReconcilers: Boolean) {
     getKoin().apply {
       loadKoinModules(
           module {
@@ -145,9 +145,11 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
             }
             single {
               OperatorPostConfigHandler { operator ->
-                getAll<Reconciler<*>>().forEach {
-                  operator.register(it) { config ->
-                    config.settingNamespace(kubernetesClient.namespace)
+                if (registerReconcilers) {
+                  getAll<Reconciler<*>>().forEach {
+                    operator.register(it) { config ->
+                      config.settingNamespace(kubernetesClient.namespace)
+                    }
                   }
                 }
               }

@@ -15,6 +15,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.fintlabs.application.applicationReconcilerModule
+import no.fintlabs.job.jobReconcilerModule
 import no.fintlabs.operator.OperatorConfigHandler
 import no.fintlabs.operator.OperatorConfiguration
 import no.fintlabs.operator.OperatorPostConfigHandler
@@ -30,8 +31,10 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform.getKoin
 
+private const val PORT = 8080
+
 fun main() {
-  startKoin { modules(applicationReconcilerModule(), baseModule) }
+  startKoin { modules(applicationReconcilerModule(), jobReconcilerModule(), baseModule) }
 
   startHttpServer()
   startOperator()
@@ -97,7 +100,7 @@ val baseModule = module {
 
 fun startHttpServer() {
   val service: HttpHandler = getKoin().get()
-  val server = service.asServer(Jetty(8080)).start()
+  val server = service.asServer(Jetty(PORT)).start()
   Runtime.getRuntime().addShutdownHook(Thread { server.stop() })
 }
 

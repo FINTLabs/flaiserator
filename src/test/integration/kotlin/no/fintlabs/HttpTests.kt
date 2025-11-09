@@ -3,8 +3,8 @@ package no.fintlabs
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import no.fintlabs.application.Utils.createKoinTestExtension
-import no.fintlabs.application.Utils.createKubernetesOperatorExtension
+import no.fintlabs.common.Utils.createKoinTestExtension
+import no.fintlabs.common.Utils.createKubernetesOperatorExtension
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method

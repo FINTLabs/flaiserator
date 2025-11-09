@@ -6,10 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import no.fintlabs.application.Utils.createAndGetResource
-import no.fintlabs.application.Utils.createKoinTestExtension
-import no.fintlabs.application.Utils.createKubernetesOperatorExtension
+import no.fintlabs.application.Utils.createApplicationKoinTestExtension
+import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Ingress
 import no.fintlabs.application.api.v1alpha1.Url
 import no.fintlabs.extensions.KubernetesOperatorContext
@@ -132,12 +132,13 @@ class LegacyIngressDRTest {
 
   // endregion
 
-  private fun KubernetesOperatorContext.createAndGetIngressRoute(app: FlaisApplicationCrd) =
+  private fun KubernetesOperatorContext.createAndGetIngressRoute(app: FlaisApplication) =
       createAndGetResource<IngressRoute>(app)
 
   companion object {
-    @RegisterExtension val koinTestExtension = createKoinTestExtension()
+    @RegisterExtension val koinTestExtension = createApplicationKoinTestExtension()
 
-    @RegisterExtension val kubernetesOperatorExtension = createKubernetesOperatorExtension()
+    @RegisterExtension
+    val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

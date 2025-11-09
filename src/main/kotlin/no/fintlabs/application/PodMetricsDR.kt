@@ -9,18 +9,19 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernetesDependentResource
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
-import no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.common.createObjectMeta
 import no.fintlabs.operator.dependent.ReconcileCondition
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class PodMetricsDR :
-    CRUDKubernetesDependentResource<PodMonitor, FlaisApplicationCrd>(PodMonitor::class.java),
-    ReconcileCondition<FlaisApplicationCrd> {
+    CRUDKubernetesDependentResource<PodMonitor, FlaisApplication>(PodMonitor::class.java),
+    ReconcileCondition<FlaisApplication> {
   override fun name(): String = "pod-metrics"
 
   override fun desired(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ): PodMonitor =
       PodMonitor().apply {
         val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
@@ -44,8 +45,8 @@ class PodMetricsDR :
       }
 
   override fun shouldReconcile(
-      primary: FlaisApplicationCrd,
-      context: Context<FlaisApplicationCrd>,
+      primary: FlaisApplication,
+      context: Context<FlaisApplication>,
   ): Boolean {
     val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
     return metrics.enabled

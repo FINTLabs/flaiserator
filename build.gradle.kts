@@ -70,8 +70,6 @@ testing {
 
         dependencies {
           implementation(project())
-
-
         }
 
         configurations {
@@ -128,8 +126,8 @@ tasks {
       "Generate CRDs from the compiled custom resource class `no.fintlabs.application.api.v1alpha1.FlaisApplicationCrd`"
     group = "crd"
 
-    sourceSet = sourceSets["main"]
-    includePackages = listOf("no.fintlabs.application.api")
+    sourceSet = sourceSets.main
+    includePackages = listOf("no.fintlabs.application.api", "no.fintlabs.job.api")
     targetDirectory =
       project.layout.projectDirectory.dir("charts/flaiserator-crd/charts/crds/templates")
 

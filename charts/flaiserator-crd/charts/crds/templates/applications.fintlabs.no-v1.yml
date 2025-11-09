@@ -285,10 +285,6 @@ spec:
                 type: "object"
               restartPolicy:
                 type: "string"
-                x-kubernetes-validations:
-                - message: "Invalid restartPolicy, must be one of Always, OnFailure,\
-                    \ Never"
-                  rule: "self in ['Always', 'OnFailure', 'Never']"
               strategy:
                 properties:
                   rollingUpdate:
