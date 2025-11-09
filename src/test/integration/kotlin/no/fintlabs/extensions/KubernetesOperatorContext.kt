@@ -3,6 +3,8 @@ package no.fintlabs.extensions
 import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.javaoperatorsdk.operator.Operator
+import io.javaoperatorsdk.operator.api.config.ControllerConfigurationOverrider
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 
 class KubernetesOperatorContext(
     val namespace: String,
@@ -33,5 +35,14 @@ class KubernetesOperatorContext(
 
   fun <T : HasMetadata> delete(resource: T) {
     kubernetesClient.resource(resource).inNamespace(namespace).delete()
+  }
+
+  fun <T : Reconciler<*>> registerReconciler(
+    reconciler: T,
+    configuration: ((ControllerConfigurationOverrider<*>) -> Unit)? = null) {
+    operator.register(reconciler) {
+      it.settingNamespace(kubernetesClient.namespace)
+      configuration?.invoke(it)
+    }
   }
 }

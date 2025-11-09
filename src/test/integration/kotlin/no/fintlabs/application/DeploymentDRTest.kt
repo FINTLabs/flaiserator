@@ -1,25 +1,34 @@
 package no.fintlabs.application
 
 import com.sksamuel.hoplite.PropertySource
-import io.fabric8.kubernetes.api.model.*
+import io.fabric8.kubernetes.api.model.EnvVar
+import io.fabric8.kubernetes.api.model.IntOrString
+import io.fabric8.kubernetes.api.model.ObjectMeta
+import io.fabric8.kubernetes.api.model.Quantity
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder
+import io.fabric8.kubernetes.api.model.Secret
 import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.github.netmikey.logunit.api.LogCapturer
+import no.fintlabs.Utils.updateAndGetResource
+import no.fintlabs.Utils.waitUntil
 import no.fintlabs.application.Utils.createAndGetResource
-import no.fintlabs.application.Utils.createKoinTestExtension
-import no.fintlabs.application.Utils.createKubernetesOperatorExtension
+import no.fintlabs.application.Utils.createApplicationKoinTestExtension
+import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
-import no.fintlabs.application.Utils.updateAndGetResource
-import no.fintlabs.application.Utils.waitUntil
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
-import no.fintlabs.application.api.v1alpha1.*
+import no.fintlabs.application.api.v1alpha1.ApplicationObservability
+import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.application.api.v1alpha1.Logging
+import no.fintlabs.application.api.v1alpha1.Metrics
+import no.fintlabs.application.api.v1alpha1.Url
 import no.fintlabs.common.api.v1alpha1.Database
-import no.fintlabs.common.api.v1alpha1.Probe
 import no.fintlabs.common.api.v1alpha1.FlaisResourceState
 import no.fintlabs.common.api.v1alpha1.Kafka
 import no.fintlabs.common.api.v1alpha1.OnePassword
+import no.fintlabs.common.api.v1alpha1.Probe
 import no.fintlabs.common.api.v1alpha1.ProbeDefaults
 import no.fintlabs.common.api.v1alpha1.Probes
 import no.fintlabs.common.createOwnerReference
@@ -427,15 +436,15 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   kafka =
-                      Kafka(
-                          acls =
-                              listOf(
-                                  Acls().apply {
-                                    topic = "test-topic"
-                                    permission = "write"
-                                  }
-                              )
-                      )
+                    Kafka(
+                      acls =
+                        listOf(
+                          Acls().apply {
+                            topic = "test-topic"
+                            permission = "write"
+                          }
+                        )
+                    )
               )
         }
 
@@ -497,9 +506,9 @@ class DeploymentDRTest {
           spec =
               spec.copy(
                   observability =
-                      ApplicationObservability(
-                          metrics = Metrics(enabled = true, port = "8081", path = "/metrics")
-                      )
+                    ApplicationObservability(
+                      metrics = Metrics(enabled = true, port = "8081", path = "/metrics")
+                    )
               )
         }
 
@@ -731,7 +740,7 @@ class DeploymentDRTest {
   companion object {
     @RegisterExtension
     val koinTestExtension =
-        createKoinTestExtension(
+        createApplicationKoinTestExtension(
             module {
               single {
                 loadConfig(
@@ -741,6 +750,6 @@ class DeploymentDRTest {
             }
         )
 
-    @RegisterExtension val kubernetesOperatorExtension = createKubernetesOperatorExtension()
+    @RegisterExtension val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
   }
 }

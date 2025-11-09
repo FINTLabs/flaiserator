@@ -1,6 +1,7 @@
 package no.fintlabs.application.api.v1alpha1
 
 import io.fabric8.generator.annotation.Min
+import io.fabric8.generator.annotation.ValidationRule
 import io.fabric8.kubernetes.api.model.EnvFromSource
 import io.fabric8.kubernetes.api.model.EnvVar
 import io.fabric8.kubernetes.api.model.Quantity
@@ -32,10 +33,11 @@ data class FlaisApplicationSpec(
             .addToLimits("cpu", Quantity("500m"))
             .addToLimits("memory", Quantity("512Mi"))
             .build(),
-    override val probes: Probes? = null,
-    override val port: Int = 8080,
-    override val restartPolicy: String = "Always",
-    override val strategy: DeploymentStrategy? = null,
+    val probes: Probes? = null,
+    @Min(1.0) val port: Int = 8080,
+    @Deprecated("Does not exist on when applied on DeploymentSpec")
+    val restartPolicy: String = "Always",
+    val strategy: DeploymentStrategy? = null,
     override val onePassword: OnePassword? = null,
     override val kafka: Kafka = Kafka(),
     override val database: Database = Database(),

@@ -22,14 +22,5 @@ interface FlaisResourceSpec {
   val env: List<EnvVar>
   val envFrom: List<EnvFromSource>
   val resources: ResourceRequirements
-  val probes: Probes?
-  @get:Min(1.0) val port: Int
-  @get:Deprecated("Does not exist on when applied on DeploymentSpec")
-  @get:ValidationRule(
-    "self in ['Always', 'OnFailure', 'Never']",
-    message = "Invalid restartPolicy, must be one of Always, OnFailure, Never",
-  )
-  val restartPolicy: String
-  val strategy: DeploymentStrategy?
   val observability: Observability?
 }
