@@ -18,7 +18,7 @@ object Utils {
     nameSelector: (P) -> String = { it.metadata.name },
   ): T? {
     create(source)
-    waitUntilIsDeployed(source)
+    waitUntilIsDeployedOrFailed(source)
     return get<T>(nameSelector(source))
   }
 
@@ -27,16 +27,16 @@ object Utils {
     nameSelector: (P) -> String = { it.metadata.name },
   ): T? {
     update(source)
-    waitUntilIsDeployed(source)
+    waitUntilIsDeployedOrFailed(source)
     return get<T>(nameSelector(source))
   }
 
-  inline fun <reified T : FlaisResource<*>> KubernetesOperatorContext.waitUntilIsDeployed(source: T) {
+  inline fun <reified T : FlaisResource<*>> KubernetesOperatorContext.waitUntilIsDeployedOrFailed(source: T) {
     waitUntil<T>(
       source.metadata.name,
-    ) {
-      it.status?.state == FlaisResourceState.DEPLOYED &&
-              it.status?.observedGeneration == it.metadata.generation
+    ) { resource ->
+      resource.status?.state.let { it == FlaisResourceState.DEPLOYED || it == FlaisResourceState.FAILED } &&
+              resource.status?.observedGeneration == resource.metadata.generation
     }
   }
 
