@@ -15,6 +15,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import no.fintlabs.application.applicationReconcilerModule
+import no.fintlabs.job.jobReconcilerModule
 import no.fintlabs.operator.OperatorConfigHandler
 import no.fintlabs.operator.OperatorConfiguration
 import no.fintlabs.operator.OperatorPostConfigHandler
@@ -33,7 +34,7 @@ import org.koin.mp.KoinPlatform.getKoin
 private const val PORT = 8080
 
 fun main() {
-  startKoin { modules(applicationReconcilerModule(), baseModule) }
+  startKoin { modules(applicationReconcilerModule(), jobReconcilerModule(), baseModule) }
 
   startHttpServer()
   startOperator()
