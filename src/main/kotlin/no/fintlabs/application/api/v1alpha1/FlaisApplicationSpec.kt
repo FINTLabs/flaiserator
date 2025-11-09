@@ -1,6 +1,7 @@
 package no.fintlabs.application.api.v1alpha1
 
 import io.fabric8.generator.annotation.Min
+import io.fabric8.generator.annotation.ValidationRule
 import io.fabric8.kubernetes.api.model.EnvFromSource
 import io.fabric8.kubernetes.api.model.EnvVar
 import io.fabric8.kubernetes.api.model.Quantity
@@ -20,6 +21,10 @@ data class FlaisApplicationSpec(
     override val orgId: String = "",
     @get:Min(0.0) val replicas: Int = 1,
     override val image: String = "",
+    @ValidationRule(
+        "self in ['IfNotPresent', 'Always', 'Never']",
+        message = "Invalid imagePullPolicy, must be one of IfNotPresent, Always, Never",
+    )
     override val imagePullPolicy: String? = null,
     override val imagePullSecrets: List<String> = emptyList(),
     override val env: List<EnvVar> = emptyList(),

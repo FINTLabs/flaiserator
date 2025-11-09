@@ -1,17 +1,27 @@
 package no.fintlabs.job.api.v1alpha1
 
-import io.fabric8.generator.annotation.Required
 import io.fabric8.generator.annotation.ValidationRule
-import io.fabric8.kubernetes.api.model.*
+import io.fabric8.kubernetes.api.model.EnvFromSource
+import io.fabric8.kubernetes.api.model.EnvVar
+import io.fabric8.kubernetes.api.model.Quantity
+import io.fabric8.kubernetes.api.model.ResourceRequirements
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder
 import no.fintlabs.common.WithKafka
 import no.fintlabs.common.WithOnePassword
 import no.fintlabs.common.WithPostgres
-import no.fintlabs.common.api.v1alpha1.*
+import no.fintlabs.common.api.v1alpha1.Database
+import no.fintlabs.common.api.v1alpha1.FlaisResourceSpec
+import no.fintlabs.common.api.v1alpha1.Kafka
+import no.fintlabs.common.api.v1alpha1.OnePassword
 
 data class FlaisJobSpec(
-    @Required override val orgId: String = "",
-    @Required override val image: String = "",
+    override val orgId: String = "",
+    override val image: String = "",
     val schedule: String? = null,
+    @ValidationRule(
+        "self in ['IfNotPresent', 'Always', 'Never']",
+        message = "Invalid imagePullPolicy, must be one of IfNotPresent, Always, Never",
+    )
     override val imagePullPolicy: String? = null,
     override val imagePullSecrets: List<String> = emptyList(),
     override val env: List<EnvVar> = emptyList(),
