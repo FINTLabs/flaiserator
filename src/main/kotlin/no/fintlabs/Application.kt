@@ -30,6 +30,8 @@ import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import org.koin.mp.KoinPlatform.getKoin
 
+private const val PORT = 8080
+
 fun main() {
   startKoin { modules(applicationReconcilerModule(), baseModule) }
 
@@ -97,7 +99,7 @@ val baseModule = module {
 
 fun startHttpServer() {
   val service: HttpHandler = getKoin().get()
-  val server = service.asServer(Jetty(8080)).start()
+  val server = service.asServer(Jetty(PORT)).start()
   Runtime.getRuntime().addShutdownHook(Thread { server.stop() })
 }
 
