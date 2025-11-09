@@ -16,10 +16,12 @@ import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition
 import java.time.Duration
 import no.fintlabs.operator.dependent.ReadyCondition
 import no.fintlabs.operator.dependent.ReconcileCondition
+import no.fintlabs.operator.workflow.DependentRef
 import no.fintlabs.operator.workflow.Workflow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.qualifier.named
+import kotlin.reflect.KClass
 
 typealias KCondition = Condition<*, *>
 
@@ -106,12 +108,15 @@ class OperatorConfiguration :
                 }
               } else null
 
+          val dependsOn = getDependsOn(dependent.dependsOn)
+
           KoinDependentResourceSpec(
                   qualifier,
                   dependentType,
                   dependentInstance.name(),
                   readyCondition,
                   reconcileCondition,
+                  dependsOn
               )
               .also {
                 DependentResourceConfigurationResolver.configureSpecFromConfigured(
@@ -123,4 +128,12 @@ class OperatorConfiguration :
         }
         .toList()
   }
-}
+
+  private fun getDependsOn(dependsOn: Array<DependentRef>) = dependsOn.map { dependentRef ->
+      val qualifier = dependentRef.qualifier.takeIf { it.isNotEmpty() }?.let { named(it) }
+      val dependent = getKoin()
+          .get<DependentResource<Any, HasMetadata>>(dependentRef.dependentClass, qualifier)
+
+      dependent.name()
+    }.toSet()
+  }
