@@ -34,7 +34,10 @@ class JobDR :
         annotations = mutableMapOf(
           "cronjob.kubernetes.io/instantiate" to "manual"
         )
-        ownerReferences = mutableListOf(createOwnerReference(cronJob))
+        ownerReferences = mutableListOf(createOwnerReference(cronJob).apply {
+          controller = true
+          blockOwnerDeletion = true
+        })
       }
       spec = cronJob.spec.jobTemplate.spec
     }
