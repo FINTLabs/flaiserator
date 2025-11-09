@@ -37,8 +37,6 @@ fun createOwnerReference(source: HasMetadata) =
       kind = source.kind
       name = source.metadata.name
       uid = source.metadata.uid
-      controller = true
-      blockOwnerDeletion = true
     }
 
 inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
