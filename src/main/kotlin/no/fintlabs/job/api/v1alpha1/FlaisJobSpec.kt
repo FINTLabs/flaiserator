@@ -25,7 +25,7 @@ data class FlaisJobSpec(
       .build(),
   override val onePassword: OnePassword? = null,
   override val kafka: Kafka = Kafka(),
-  override val observability: Observability? = null,
+  override val observability: JobObservability? = null,
   override val database: Database = Database(),
   val timezone: String = "Europe/Oslo",
   val activeDeadlineSeconds: Long? = null,
