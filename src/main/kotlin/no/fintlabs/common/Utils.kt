@@ -1,5 +1,6 @@
 package no.fintlabs.common
 
+import io.fabric8.kubernetes.api.model.HasMetadata
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import io.fabric8.kubernetes.api.model.OwnerReference
 import io.javaoperatorsdk.operator.api.reconciler.BaseControl
@@ -27,13 +28,14 @@ fun createObjectMeta(source: FlaisResource<*>) =
       ownerReferences = listOf(createOwnerReference(source))
     }
 
-fun createOwnerReference(source: FlaisResource<*>) =
+fun createOwnerReference(source: HasMetadata) =
     OwnerReference().apply {
       apiVersion = source.apiVersion
       kind = source.kind
       name = source.metadata.name
       uid = source.metadata.uid
       controller = true
+      blockOwnerDeletion = true
     }
 
 inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
