@@ -22,9 +22,9 @@ object Utils {
     return get<T>(nameSelector(source))
   }
 
-  inline fun <reified T : HasMetadata> KubernetesOperatorContext.updateAndGetResource(
-    source: FlaisResource<*>,
-    nameSelector: (FlaisResource<*>) -> String = { it.metadata.name },
+  inline fun <reified P : FlaisResource<*>, reified T : HasMetadata> KubernetesOperatorContext.updateAndGetResource(
+    source: P,
+    nameSelector: (P) -> String = { it.metadata.name },
   ): T? {
     update(source)
     waitUntilIsDeployed(source)
