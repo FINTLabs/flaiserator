@@ -1,0 +1,54 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: Job
+metadata:
+  name: test-job
+  namespace: test-namespace
+  labels:
+    app.kubernetes.io/name: flais-test-job
+    app.kubernetes.io/instance: flais-test-job-test-com
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: test-job
+    app.kubernetes.io/part-of: flais
+    fintlabs.no/team: flais
+spec:
+  org-id: test.com
+  image: hello-world
+  schedule: "0 30 * * sun" # every sunday at 00:30
+  resources:
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+  env:
+    - name: ENV1
+      value: test
+    - name: ENV2
+      value: test
+    - name: ENV3
+      value: test
+  envFrom:
+    - secretRef:
+        name: flais-test-application-secret
+    - configMapRef:
+        name: flais-test-application-configmap
+  observability:
+    logging:
+      loki: true
+  onePassword:
+    itemPath: "vaults/aks-alpha-vault/items/azurerator"
+  database:
+    database: test
+  kafka:
+    acls:
+      - topic: '*.test.topic'
+        permission: read
+  activeDeadlineSeconds: 30
+  timezone: "Europe/Oslo"
+  backoffLimit: 6
+  ttlSecondsAfterFinish: 20
+  successfulJobsHistoryLimit: 6
+  failedJobsHistoryLimit: 6
+  concurrencyPolicy: Allow
+  restartPolicy: Never
