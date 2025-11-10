@@ -6,32 +6,52 @@ metadata:
     {{- include "flaiserator.labels" . | nindent 4 }}
 rules:
   - apiGroups:
-      - "*"
+      - ''
+      - 'apps'
+      - 'batch'
     resources:
-      - secrets
-      - deployments
-      - services
-      - applications
-      - jobs
-      - cronjobs
-      - kafkauserandacls
-      - pgusers
-      - ingressroutes
-      - podmonitors
-      - onepassworditems
+      - 'secrets'
+      - 'deployments'
+      - 'services'
+      - 'jobs'
+      - 'cronjobs'
     verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
+      - 'get'
+      - 'create'
+      - 'update'
+      - 'delete'
+      - 'deletecollection'
+      - 'patch'
+      - 'list'
+      - 'watch'
 
   - apiGroups:
-      - apiextensions.k8s.io
+      - 'fintlabs.no'
+      - 'onepassword.com'
+      - 'traefik.containo.us'
+      - 'monitoring.coreos.com'
     resources:
-      - customresourcedefinitions
+      - 'applications'
+      - 'jobs'
+      - 'kafkauserandacls'
+      - 'pgusers'
+      - 'ingressroutes'
+      - 'podmonitors'
+      - 'onepassworditems'
     verbs:
-      - get
-      - list
+      - 'get'
+      - 'create'
+      - 'update'
+      - 'delete'
+      - 'deletecollection'
+      - 'patch'
+      - 'list'
+      - 'watch'
+
+  - apiGroups:
+      - 'apiextensions.k8s.io'
+    resources:
+      - 'customresourcedefinitions'
+    verbs:
+      - 'get'
+      - 'list'
