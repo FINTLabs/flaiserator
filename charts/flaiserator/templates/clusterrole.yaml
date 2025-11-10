@@ -6,12 +6,19 @@ metadata:
     {{- include "flaiserator.labels" . | nindent 4 }}
 rules:
   - apiGroups:
-      - ""
-      - "apps"
+      - "*"
     resources:
       - secrets
       - deployments
       - services
+      - applications
+      - jobs
+      - cronjobs
+      - kafkauserandacls
+      - pgusers
+      - ingressroutes
+      - podmonitors
+      - onepassworditems
     verbs:
       - create
       - delete
@@ -28,19 +35,3 @@ rules:
     verbs:
       - get
       - list
-
-  - apiGroups:
-      - fintlabs.no
-      - onepassword.com
-      - traefik.containo.us
-      - monitoring.coreos.com
-    resources:
-      - "*"
-    verbs:
-      - get
-      - list
-      - watch
-      - create
-      - delete
-      - patch
-      - update
