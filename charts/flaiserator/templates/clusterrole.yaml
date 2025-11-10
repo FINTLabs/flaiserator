@@ -6,52 +6,109 @@ metadata:
     {{- include "flaiserator.labels" . | nindent 4 }}
 rules:
   - apiGroups:
-      - ''
-      - 'apps'
-      - 'batch'
+      - ""
     resources:
-      - 'secrets'
-      - 'deployments'
-      - 'services'
-      - 'jobs'
-      - 'cronjobs'
+      - "secrets"
+      - "services"
     verbs:
-      - 'get'
-      - 'create'
-      - 'update'
-      - 'delete'
-      - 'deletecollection'
-      - 'patch'
-      - 'list'
-      - 'watch'
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+      - "delete"
 
   - apiGroups:
-      - 'fintlabs.no'
-      - 'onepassword.com'
-      - 'traefik.containo.us'
-      - 'monitoring.coreos.com'
+      - "apps"
     resources:
-      - 'applications'
-      - 'jobs'
-      - 'kafkauserandacls'
-      - 'pgusers'
-      - 'ingressroutes'
-      - 'podmonitors'
-      - 'onepassworditems'
+      - "deployments"
     verbs:
-      - 'get'
-      - 'create'
-      - 'update'
-      - 'delete'
-      - 'deletecollection'
-      - 'patch'
-      - 'list'
-      - 'watch'
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+      - "delete"
 
   - apiGroups:
-      - 'apiextensions.k8s.io'
+      - "batch"
     resources:
-      - 'customresourcedefinitions'
+      - "jobs"
+      - "cronjobs"
     verbs:
-      - 'get'
-      - 'list'
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+      - "delete"
+
+  - apiGroups:
+      - "fintlabs.no"
+    resources:
+      - "applications"
+      - "applications/status"
+      - "applications/finalizers"
+      - "jobs"
+      - "jobs/status"
+      - "jobs/finalizers"
+      - "kafkauserandacls"
+      - "pgusers"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+      - "delete"
+
+  - apiGroups:
+      - "onepassword.com"
+    resources:
+      - "onepassworditems"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+      - "delete"
+
+  - apiGroups:
+      - "traefik.containo.us"
+    resources:
+      - "ingressroutes"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+      - "delete"
+
+  - apiGroups:
+      - "monitoring.coreos.com"
+    resources:
+      - "podmonitors"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+      - "create"
+      - "update"
+      - "patch"
+      - "delete"
+
+  - apiGroups:
+      - "apiextensions.k8s.io"
+    resources:
+      - "customresourcedefinitions"
+    verbs:
+      - "get"
+      - "list"
