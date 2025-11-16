@@ -59,7 +59,7 @@ jobs:
         run: ./gradlew :test --stacktrace --configuration-cache
 
       - name: Unit Test Reports
-        uses: dorny/test-reporter@v2.1.1
+        uses: dorny/test-reporter@v2.2.0
         if: always()
         with:
           name: Unit Test Reports
@@ -92,7 +92,7 @@ jobs:
         run: ./gradlew :integrationTest --stacktrace --configuration-cache
 
       - name: Integration Test Reports
-        uses: dorny/test-reporter@v2.1.1
+        uses: dorny/test-reporter@v2.2.0
         if: always()
         with:
           name: Integration Test Reports - Kubernetes ${{ matrix.kubernetes }}
