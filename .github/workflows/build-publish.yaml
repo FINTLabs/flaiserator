@@ -25,7 +25,7 @@ jobs:
       charts: ${{ steps.filter.outputs.charts }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
 
