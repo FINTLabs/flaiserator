@@ -39,7 +39,7 @@ operator-framework-junit5 = { module = "io.javaoperatorsdk:operator-framework-ju
 awaitility-kotlin = { module = "org.awaitility:awaitility-kotlin", version.ref = "awaitility" }
 logunit-core = { module = "io.github.netmikey.logunit:logunit-core", version.ref = "logunit"}
 logunit-logback = { module = "io.github.netmikey.logunit:logunit-logback", version.ref = "logunit"}
-testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version="1.21.3"}
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version="2.0.3"}
 testcontainers-k3s = { module = "org.testcontainers:k3s" }
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin" }
