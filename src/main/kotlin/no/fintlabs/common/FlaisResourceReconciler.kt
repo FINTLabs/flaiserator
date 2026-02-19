@@ -37,6 +37,7 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
       return it
     }
 
+    logger.info("Starting reconciliation of ${resource.javaClass.simpleName}: ${resource.metadata.name}")
     context.managedWorkflowAndDependentResourceContext().reconcileManagedWorkflow()
 
     if (context.isNextReconciliationImminent) {
@@ -46,6 +47,7 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
 
     val resourceUpdate = resource.clone().apply { status = determineNewStatus(resource, context) }
 
+    logger.info("Finished reconciling ${resource.javaClass.simpleName}: ${resource.metadata.name}")
     return UpdateControl.patchStatus(resourceUpdate).also { removeMDC() }
   }
 
