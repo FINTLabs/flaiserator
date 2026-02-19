@@ -71,8 +71,7 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
       origResource: T,
       context: Context<T>,
   ): UpdateControl<T>? {
-    val currentCorrelationId =
-        origResource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+    val currentCorrelationId = origResource.metadata.correlationIdAnnotation
     val observedCorrelationId = origResource.status?.correlationId
     val observedGen = origResource.status?.observedGeneration
     val currentGen = origResource.metadata.generation
@@ -149,7 +148,7 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
   private fun setMDC(resource: T) {
     MDC.put(
         "correlationId",
-        resource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] ?: "",
+        resource.metadata.correlationIdAnnotation ?: "",
     )
   }
 
