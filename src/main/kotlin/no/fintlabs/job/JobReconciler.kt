@@ -15,9 +15,10 @@ import no.fintlabs.operator.workflow.Workflow
 
 @GradualRetry(maxAttempts = 3)
 @ControllerConfiguration(
-    informer = Informer(
-        genericFilter = FlaisResourceReconciliationFilter::class,
-    )
+    informer =
+        Informer(
+            genericFilter = FlaisResourceReconciliationFilter::class,
+        )
 )
 @Workflow(
     [

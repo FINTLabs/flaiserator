@@ -1,5 +1,8 @@
 package no.fintlabs.common
 
+import kotlin.test.Test
+import kotlin.test.assertNotNull
+import kotlin.time.Duration.Companion.seconds
 import nl.altindag.log.LogCaptor
 import no.fintlabs.common.Utils.createAndGetResource
 import no.fintlabs.common.Utils.createKoinTestExtension
@@ -11,19 +14,13 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.test.KoinTest
-import kotlin.test.Test
-import kotlin.test.assertNotNull
-import kotlin.time.Duration.Companion.seconds
-
 
 class FlaisResourceReconciliationFilterTest : KoinTest {
   @Test
   fun `should not reconcile non updated resources on startup`(context: KubernetesOperatorContext) {
     context.createAndGetTestResource(createTestResource())
     context.operator.stop()
-    val logsCaptor = LogCaptor.forName("io.javaoperatorsdk").apply {
-      setLogLevelToDebug()
-    }
+    val logsCaptor = LogCaptor.forName("io.javaoperatorsdk").apply { setLogLevelToDebug() }
     context.operator.start()
     await atMost 5.seconds until { logsCaptor.hasDebugMessage("Skipping event handling resource") }
   }
@@ -33,22 +30,23 @@ class FlaisResourceReconciliationFilterTest : KoinTest {
     val resource = context.createAndGetTestResource(createTestResource())
     assertNotNull(resource)
     context.operator.stop()
-    val logsCaptor = LogCaptor.forName("no.fintlabs.common.FlaisResourceReconciler").apply {
-      setLogLevelToDebug()
-    }
-    context.update(resource.apply {
-      spec = spec.copy(image = "123")
-    })
+    val logsCaptor =
+        LogCaptor.forName("no.fintlabs.common.FlaisResourceReconciler").apply {
+          setLogLevelToDebug()
+        }
+    context.update(resource.apply { spec = spec.copy(image = "123") })
     context.operator.start()
-    await atMost 5.seconds until {
-      logsCaptor.hasInfoMessage("Starting reconciliation") &&
-      logsCaptor.hasInfoMessage("Finished reconciling")
-    }
+    await atMost
+        5.seconds until
+        {
+          logsCaptor.hasInfoMessage("Starting reconciliation") &&
+              logsCaptor.hasInfoMessage("Finished reconciling")
+        }
   }
 
   companion object {
     private fun KubernetesOperatorContext.createAndGetTestResource(resource: FlaisTestResource) =
-      createAndGetResource<FlaisTestResource>(resource)
+        createAndGetResource<FlaisTestResource>(resource)
 
     @RegisterExtension val koinTestExtension = createKoinTestExtension()
 

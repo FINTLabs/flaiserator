@@ -37,7 +37,9 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
       return it
     }
 
-    logger.info("Starting reconciliation of ${resource.javaClass.simpleName}: ${resource.metadata.name}")
+    logger.info(
+        "Starting reconciliation of ${resource.javaClass.simpleName}: ${resource.metadata.name}"
+    )
     context.managedWorkflowAndDependentResourceContext().reconcileManagedWorkflow()
 
     if (context.isNextReconciliationImminent) {

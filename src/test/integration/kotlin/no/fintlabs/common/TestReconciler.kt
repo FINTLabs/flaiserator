@@ -6,9 +6,10 @@ import no.fintlabs.operator.workflow.Dependent
 import no.fintlabs.operator.workflow.Workflow
 
 @ControllerConfiguration(
-    informer = Informer(
-        genericFilter = FlaisResourceReconciliationFilter::class,
-    )
+    informer =
+        Informer(
+            genericFilter = FlaisResourceReconciliationFilter::class,
+        )
 )
 @Workflow(
     dependents =

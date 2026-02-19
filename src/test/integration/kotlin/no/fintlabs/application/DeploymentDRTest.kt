@@ -11,12 +11,12 @@ import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
-import io.github.netmikey.logunit.api.LogCapturer
-import nl.altindag.log.LogCaptor
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import nl.altindag.log.LogCaptor
 import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.Utils.waitUntil
 import no.fintlabs.application.Utils.createAndGetResource
@@ -45,8 +45,6 @@ import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
-import kotlin.test.assertFalse
-import kotlin.test.assertIsNot
 
 @KubernetesResources("deployment/kubernetes")
 class DeploymentDRTest {
