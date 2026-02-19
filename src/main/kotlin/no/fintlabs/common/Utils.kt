@@ -39,6 +39,12 @@ fun createOwnerReference(source: HasMetadata) =
       uid = source.metadata.uid
     }
 
+var ObjectMeta.correlationIdAnnotation: String?
+  get() = this.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+  set(value) {
+    this.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] = value
+  }
+
 inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
 
 fun <T : BaseControl<T>> BaseControl<T>.rescheduleImmediate(): T = rescheduleAfter(0L)

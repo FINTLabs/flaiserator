@@ -1,8 +1,10 @@
 package no.fintlabs.job
 
+import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry
 import no.fintlabs.common.FlaisResourceReconciler
+import no.fintlabs.common.FlaisResourceReconciliationFilter
 import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
 import no.fintlabs.common.PostgresUserDR
@@ -12,7 +14,11 @@ import no.fintlabs.operator.workflow.DependentRef
 import no.fintlabs.operator.workflow.Workflow
 
 @GradualRetry(maxAttempts = 3)
-@ControllerConfiguration
+@ControllerConfiguration(
+    informer = Informer(
+        genericFilter = FlaisResourceReconciliationFilter::class,
+    )
+)
 @Workflow(
     [
         Dependent(CronJobDR::class),
