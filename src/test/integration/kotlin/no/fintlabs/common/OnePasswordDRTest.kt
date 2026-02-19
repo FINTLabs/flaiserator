@@ -1,10 +1,10 @@
 package no.fintlabs.common
 
 import com.onepassword.v1.OnePasswordItem
-import junit.framework.TestCase.assertNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import no.fintlabs.common.Utils.createAndGetResource
 import no.fintlabs.common.Utils.createKoinTestExtension
 import no.fintlabs.common.Utils.createKubernetesOperatorExtension
