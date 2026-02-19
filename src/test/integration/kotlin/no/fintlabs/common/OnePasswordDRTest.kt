@@ -1,7 +1,6 @@
 package no.fintlabs.common
 
 import com.onepassword.v1.OnePasswordItem
-import junit.framework.TestCase.assertNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -12,6 +11,7 @@ import no.fintlabs.common.Utils.createTestResource
 import no.fintlabs.common.api.v1alpha1.OnePassword
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
+import kotlin.test.assertNull
 
 class OnePasswordDRTest {
   // region General
