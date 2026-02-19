@@ -11,10 +11,6 @@ import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import io.javaoperatorsdk.operator.Operator
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.junit.DefaultNamespaceNameSupplier
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.time.Duration
-import kotlin.jvm.optionals.getOrNull
 import no.fintlabs.common.getLogger
 import no.fintlabs.extensions.Utils.executeWithRetry
 import no.fintlabs.operator.OperatorConfigHandler
@@ -29,39 +25,27 @@ import org.koin.core.context.loadKoinModules
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.testcontainers.k3s.K3sContainer
-import org.testcontainers.utility.DockerImageName
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.time.Duration
+import kotlin.jvm.optionals.getOrNull
 
 class KubernetesOperatorExtension
 private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>) :
     BeforeEachCallback,
     BeforeAllCallback,
-    AfterAllCallback,
     AfterEachCallback,
     ParameterResolver,
     KoinComponent {
   private val logger = getLogger()
-  private val k3s: K3sContainer
+  private val k3s: K3sContainer = TcK3s.global()
   private val namespaceSupplier = DefaultNamespaceNameSupplier()
 
   private var classAdditionalResources = emptyList<KubernetesResourceSource>()
 
-  init {
-    val kubernetesVersion = System.getenv("TEST_KUBERNETES_VERSION")?.let { "$it-k3s1" } ?: "latest"
-    k3s = K3sContainer(DockerImageName.parse("rancher/k3s:$kubernetesVersion")).withReuse(true)
-  }
-
   override fun beforeAll(context: ExtensionContext) {
     classAdditionalResources = getAdditionalResources(context)
-    if (!useLocalKubernetes()) {
-      k3s.start()
-    }
     ensureCRDs()
-  }
-
-  override fun afterAll(context: ExtensionContext) {
-    if (k3s.isRunning) {
-      k3s.stop()
-    }
   }
 
   override fun beforeEach(context: ExtensionContext) {

@@ -142,6 +142,32 @@ tasks {
       exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
   }
+
+  val tcEnv = mapOf(
+    "TESTCONTAINERS_REUSE_ENABLE" to "true",
+    "TESTCONTAINERS_RYUK_DISABLED" to "true",
+  )
+
+  fun JavaExec.configureTcK3s(vararg tcArgs: String) {
+    mainClass = "no.fintlabs.extensions.TcK3s"
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    args(*tcArgs)
+    environment(tcEnv)
+  }
+
+  val startGlobalK3s by registering(JavaExec::class) {
+    configureTcK3s("start")
+  }
+
+  val stopK3s by registering(JavaExec::class) {
+    configureTcK3s("stop")
+  }
+
+  named<Test>("integrationTest") {
+    dependsOn(startGlobalK3s)
+    finalizedBy(stopK3s)
+    environment(tcEnv)
+  }
 }
 
 spotless {
