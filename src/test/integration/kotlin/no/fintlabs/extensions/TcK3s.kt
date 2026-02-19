@@ -1,43 +1,37 @@
 package no.fintlabs.extensions
 
+import java.util.concurrent.ConcurrentHashMap
 import org.testcontainers.k3s.K3sContainer
 import org.testcontainers.utility.DockerImageName
-import java.util.concurrent.ConcurrentHashMap
 
 object TcK3s {
   const val CONTAINER_NAME_PREFIX = "flaiserator-test-"
 
   val kubernetesVersion = System.getenv("TEST_KUBERNETES_VERSION")?.let { "$it-k3s1" } ?: "latest"
-  val kubernetesImage =  System.getenv("TEST_KUBERNETES_IMAGE") ?: "rancher/k3s"
+  val kubernetesImage = System.getenv("TEST_KUBERNETES_IMAGE") ?: "rancher/k3s"
 
-  private val globalContainer: K3sContainer by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
-    createContainer("global")
-  }
+  private val globalContainer: K3sContainer by
+      lazy(LazyThreadSafetyMode.SYNCHRONIZED) { createContainer("global") }
 
   private val scopedContainers = ConcurrentHashMap<String, K3sContainer>()
 
   fun global(): K3sContainer = globalContainer
 
   fun scoped(key: String): K3sContainer =
-    scopedContainers.computeIfAbsent(key) {
-      createContainer(key)
-    }
+      scopedContainers.computeIfAbsent(key) { createContainer(key) }
 
   fun stopScoped(key: String) {
     scopedContainers.remove(key)?.stop()
   }
 
   private fun createContainer(name: String): K3sContainer =
-    K3sContainer(DockerImageName.parse("$kubernetesImage:$kubernetesVersion")).apply {
-      withCreateContainerCmdModifier {
-        it.withName("$CONTAINER_NAME_PREFIX$name")
+      K3sContainer(DockerImageName.parse("$kubernetesImage:$kubernetesVersion")).apply {
+        withCreateContainerCmdModifier { it.withName("$CONTAINER_NAME_PREFIX$name") }
+        withReuse(true)
+        start()
       }
-      withReuse(true)
-      start()
-    }
 
-  private fun startGlobal() =
-    global()
+  private fun startGlobal() = global()
 
   private fun stopAll() {
     println("Stopping all test containers with prefix: $CONTAINER_NAME_PREFIX")
@@ -53,17 +47,21 @@ object TcK3s {
   }
 
   private fun dockerPsByPrefix(prefix: String): List<String> =
-    runDocker(
-      "ps", "-a",
-      "--filter", "name=^$prefix",
-      "--format", "{{.ID}}",
-      captureOutput = true
-    ).filter { it.isNotBlank() }
+      runDocker(
+              "ps",
+              "-a",
+              "--filter",
+              "name=^$prefix",
+              "--format",
+              "{{.ID}}",
+              captureOutput = true,
+          )
+          .filter { it.isNotBlank() }
 
   private fun runDocker(
-    vararg args: String,
-    captureOutput: Boolean = false,
-    ignoreError: Boolean = false,
+      vararg args: String,
+      captureOutput: Boolean = false,
+      ignoreError: Boolean = false,
   ): List<String> {
 
     val builder = ProcessBuilder("docker", *args)
@@ -76,11 +74,12 @@ object TcK3s {
 
     val process = builder.start()
 
-    val output = if (captureOutput) {
-      process.inputStream.bufferedReader().readLines()
-    } else {
-      emptyList()
-    }
+    val output =
+        if (captureOutput) {
+          process.inputStream.bufferedReader().readLines()
+        } else {
+          emptyList()
+        }
 
     val exit = process.waitFor()
 
