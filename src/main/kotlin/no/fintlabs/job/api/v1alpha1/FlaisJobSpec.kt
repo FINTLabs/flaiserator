@@ -30,7 +30,6 @@ data class FlaisJobSpec(
         ResourceRequirementsBuilder()
             .addToRequests("cpu", Quantity("250m"))
             .addToRequests("memory", Quantity("256Mi"))
-            .addToLimits("cpu", Quantity("500m"))
             .addToLimits("memory", Quantity("512Mi"))
             .build(),
     override val onePassword: OnePassword? = null,

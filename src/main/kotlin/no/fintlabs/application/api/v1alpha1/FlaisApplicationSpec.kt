@@ -33,7 +33,6 @@ data class FlaisApplicationSpec(
         ResourceRequirementsBuilder()
             .addToRequests("cpu", Quantity("250m"))
             .addToRequests("memory", Quantity("256Mi"))
-            .addToLimits("cpu", Quantity("500m"))
             .addToLimits("memory", Quantity("512Mi"))
             .build(),
     val probes: Probes? = null,
