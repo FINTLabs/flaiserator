@@ -10,9 +10,9 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import no.fintlabs.Utils.updateAndGetResource
-import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
 import no.fintlabs.application.api.v1alpha1.Logging
 import no.fintlabs.common.api.v1alpha1.Database
@@ -31,7 +31,6 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.core.qualifier.named
 import org.koin.test.KoinTest
 import org.koin.test.get
-import kotlin.test.assertNull
 
 class CronJobDRTest : KoinTest {
   @Test
@@ -134,12 +133,10 @@ class CronJobDRTest : KoinTest {
 
   @Test
   fun `should not set cpu resource limits`(context: KubernetesOperatorContext) {
-    val flaisJob = createTestFlaisJob().apply {
-      spec =
-        spec.copy(
-          resources = ResourceRequirementsBuilder().build()
-        )
-    }
+    val flaisJob =
+        createTestFlaisJob().apply {
+          spec = spec.copy(resources = ResourceRequirementsBuilder().build())
+        }
 
     val cronJob = context.createAndGetCronJob(flaisJob)
     assertNotNull(cronJob)
