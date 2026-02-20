@@ -28,7 +28,7 @@ data class FlaisJobSpec(
     override val envFrom: List<EnvFromSource> = emptyList(),
     override val resources: ResourceRequirements =
         ResourceRequirementsBuilder()
-            .addToRequests("cpu", Quantity("250m"))
+            .addToRequests("cpu", Quantity("200m"))
             .addToRequests("memory", Quantity("256Mi"))
             .addToLimits("memory", Quantity("512Mi"))
             .build(),
