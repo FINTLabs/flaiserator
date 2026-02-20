@@ -11,6 +11,9 @@ import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
+import io.fabric8.kubernetes.client.dsl.base.PatchContext
+import io.fabric8.kubernetes.client.dsl.base.PatchType
+import io.fabric8.kubernetes.client.utils.Serialization
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -536,9 +539,12 @@ class DeploymentDRTest {
     val application = assertNotNull(context.get<FlaisApplication>("test"))
     var deployment = assertNotNull(context.get<Deployment>("test"))
 
-    deployment.metadata.ownerReferences.add(createOwnerReference(application))
+    val patch =
+        mapOf("metadata" to mapOf("ownerReferences" to listOf(createOwnerReference(application))))
+    context.kubernetesClient
+        .resource(deployment)
+        .patch(PatchContext.of(PatchType.STRATEGIC_MERGE), Serialization.asJson(patch))
 
-    context.update(deployment)
     context.operator.start()
 
     context.waitUntil<FlaisApplication>(application.metadata.name) {
