@@ -10,6 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
@@ -128,6 +129,20 @@ class CronJobDRTest : KoinTest {
     val cronJob = context.createAndGetCronJob(flaisJob)
     assertNotNull(cronJob)
     assertEquals("OnFailure", cronJob.spec.jobTemplate.spec.template.spec.restartPolicy)
+  }
+
+  @Test
+  fun `should not set cpu resource limits`(context: KubernetesOperatorContext) {
+    val flaisJob =
+        createTestFlaisJob().apply {
+          spec = spec.copy(resources = ResourceRequirementsBuilder().build())
+        }
+
+    val cronJob = context.createAndGetCronJob(flaisJob)
+    assertNotNull(cronJob)
+    val containers = cronJob.spec.jobTemplate.spec.template.spec.containers
+    val appContainer = containers.first { it.name == flaisJob.metadata.name }
+    assertNull(appContainer.resources.limits["cpu"])
   }
 
   @Test

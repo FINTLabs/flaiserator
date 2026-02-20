@@ -233,6 +233,18 @@ class DeploymentDRTest {
 
   // region Resources
   @Test
+  fun `should not set cpu resource limits`(context: KubernetesOperatorContext) {
+    val flaisApplication =
+        createTestFlaisApplication().apply {
+          spec = spec.copy(resources = ResourceRequirementsBuilder().build())
+        }
+
+    val deployment = context.createAndGetDeployment(flaisApplication)
+    assertNotNull(deployment)
+    assertNull(deployment.spec.template.spec.containers[0].resources.limits["cpu"])
+  }
+
+  @Test
   fun `should have correct resource limits`(context: KubernetesOperatorContext) {
     val flaisApplication =
         createTestFlaisApplication().apply {
