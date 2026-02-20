@@ -11,11 +11,15 @@ import io.fabric8.kubernetes.api.model.apps.Deployment
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
 import io.fabric8.kubernetes.api.model.apps.RollingUpdateDeployment
 import io.fabric8.kubernetes.client.KubernetesClientException
-import io.github.netmikey.logunit.api.LogCapturer
+import io.fabric8.kubernetes.client.dsl.base.PatchContext
+import io.fabric8.kubernetes.client.dsl.base.PatchType
+import io.fabric8.kubernetes.client.utils.Serialization
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import nl.altindag.log.LogCaptor
 import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.Utils.waitUntil
 import no.fintlabs.application.Utils.createAndGetResource
@@ -535,9 +539,12 @@ class DeploymentDRTest {
     val application = assertNotNull(context.get<FlaisApplication>("test"))
     var deployment = assertNotNull(context.get<Deployment>("test"))
 
-    deployment.metadata.ownerReferences.add(createOwnerReference(application))
+    val patch =
+        mapOf("metadata" to mapOf("ownerReferences" to listOf(createOwnerReference(application))))
+    context.kubernetesClient
+        .resource(deployment)
+        .patch(PatchContext.of(PatchType.STRATEGIC_MERGE), Serialization.asJson(patch))
 
-    context.update(deployment)
     context.operator.start()
 
     context.waitUntil<FlaisApplication>(application.metadata.name) {
@@ -552,6 +559,7 @@ class DeploymentDRTest {
 
   @Test
   fun `should not recreate deployment on pod selector match`(context: KubernetesOperatorContext) {
+    val logsCaptor = LogCaptor.forClass(DeploymentDR::class.java)
     val flaisApplication = createTestFlaisApplication()
 
     var deployment = context.createAndGetDeployment(flaisApplication)
@@ -561,7 +569,7 @@ class DeploymentDRTest {
 
     deployment = context.updateAndGetResource(flaisApplication)
     assertNotNull(deployment)
-    logs.assertDoesNotContain("Pod selector does not match, recreating deployment")
+    assertFalse(logsCaptor.hasMessage("Pod selector does not match, recreating deployment"))
   }
 
   // endregion
@@ -734,9 +742,6 @@ class DeploymentDRTest {
 
   private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplication) =
       createAndGetResource<Deployment>(app)
-
-  @RegisterExtension
-  val logs: LogCapturer = LogCapturer.create().captureForType(DeploymentDR::class.java)
 
   companion object {
     @RegisterExtension

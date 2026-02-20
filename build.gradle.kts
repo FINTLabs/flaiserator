@@ -41,7 +41,7 @@ dependencies {
   testImplementation(libs.testcontainers.k3s)
   testImplementation(libs.bundles.fabric8test)
   testImplementation(libs.bundles.koinTest)
-  testImplementation(libs.bundles.logunit)
+  testImplementation(libs.logcapturer)
 }
 
 testing {

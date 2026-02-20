@@ -37,8 +37,7 @@ fabric8-kubernetes-server-mock = { module = "io.fabric8:kubernetes-server-mock",
 fabric8-kube-api-test = { module = "io.fabric8:kube-api-test", version.ref = "fabric8" }
 operator-framework-junit5 = { module = "io.javaoperatorsdk:operator-framework-junit-5", version.ref = "operatorSdk" }
 awaitility-kotlin = { module = "org.awaitility:awaitility-kotlin", version.ref = "awaitility" }
-logunit-core = { module = "io.github.netmikey.logunit:logunit-core", version.ref = "logunit"}
-logunit-logback = { module = "io.github.netmikey.logunit:logunit-logback", version.ref = "logunit"}
+logcapturer = { module= "io.github.hakky54:logcaptor", version="2.12.2" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version="2.0.3"}
 testcontainers-k3s = { module = "org.testcontainers:testcontainers-k3s" }
 
@@ -59,5 +58,4 @@ fabric8 = ["fabric8-kubernetes-client", "fabric8-generator-api"]
 fabric8test = ["fabric8-kubernetes-server-mock", "fabric8-kube-api-test"]
 logging = ["logback-classic", "logstash-logback-encoder"]
 hoplite = ["hoplite-core", "hoplite-yaml"]
-logunit = ["logunit-core", "logunit-logback"]
 http4k = ["http4k-server-jetty", "http4k-metrics-micrometer"]

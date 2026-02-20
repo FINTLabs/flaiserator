@@ -37,6 +37,9 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
       return it
     }
 
+    logger.info(
+        "Starting reconciliation of ${resource.javaClass.simpleName}: ${resource.metadata.name}"
+    )
     context.managedWorkflowAndDependentResourceContext().reconcileManagedWorkflow()
 
     if (context.isNextReconciliationImminent) {
@@ -46,6 +49,7 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
 
     val resourceUpdate = resource.clone().apply { status = determineNewStatus(resource, context) }
 
+    logger.info("Finished reconciling ${resource.javaClass.simpleName}: ${resource.metadata.name}")
     return UpdateControl.patchStatus(resourceUpdate).also { removeMDC() }
   }
 
@@ -71,8 +75,7 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
       origResource: T,
       context: Context<T>,
   ): UpdateControl<T>? {
-    val currentCorrelationId =
-        origResource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+    val currentCorrelationId = origResource.metadata.correlationIdAnnotation
     val observedCorrelationId = origResource.status?.correlationId
     val observedGen = origResource.status?.observedGeneration
     val currentGen = origResource.metadata.generation
@@ -149,7 +152,7 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
   private fun setMDC(resource: T) {
     MDC.put(
         "correlationId",
-        resource.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] ?: "",
+        resource.metadata.correlationIdAnnotation ?: "",
     )
   }
 

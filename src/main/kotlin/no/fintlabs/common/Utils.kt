@@ -25,8 +25,7 @@ fun createObjectMeta(source: FlaisResource<*>) =
               .plus(MANAGED_BY_FLAISERATOR_LABEL)
       annotations =
           mutableMapOf(
-              DEPLOYMENT_CORRELATION_ID_ANNOTATION to
-                  source.metadata.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+              DEPLOYMENT_CORRELATION_ID_ANNOTATION to source.metadata.correlationIdAnnotation
           )
       ownerReferences = listOf(createOwnerReference(source))
     }
@@ -38,6 +37,12 @@ fun createOwnerReference(source: HasMetadata) =
       name = source.metadata.name
       uid = source.metadata.uid
     }
+
+var ObjectMeta.correlationIdAnnotation: String?
+  get() = this.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION]
+  set(value) {
+    this.annotations[DEPLOYMENT_CORRELATION_ID_ANNOTATION] = value
+  }
 
 inline fun <reified T> T.getLogger(): Logger = LoggerFactory.getLogger(T::class.java)
 
