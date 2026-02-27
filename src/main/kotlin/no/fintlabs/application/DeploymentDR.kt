@@ -68,6 +68,15 @@ class DeploymentDR :
       primary: FlaisApplication,
       context: Context<FlaisApplication>,
   ): Deployment {
+    val staleEnvVarNames = staleLegacyEnvVarNames(actual, desired)
+    if (shouldRecreateForLegacyFieldOwnership(actual, staleEnvVarNames)) {
+      logger.info(
+          "Recreating deployment ${actual.metadata.name} to clear stale legacy SSA-owned env vars from manager(s) $LEGACY_FIELD_MANAGERS: ${staleEnvVarNames.joinToString()}",
+      )
+      handleDelete(primary, actual, context)
+      return handleCreate(desired, primary, context)
+    }
+
     val kubernetesSerialization = context.client.kubernetesSerialization
     val desiredSelector =
         kubernetesSerialization.convertValue(desired.spec.selector, Map::class.java)
@@ -174,4 +183,42 @@ class DeploymentDR :
         startsWith("/") -> this
         else -> "/$this"
       }
+
+  companion object {
+    private const val APPLY_OPERATION = "Apply"
+
+    private val LEGACY_FIELD_MANAGERS = setOf("flaisapplicationreconciler")
+
+    private const val DEFAULT_CONTAINER_NAME = "app"
+
+    internal fun shouldRecreateForLegacyFieldOwnership(
+        actual: Deployment,
+        staleEnvVarNames: Set<String>,
+    ): Boolean {
+      val hasLegacyApplyManager =
+          actual.metadata?.managedFields.orEmpty().any {
+            it.operation == APPLY_OPERATION && it.manager in LEGACY_FIELD_MANAGERS
+          }
+
+      return hasLegacyApplyManager && staleEnvVarNames.isNotEmpty()
+    }
+
+    internal fun staleLegacyEnvVarNames(actual: Deployment, desired: Deployment): Set<String> {
+      val desiredByContainer = envNamesByContainer(desired)
+
+      return envNamesByContainer(actual)
+          .flatMap { (containerName, actualEnvNames) ->
+            val desiredEnvNames = desiredByContainer[containerName].orEmpty()
+            (actualEnvNames - desiredEnvNames).map { envName -> "$containerName:$envName" }
+          }
+          .toSet()
+    }
+
+    private fun envNamesByContainer(deployment: Deployment): Map<String, Set<String>> =
+        deployment.spec?.template?.spec?.containers.orEmpty().associate { container ->
+          val containerName = container.name ?: DEFAULT_CONTAINER_NAME
+          val envNames = container.env.orEmpty().mapNotNull { env -> env.name }.toSet()
+          containerName to envNames
+        }
+  }
 }

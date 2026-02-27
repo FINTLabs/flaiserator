@@ -15,10 +15,11 @@ import org.koin.core.component.KoinComponent
 
 @GradualRetry(maxAttempts = 3)
 @ControllerConfiguration(
+    fieldManager = "applicationreconciler",
     informer =
         Informer(
             genericFilter = FlaisResourceReconciliationFilter::class,
-        )
+        ),
 )
 @Workflow(
     [
