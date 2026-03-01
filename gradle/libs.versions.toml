@@ -37,7 +37,7 @@ fabric8-kubernetes-server-mock = { module = "io.fabric8:kubernetes-server-mock",
 fabric8-kube-api-test = { module = "io.fabric8:kube-api-test", version.ref = "fabric8" }
 operator-framework-junit5 = { module = "io.javaoperatorsdk:operator-framework-junit-5", version.ref = "operatorSdk" }
 awaitility-kotlin = { module = "org.awaitility:awaitility-kotlin", version.ref = "awaitility" }
-logcapturer = { module= "io.github.hakky54:logcaptor", version="2.12.2" }
+logcapturer = { module= "io.github.hakky54:logcaptor", version="2.12.5" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version="2.0.3"}
 testcontainers-k3s = { module = "org.testcontainers:testcontainers-k3s" }
 
