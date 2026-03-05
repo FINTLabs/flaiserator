@@ -6,7 +6,6 @@ import io.javaoperatorsdk.operator.api.reconciler.DeleteControl
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl
-import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import no.fintlabs.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
 import no.fintlabs.common.api.v1alpha1.FlaisResource
@@ -15,8 +14,12 @@ import no.fintlabs.common.api.v1alpha1.FlaisResourceStatus
 import no.fintlabs.common.api.v1alpha1.StatusError
 import no.fintlabs.common.api.v1alpha1.clone
 import no.fintlabs.common.api.v1alpha1.resourceHash
+import no.fintlabs.common.utils.correlationIdAnnotation
+import no.fintlabs.common.utils.getLogger
+import no.fintlabs.common.utils.rescheduleImmediate
 import org.koin.core.component.KoinComponent
 import org.slf4j.MDC
+import java.util.UUID
 
 abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
     Reconciler<T>, Cleaner<T>, KoinComponent {

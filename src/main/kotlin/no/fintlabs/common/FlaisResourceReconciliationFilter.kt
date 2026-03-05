@@ -3,6 +3,7 @@ package no.fintlabs.common
 import io.javaoperatorsdk.operator.processing.event.source.filter.GenericFilter
 import no.fintlabs.common.api.v1alpha1.FlaisResource
 import no.fintlabs.common.api.v1alpha1.FlaisResourceState
+import no.fintlabs.common.utils.correlationIdAnnotation
 
 class FlaisResourceReconciliationFilter : GenericFilter<FlaisResource<*>> {
   override fun accept(resource: FlaisResource<*>): Boolean {

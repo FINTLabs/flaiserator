@@ -20,10 +20,10 @@ import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
 import no.fintlabs.common.PostgresUserDR
 import no.fintlabs.common.api.v1alpha1.Probe as FlaisProbe
-import no.fintlabs.common.createObjectMeta
-import no.fintlabs.common.getLogger
 import no.fintlabs.common.pod.PodBuilder
 import no.fintlabs.common.pod.PodBuilderContext
+import no.fintlabs.common.utils.createObjectMeta
+import no.fintlabs.common.utils.getLogger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

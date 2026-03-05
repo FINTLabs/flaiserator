@@ -39,7 +39,7 @@ import no.fintlabs.common.api.v1alpha1.OnePassword
 import no.fintlabs.common.api.v1alpha1.Probe
 import no.fintlabs.common.api.v1alpha1.ProbeDefaults
 import no.fintlabs.common.api.v1alpha1.Probes
-import no.fintlabs.common.createOwnerReference
+import no.fintlabs.common.utils.createOwnerReference
 import no.fintlabs.extensions.KubernetesOperator
 import no.fintlabs.extensions.KubernetesOperatorContext
 import no.fintlabs.extensions.KubernetesResources
