@@ -29,8 +29,7 @@ class PodBuilder<T : FlaisResource<*>>(
     configurePodSpec(builderContext)
 
     val appName = primary.metadata.name
-    val appContainerIndex =
-        builderContext.containers.indexOfFirst { it.name == primary.metadata.name }
+    val appContainerIndex = builderContext.containers.indexOfFirst { it.name == appName }
     if (appContainerIndex == -1) {
       error("App container '$appName' not found in Pod configuration")
     }
