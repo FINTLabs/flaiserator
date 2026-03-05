@@ -14,6 +14,7 @@ import no.fintlabs.common.Utils.createKoinTestExtension
 import no.fintlabs.common.Utils.createKubernetesOperatorExtension
 import no.fintlabs.common.Utils.createTestResource
 import no.fintlabs.common.api.v1alpha1.FlaisResourceState
+import no.fintlabs.common.api.v1alpha1.resourceHash
 import no.fintlabs.extensions.KubernetesOperator
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -52,6 +53,15 @@ class FlaisResourceReconcilerTest : KoinTest {
     assertEquals("123", testResource.metadata.annotations["fintlabs.no/deployment-correlation-id"])
     assertNotNull(testResource.status.correlationId)
     assertEquals("123", testResource.status.correlationId)
+  }
+
+  @Test
+  fun `should set correct synchronization hash`(context: KubernetesOperatorContext) {
+    val testResource = context.createAndGetTestResource(createTestResource())
+
+    assertNotNull(testResource)
+    assertNotNull(testResource.status.synchronizationHash)
+    assertEquals(testResource.resourceHash(), testResource.status.synchronizationHash)
   }
 
   @KubernetesOperator(explicitStart = true, registerReconcilers = false)

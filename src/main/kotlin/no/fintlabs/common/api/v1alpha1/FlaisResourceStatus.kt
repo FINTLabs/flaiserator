@@ -5,4 +5,5 @@ data class FlaisResourceStatus(
     val state: FlaisResourceState = FlaisResourceState.PENDING,
     val correlationId: String? = null,
     val errors: List<StatusError>? = null,
+    val synchronizationHash: Int? = null,
 )

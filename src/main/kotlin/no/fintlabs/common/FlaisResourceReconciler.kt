@@ -6,16 +6,15 @@ import io.javaoperatorsdk.operator.api.reconciler.DeleteControl
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl
-import java.util.UUID
-import kotlin.collections.iterator
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
-import kotlin.text.isNullOrBlank
 import no.fintlabs.application.api.DEPLOYMENT_CORRELATION_ID_ANNOTATION
 import no.fintlabs.common.api.v1alpha1.FlaisResource
 import no.fintlabs.common.api.v1alpha1.FlaisResourceState
 import no.fintlabs.common.api.v1alpha1.FlaisResourceStatus
 import no.fintlabs.common.api.v1alpha1.StatusError
 import no.fintlabs.common.api.v1alpha1.clone
+import no.fintlabs.common.api.v1alpha1.resourceHash
 import org.koin.core.component.KoinComponent
 import org.slf4j.MDC
 
@@ -82,19 +81,22 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
 
     val resourceUpdated = currentGen != observedGen
 
-    val (correlationId, correlationIdUpdated) =
+    val (correlationId, correlationIdUpdated, correlationIdSet) =
         if (
             currentCorrelationId.isNullOrBlank() ||
                 (resourceUpdated && currentCorrelationId == observedCorrelationId)
         ) {
-          UUID.randomUUID().toString() to true
-        } else currentCorrelationId to false
+          Triple(UUID.randomUUID().toString(), true, true)
+        } else Triple(currentCorrelationId, currentCorrelationId != observedCorrelationId, false)
 
-    val updateStatus = resourceUpdated || correlationIdUpdated
+    val synchronizationHash = origResource.resourceHash()
+    val synchronizationHashUpdated = synchronizationHash != origResource.status?.synchronizationHash
+
+    val updateStatus = resourceUpdated || correlationIdUpdated || synchronizationHashUpdated
 
     val patchResource =
         origResource.clone().apply {
-          if (correlationIdUpdated) {
+          if (correlationIdSet) {
             metadata.annotations = mapOf(DEPLOYMENT_CORRELATION_ID_ANNOTATION to correlationId)
           }
 
@@ -104,12 +106,13 @@ abstract class FlaisResourceReconciler<T : FlaisResource<*>> :
                     observedGeneration = origResource.metadata.generation,
                     state = FlaisResourceState.PENDING,
                     correlationId = correlationId,
+                    synchronizationHash = synchronizationHash,
                 )
           }
         }
 
     return when {
-      correlationIdUpdated -> UpdateControl.patchResourceAndStatus(patchResource)
+      correlationIdSet -> UpdateControl.patchResourceAndStatus(patchResource)
       updateStatus -> UpdateControl.patchStatus(patchResource)
       else -> null
     }?.apply { rescheduleImmediate() }
