@@ -8,8 +8,8 @@ import io.javaoperatorsdk.operator.processing.dependent.Creator
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResource
 import kotlin.jvm.optionals.getOrNull
-import no.fintlabs.common.createOwnerReference
-import no.fintlabs.common.getRequiredSecondaryResource
+import no.fintlabs.common.utils.createOwnerReference
+import no.fintlabs.common.utils.getRequiredSecondaryResource
 import no.fintlabs.job.api.v1alpha1.FlaisJob
 import no.fintlabs.operator.dependent.ReadyCondition
 import no.fintlabs.operator.dependent.ReconcileCondition

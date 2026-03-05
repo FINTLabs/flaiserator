@@ -14,6 +14,7 @@ import no.fintlabs.common.api.v1alpha1.FlaisResourceSpec
 import no.fintlabs.common.api.v1alpha1.OnePassword
 import no.fintlabs.common.pod.PodBuilderContext
 import no.fintlabs.common.pod.PodCustomizer
+import no.fintlabs.common.utils.createObjectMeta
 import no.fintlabs.operator.dependent.ReconcileCondition
 
 interface WithOnePassword : FlaisResourceSpec {

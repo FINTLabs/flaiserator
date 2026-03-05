@@ -12,6 +12,7 @@ import no.fintlabs.common.api.v1alpha1.FlaisResource
 import no.fintlabs.common.api.v1alpha1.FlaisResourceSpec
 import no.fintlabs.common.pod.PodBuilderContext
 import no.fintlabs.common.pod.PodCustomizer
+import no.fintlabs.common.utils.createObjectMeta
 import no.fintlabs.operator.dependent.ReconcileCondition
 import no.fintlabs.v1alpha1.PGUser
 import no.fintlabs.v1alpha1.PGUserSpec

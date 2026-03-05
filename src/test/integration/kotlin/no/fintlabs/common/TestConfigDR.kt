@@ -5,6 +5,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Context
 import io.javaoperatorsdk.operator.processing.dependent.Creator
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependentResource
+import no.fintlabs.common.utils.createObjectMeta
 
 @KubernetesDependent
 class TestConfigDR :

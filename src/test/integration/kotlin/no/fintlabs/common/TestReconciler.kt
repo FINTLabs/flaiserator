@@ -6,10 +6,12 @@ import no.fintlabs.operator.workflow.Dependent
 import no.fintlabs.operator.workflow.Workflow
 
 @ControllerConfiguration(
+    fieldManager = "testreconciler",
     informer =
         Informer(
-            genericFilter = FlaisResourceReconciliationFilter::class,
-        )
+            onAddFilter = FlaisResourceReconciliationAddFilter::class,
+            onUpdateFilter = FlaisResourceReconciliationUpdateFilter::class,
+        ),
 )
 @Workflow(
     dependents =
