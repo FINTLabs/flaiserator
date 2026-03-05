@@ -335,6 +335,8 @@ spec:
                 - "FAILED"
                 - "PENDING"
                 type: "string"
+              synchronizationHash:
+                type: "string"
             type: "object"
         type: "object"
     served: true
