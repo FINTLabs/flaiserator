@@ -20,7 +20,7 @@ class FlaisResourceReconciliationFilterTest {
   @Test
   fun `should reconcile when synchronization hash differs`() {
     val resource = buildResource()
-    resource.status = buildStatus(resource, synchronizationHash = 123)
+    resource.status = buildStatus(resource, synchronizationHash = "123")
 
     assertTrue(FlaisResourceReconciliationFilter.shouldReconcile(resource))
   }
@@ -88,7 +88,7 @@ class FlaisResourceReconciliationFilterTest {
       state: FlaisResourceState = FlaisResourceState.DEPLOYED,
       correlationId: String? =
           resource.metadata.annotations["fintlabs.no/deployment-correlation-id"],
-      synchronizationHash: Int = resource.resourceHash(),
+      synchronizationHash: String = resource.resourceHash(),
   ): FlaisResourceStatus =
       FlaisResourceStatus(
           observedGeneration = observedGeneration,
