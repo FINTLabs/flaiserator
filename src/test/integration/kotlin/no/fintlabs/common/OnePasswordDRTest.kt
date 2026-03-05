@@ -5,10 +5,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import no.fintlabs.common.Utils.createAndGetResource
-import no.fintlabs.common.Utils.createKoinTestExtension
-import no.fintlabs.common.Utils.createKubernetesOperatorExtension
-import no.fintlabs.common.Utils.createTestResource
 import no.fintlabs.common.api.v1alpha1.OnePassword
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.junit.jupiter.api.extension.RegisterExtension

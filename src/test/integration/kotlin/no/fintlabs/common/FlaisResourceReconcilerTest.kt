@@ -7,12 +7,10 @@ import io.mockk.spyk
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
+import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.Utils.waitUntil
-import no.fintlabs.common.Utils.createAndGetResource
-import no.fintlabs.common.Utils.createKoinTestExtension
-import no.fintlabs.common.Utils.createKubernetesOperatorExtension
-import no.fintlabs.common.Utils.createTestResource
 import no.fintlabs.common.api.v1alpha1.FlaisResourceState
 import no.fintlabs.common.api.v1alpha1.resourceHash
 import no.fintlabs.extensions.KubernetesOperator

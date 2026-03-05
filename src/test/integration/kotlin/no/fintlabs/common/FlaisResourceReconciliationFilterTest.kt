@@ -4,10 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 import nl.altindag.log.LogCaptor
-import no.fintlabs.common.Utils.createAndGetResource
-import no.fintlabs.common.Utils.createKoinTestExtension
-import no.fintlabs.common.Utils.createKubernetesOperatorExtension
-import no.fintlabs.common.Utils.createTestResource
+import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.extensions.KubernetesOperatorContext
 import org.awaitility.kotlin.atMost
 import org.awaitility.kotlin.await
