@@ -4,7 +4,8 @@ import io.javaoperatorsdk.operator.api.config.informer.Informer
 import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration
 import io.javaoperatorsdk.operator.processing.retry.GradualRetry
 import no.fintlabs.common.FlaisResourceReconciler
-import no.fintlabs.common.FlaisResourceReconciliationFilter
+import no.fintlabs.common.FlaisResourceReconciliationAddFilter
+import no.fintlabs.common.FlaisResourceReconciliationUpdateFilter
 import no.fintlabs.common.KafkaDR
 import no.fintlabs.common.OnePasswordDR
 import no.fintlabs.common.PostgresUserDR
@@ -15,10 +16,12 @@ import no.fintlabs.operator.workflow.Workflow
 
 @GradualRetry(maxAttempts = 3)
 @ControllerConfiguration(
+    fieldManager = "jobreconciler",
     informer =
         Informer(
-            genericFilter = FlaisResourceReconciliationFilter::class,
-        )
+            onAddFilter = FlaisResourceReconciliationAddFilter::class,
+            onUpdateFilter = FlaisResourceReconciliationUpdateFilter::class,
+        ),
 )
 @Workflow(
     [
