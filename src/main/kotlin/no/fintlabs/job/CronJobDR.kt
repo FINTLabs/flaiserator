@@ -95,7 +95,7 @@ class CronJobDR :
           image = primary.spec.image
           imagePullPolicy = primary.spec.imagePullPolicy
           resources = primary.spec.resources
-          env = builderContext.env
+          env = builderContext.getNormalizedEnv()
           envFrom = builderContext.envFrom
           volumeMounts = builderContext.volumeMounts
         }

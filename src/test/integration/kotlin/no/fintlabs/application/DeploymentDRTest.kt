@@ -413,6 +413,60 @@ class DeploymentDRTest {
     assertEquals("/test", deployment.spec.template.spec.containers[0].env[3].value)
   }
 
+  @Test
+  fun `should be able to override env default envs`(context: KubernetesOperatorContext) {
+    val flaisApplication =
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  env =
+                      listOf(
+                          EnvVar().apply {
+                            name = "fint.org-id"
+                            value = "fintlabs"
+                          }
+                      )
+              )
+        }
+
+    val deployment = context.createAndGetDeployment(flaisApplication)
+    assertNotNull(deployment)
+
+    assertEquals(
+        "fintlabs",
+        deployment.spec.template.spec.containers[0].env.find { it.name == "fint.org-id" }?.value,
+    )
+  }
+
+  @Test
+  fun `should keep last env var when duplicate names exist`(context: KubernetesOperatorContext) {
+    val flaisApplication =
+        createTestFlaisApplication().apply {
+          spec =
+              spec.copy(
+                  env =
+                      listOf(
+                          EnvVar().apply {
+                            name = "override"
+                            value = "first"
+                          },
+                          EnvVar().apply {
+                            name = "override"
+                            value = "second"
+                          },
+                      )
+              )
+        }
+
+    val deployment = context.createAndGetDeployment(flaisApplication)
+    assertNotNull(deployment)
+
+    assertEquals(
+        "second",
+        deployment.spec.template.spec.containers[0].env.find { it.name == "override" }?.value,
+    )
+  }
+
   // endregion
 
   // region Volumes and volume mounts

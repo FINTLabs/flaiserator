@@ -56,7 +56,8 @@ class PodBuilder<T : FlaisResource<*>>(
   }
 
   private fun createContainerEnvVars(primary: T, builderContext: PodBuilderContext) {
-    val envVars =
+    builderContext.env += createDefaultEnvVars(primary)
+    builderContext.env +=
         primary.spec.env
             .map {
               if (it.value?.isEmpty() == true) {
@@ -65,12 +66,13 @@ class PodBuilder<T : FlaisResource<*>>(
               it
             }
             .toMutableList()
-
-    envVars.add(EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null))
-    envVars.add(EnvVar("TZ", "Europe/Oslo", null))
-
-    builderContext.env.addAll(envVars)
   }
+
+  private fun createDefaultEnvVars(primary: T) =
+      listOf(
+          EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null),
+          EnvVar("TZ", "Europe/Oslo", null),
+      )
 
   private fun createImagePullSecrets(primary: T) =
       mutableSetOf<String>().plus(primary.spec.imagePullSecrets).plus(config.imagePullSecrets).map {
