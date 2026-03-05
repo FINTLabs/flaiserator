@@ -15,4 +15,7 @@ data class PodBuilderContext(
     val initContainers: MutableList<Container> = mutableListOf(),
     val volumes: MutableList<Volume> = mutableListOf(),
     val volumeMounts: MutableList<VolumeMount> = mutableListOf(),
-)
+) {
+  fun getNormalizedEnv() =
+      env.asSequence().filter { !it.name.isNullOrBlank() }.associateBy { it.name }.values.toList()
+}

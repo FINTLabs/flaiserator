@@ -102,7 +102,7 @@ class DeploymentDR :
           imagePullPolicy = primary.spec.imagePullPolicy
           resources = primary.spec.resources
           ports = createContainerPorts(primary)
-          env = builderContext.env
+          env = builderContext.getNormalizedEnv()
           envFrom = builderContext.envFrom
           volumeMounts = builderContext.volumeMounts
           startupProbe = primary.spec.probes?.startup?.let { createPodProbe(it, primary.spec.port) }

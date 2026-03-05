@@ -218,6 +218,29 @@ class CronJobDRTest : KoinTest {
   }
 
   @Test
+  fun `should be able to override env default envs`(context: KubernetesOperatorContext) {
+    val flaisJob =
+        createTestFlaisJob().apply {
+          spec =
+              spec.copy(
+                  env =
+                      listOf(
+                          EnvVar().apply {
+                            name = "fint.org-id"
+                            value = "fintlabs"
+                          }
+                      )
+              )
+        }
+
+    val cronJob = context.createAndGetCronJob(flaisJob)
+    assertNotNull(cronJob)
+    val containers = cronJob.spec.jobTemplate.spec.template.spec.containers
+    val appContainer = containers.first { it.name == flaisJob.metadata.name }
+    assertEquals("fintlabs", appContainer.env.find { it.name == "fint.org-id" }?.value)
+  }
+
+  @Test
   fun `should have additional envFrom variable from 1Password`(context: KubernetesOperatorContext) {
     val flaisJob =
         createTestFlaisJob().apply {
