@@ -1,6 +1,8 @@
 package no.fintlabs.common
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 import nl.altindag.log.LogCaptor
@@ -12,8 +14,6 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.until
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.test.KoinTest
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 
 class FlaisResourceReconciliationFilterTest : KoinTest {
   @Test

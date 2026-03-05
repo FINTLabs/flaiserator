@@ -7,9 +7,7 @@ import io.mockk.spyk
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
-import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.Utils.waitUntil
 import no.fintlabs.common.api.v1alpha1.FlaisResourceState
 import no.fintlabs.common.api.v1alpha1.resourceHash
