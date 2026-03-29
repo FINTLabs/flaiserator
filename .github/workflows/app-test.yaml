@@ -34,7 +34,7 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run Spotless Check
         run: ./gradlew :spotlessCheck --stacktrace --configuration-cache
@@ -53,13 +53,13 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run Unit Tests
         run: ./gradlew :test --stacktrace --configuration-cache
 
       - name: Unit Test Reports
-        uses: dorny/test-reporter@v2.5.0
+        uses: dorny/test-reporter@v3.0.0
         if: always()
         with:
           name: Unit Test Reports
@@ -84,7 +84,7 @@ jobs:
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Run Integration Tests
         env:
@@ -92,7 +92,7 @@ jobs:
         run: ./gradlew :integrationTest --stacktrace --configuration-cache
 
       - name: Integration Test Reports
-        uses: dorny/test-reporter@v2.5.0
+        uses: dorny/test-reporter@v3.0.0
         if: always()
         with:
           name: Integration Test Reports - Kubernetes ${{ matrix.kubernetes }}

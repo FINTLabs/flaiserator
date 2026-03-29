@@ -41,7 +41,7 @@ jobs:
             core.setOutput('latest_tag', latestTag);
 
       - id: commit-hash
-        uses: prompt/actions-commit-hash@v3
+        uses: prompt/actions-commit-hash@v4
 
       - id: versions
         run: |
