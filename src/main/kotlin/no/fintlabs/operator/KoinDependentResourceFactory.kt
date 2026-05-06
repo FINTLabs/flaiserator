@@ -8,25 +8,35 @@ import kotlin.reflect.KClass
 import org.koin.core.component.KoinComponent
 import org.koin.core.qualifier.Qualifier
 
-class KoinDependentResourceFactory<
-    C : ControllerConfiguration<*>,
-    D : DependentResourceSpec<*, *, *>,
-> : DependentResourceFactory<C, D>, KoinComponent {
+class KoinDependentResourceFactory<C : ControllerConfiguration<*>> :
+    DependentResourceFactory<C, DependentResourceSpec<*, *, *>>, KoinComponent {
   private val knownDependents = mutableMapOf<Pair<KClass<*>, Qualifier?>, DependentResource<*, *>>()
 
-  override fun createFrom(spec: D, controllerConfiguration: C): DependentResource<*, *> {
+  override fun createFrom(
+      spec: DependentResourceSpec<*, *, *>,
+      controllerConfiguration: C,
+  ): DependentResource<*, *> {
     if (spec !is KoinDependentResourceSpec<*, *>) {
-      throw IllegalStateException(
-          "${spec.javaClass.canonicalName} cannot be instantiated. Not KoinDependentResourceSpec"
-      )
+      error("${spec.javaClass.canonicalName} cannot be instantiated. Not KoinDependentResourceSpec")
     }
 
-    val clazz = spec.dependentResourceClass.kotlin
+    return createFromKoinSpec(spec, controllerConfiguration)
+  }
+
+  private fun createFromKoinSpec(
+      spec: KoinDependentResourceSpec<*, *>,
+      controllerConfiguration: C,
+  ): DependentResource<*, *> {
+    val dependentResourceKClass = spec.dependentResourceClass.kotlin
     val qualifier = spec.qualifier
-    return knownDependents.getOrPut(clazz to qualifier) {
-      getKoin()
-          .get<DependentResource<*, *>>(spec.dependentResourceClass.kotlin, spec.qualifier)
-          .also { configure(it, spec, controllerConfiguration) }
+
+    return knownDependents.getOrPut(dependentResourceKClass to qualifier) {
+      @Suppress("UNCHECKED_CAST")
+      val dependent =
+          getKoin().get(clazz = dependentResourceKClass, qualifier = qualifier)
+              as DependentResource<*, *>
+
+      dependent.also { configure(it, spec, controllerConfiguration) }
     }
   }
 }

@@ -82,7 +82,7 @@ testing {
 }
 
 tasks {
-  withType<Wrapper> { gradleVersion = "9.0" }
+  withType<Wrapper> { gradleVersion = "9.5.0" }
 
   java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
