@@ -1,6 +1,4 @@
 version: 2
-pull-request-branch-name:
-  separator: "-"
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
