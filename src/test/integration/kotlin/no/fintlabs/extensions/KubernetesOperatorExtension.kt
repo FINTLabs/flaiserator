@@ -56,7 +56,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
     val operatorContext =
         KubernetesOperatorContext(namespace, { get<KubernetesClient>() }, { get<Operator>() })
-    context.store().put(KubernetesOperatorContext::class.simpleName, operatorContext)
+    context.store().put(KUBERNETES_OPERATOR_CONTEXT_KEY, operatorContext)
 
     if (!operatorConfig.explicitStart) {
       startOperator(operatorContext.operator)
@@ -65,8 +65,7 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
 
   override fun afterEach(context: ExtensionContext) {
     val kubernetesOperatorContext =
-        context.store().get(KubernetesOperatorContext::class.simpleName)
-            as KubernetesOperatorContext
+        context.store().get(KUBERNETES_OPERATOR_CONTEXT_KEY) as KubernetesOperatorContext
     val kubernetesClient = kubernetesOperatorContext.kubernetesClient
 
     try {
@@ -80,8 +79,8 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
   override fun supportsParameter(pContext: ParameterContext, eContext: ExtensionContext): Boolean =
       pContext.parameter.type == KubernetesOperatorContext::class.java
 
-  override fun resolveParameter(pContext: ParameterContext, eContext: ExtensionContext): Any =
-      eContext.store().get(KubernetesOperatorContext::class.simpleName)
+  override fun resolveParameter(pContext: ParameterContext, eContext: ExtensionContext): Any? =
+      eContext.store().get(KUBERNETES_OPERATOR_CONTEXT_KEY)
 
   private fun startOperator(operator: Operator) {
     executeWithRetry { operator.start() }
@@ -200,6 +199,8 @@ private constructor(private val crdClass: List<Class<out CustomResource<*, *>>>)
   private fun useLocalKubernetes() = System.getenv("TEST_KUBERNETES_LOCAL").toBoolean()
 
   companion object {
+    private val KUBERNETES_OPERATOR_CONTEXT_KEY = KubernetesOperatorContext::class.java.name
+
     fun create(crdClass: List<Class<out CustomResource<*, *>>> = emptyList()) =
         KubernetesOperatorExtension(crdClass)
 
