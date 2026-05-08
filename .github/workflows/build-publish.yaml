@@ -10,7 +10,9 @@ on:
       - src/**
       - build.gradle.kts
       - settings.gradle.kts
+      - buildSrc/**
       - gradle.properties
+      - gradle/**
       - Dockerfile
 
 permissions:
@@ -39,7 +41,9 @@ jobs:
               - 'src/**'
               - 'build.gradle.kts'
               - 'settings.gradle.kts'
+              - 'buildSrc/**'
               - 'gradle.properties'
+              - 'gradle/**'
               - 'Dockerfile'
             charts:
               - 'charts/**'
