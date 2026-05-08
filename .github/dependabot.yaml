@@ -1,37 +1,56 @@
 version: 2
+pull-request-branch-name:
+  separator: "-"
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "sunday"
-    open-pull-requests-limit: 10
+      day: "monday"
+      time: "04:00"
+      timezone: "Europe/Oslo"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     groups:
-      kubernetes:
+      kubernetes-stack:
         patterns:
           - "io.fabric8*"
           - "io.javaoperatorsdk*"
-      micrometer:
+      observability:
         patterns:
           - "io.micrometer*"
-      div:
+          - "ch.qos.logback*"
+          - "net.logstash.logback*"
+      kotlin-and-build:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "com.diffplug.spotless"
+      runtime-support:
         patterns:
           - "com.sksamuel.hoplite*"
           - "com.fasterxml.jackson.module*"
           - "org.http4k*"
-          - "ch.qos.logback*"
-          - "net.logstash.logback*"
+          - "io.insert-koin*"
+      testing:
+        patterns:
           - "io.mockk*"
           - "org.awaitility*"
-          - "io.github.netmikey.logunit*"
-          - "io.insert-koin*"
-          - "org.jetbrains.kotlin*"
+          - "org.testcontainers*"
+          - "io.github.hakky54:logcaptor"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "sunday"
+      day: "monday"
+      time: "04:00"
+      timezone: "Europe/Oslo"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     groups:
       github-actions:
         patterns:
@@ -41,7 +60,13 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "sunday"
+      day: "monday"
+      time: "04:00"
+      timezone: "Europe/Oslo"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     groups:
       docker:
         patterns:

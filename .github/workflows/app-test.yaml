@@ -8,6 +8,8 @@ on:
       - src/**
       - build.gradle.kts
       - settings.gradle.kts
+      - buildSrc/**
+      - gradle.properties
       - gradle/**
 
 concurrency:
