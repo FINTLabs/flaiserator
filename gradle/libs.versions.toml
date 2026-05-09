@@ -9,7 +9,7 @@ logback = "1.5.32"
 logstashEncoder = "9.0"
 jackson = "2.21.3"
 logunit = "2.0.0"
-http4k = "5.47.0.0"
+http4k = "6.46.0.0"
 micrometer = "1.16.5"
 
 [libraries]
@@ -24,8 +24,8 @@ hoplite-yaml = { module = "com.sksamuel.hoplite:hoplite-yaml", version.ref = "ho
 jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 
 http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
-http4k-server-jetty = { module = "org.http4k:http4k-server-jetty", version.ref = "http4k" }
-http4k-metrics-micrometer = { module = "org.http4k:http4k-metrics-micrometer", version.ref = "http4k" }
+http4k-server-jetty = { module = "org.http4k:http4k-server-jetty" }
+http4k-metrics-micrometer = { module = "org.http4k:http4k-ops-micrometer" }
 
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
