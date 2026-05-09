@@ -22,7 +22,9 @@ operator-framework-core = { module = "io.javaoperatorsdk:operator-framework-core
 operator-micrometer-support = { module = "io.javaoperatorsdk:micrometer-support", version.ref = "operatorSdk" }
 hoplite-core = { module = "com.sksamuel.hoplite:hoplite-core", version.ref = "hoplite" }
 hoplite-yaml = { module = "com.sksamuel.hoplite:hoplite-yaml", version.ref = "hoplite" }
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson"}
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
 
 http4k-bom = { module = "org.http4k:http4k-bom", version.ref = "http4k" }
 http4k-server-jetty = { module = "org.http4k:http4k-server-jetty" }
