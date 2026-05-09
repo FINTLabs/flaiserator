@@ -22,7 +22,7 @@ repositories { mavenCentral() }
 
 dependencies {
   implementation(kotlin("stdlib"))
-  implementation(platform(libs.netty.bom))
+  implementation(enforcedPlatform(libs.netty.bom))
   implementation(platform(libs.koin.bom))
   implementation(platform(libs.jackson.bom))
   implementation(libs.koin.core)
