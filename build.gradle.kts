@@ -22,8 +22,9 @@ repositories { mavenCentral() }
 
 dependencies {
   implementation(kotlin("stdlib"))
-  implementation(platform(libs.koin.bom))
   implementation(platform(libs.netty.bom))
+  implementation(platform(libs.koin.bom))
+  implementation(platform(libs.jackson.bom))
   implementation(libs.koin.core)
   implementation(libs.bundles.fabric8)
   implementation(libs.bundles.operator)
@@ -35,7 +36,6 @@ dependencies {
   implementation(libs.micrometer.registry.prometheus)
 
   testImplementation(kotlin("test"))
-  testImplementation(platform(libs.netty.bom))
   testImplementation(libs.mockk)
   testImplementation(libs.awaitility.kotlin)
   testImplementation(libs.operator.framework.junit5)
