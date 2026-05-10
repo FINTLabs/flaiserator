@@ -60,6 +60,16 @@ dependencies {
   testImplementation(libs.bundles.fabric8test)
   testImplementation(libs.bundles.koinTest)
   testImplementation(libs.logcapturer)
+
+  constraints {
+    testImplementation("org.bouncycastle:bcpkix-jdk18on") {
+      version {
+        require("1.84")
+      }
+      because("Override bouncycastle version due to vulnerability in version < 1.84. " +
+              "Used in io.fabric8:kubernetes-server-mock and io.fabric8:kube-api-test")
+    }
+  }
 }
 
 testing {
