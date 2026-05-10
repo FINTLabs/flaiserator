@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -8,6 +9,17 @@ plugins {
   application
   alias(libs.plugins.fabric8.generator)
   alias(libs.plugins.spotless)
+}
+
+buildscript {
+  configurations.classpath {
+    resolutionStrategy.eachDependency {
+      if (requested.group == "io.netty") {
+        useVersion(libs.versions.netty.get())
+        because("Override Fabric8 Java Generator transitive Netty version to avoid CVEs in the bundled version")
+      }
+    }
+  }
 }
 
 group = "no.fintlabs"
@@ -22,9 +34,13 @@ repositories { mavenCentral() }
 
 dependencies {
   implementation(kotlin("stdlib"))
-  implementation(enforcedPlatform(libs.netty.bom))
+  implementation(platform(libs.netty.bom)) {
+    because("Override Fabric8 transitive Netty version to avoid CVEs in the bundled version")
+  }
+  implementation(platform(libs.jackson.bom)) {
+    because("Align transitive Jackson modules on the supported Jackson 2.x line")
+  }
   implementation(platform(libs.koin.bom))
-  implementation(platform(libs.jackson.bom))
   implementation(libs.koin.core)
   implementation(libs.bundles.fabric8)
   implementation(libs.bundles.operator)
@@ -141,7 +157,7 @@ tasks {
 
     testLogging {
       events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-      exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+      exceptionFormat = TestExceptionFormat.FULL
     }
   }
 
@@ -177,7 +193,6 @@ spotless {
     ktfmt("0.57").metaStyle()
   }
 }
-
 
 fun fetchNumCores(): Int =
   Runtime.getRuntime()
