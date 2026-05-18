@@ -1,6 +1,6 @@
 [versions]
 mockk = "1.14.9"
-fabric8 = "7.6.1"
+fabric8 = "7.7.0"
 koin = "4.2.1"
 operatorSdk = "5.2.3"
 awaitility = "4.3.0"
