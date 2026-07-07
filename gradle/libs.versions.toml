@@ -1,8 +1,8 @@
 [versions]
 mockk = "1.14.9"
-fabric8 = "7.6.1"
+fabric8 = "7.8.0"
 koin = "4.2.2"
-operatorSdk = "5.2.3"
+operatorSdk = "5.2.5"
 awaitility = "4.3.0"
 hoplite = "2.9.0"
 logback = "1.5.32"
