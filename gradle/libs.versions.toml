@@ -51,9 +51,9 @@ koin-test = { module = "io.insert-koin:koin-test" }
 koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.21"}
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.4.0"}
 fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" }
-spotless = { id = "com.diffplug.spotless", version="8.5.1" }
+spotless = { id = "com.diffplug.spotless", version="8.8.0" }
 
 [bundles]
 operator = ["operator-framework-core", "operator-micrometer-support"]
