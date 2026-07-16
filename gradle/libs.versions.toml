@@ -11,7 +11,7 @@ jackson = "2.21.3"
 logunit = "2.0.0"
 http4k = "6.53.0.0"
 micrometer = "1.17.0"
-netty = "4.1.136.Final"
+netty = "4.2.16.Final"
 
 [libraries]
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
