@@ -11,17 +11,6 @@ plugins {
   alias(libs.plugins.spotless)
 }
 
-buildscript {
-  configurations.classpath {
-    resolutionStrategy.eachDependency {
-      if (requested.group == "io.netty") {
-        useVersion(libs.versions.netty.get())
-        because("Override Fabric8 Java Generator transitive Netty version to avoid CVEs in the bundled version")
-      }
-    }
-  }
-}
-
 group = "no.fintlabs"
 
 sourceSets {
@@ -34,9 +23,6 @@ repositories { mavenCentral() }
 
 dependencies {
   implementation(kotlin("stdlib"))
-  implementation(platform(libs.netty.bom)) {
-    because("Override Fabric8 transitive Netty version to avoid CVEs in the bundled version")
-  }
   implementation(platform(libs.jackson.bom)) {
     because("Align transitive Jackson modules on the supported Jackson 2.x line")
   }
