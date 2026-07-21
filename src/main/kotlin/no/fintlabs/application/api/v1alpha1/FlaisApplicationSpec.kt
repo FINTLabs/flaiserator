@@ -47,4 +47,7 @@ data class FlaisApplicationSpec(
     val url: Url = Url(),
     val ingress: Ingress? = null,
     override val observability: ApplicationObservability? = null,
-) : FlaisResourceSpec, WithOnePassword, WithKafka, WithPostgres
+) : FlaisResourceSpec,
+    WithOnePassword,
+    WithKafka,
+    WithPostgres

@@ -22,113 +22,125 @@ import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 class IngressDR :
     CRUDKubernetesDependentResource<IngressRoute, FlaisApplication>(IngressRoute::class.java),
     ReconcileCondition<FlaisApplication> {
-  override fun name(): String = "ingress"
+    override fun name(): String = "ingress"
 
-  override fun desired(primary: FlaisApplication, context: Context<FlaisApplication>) =
-      IngressRoute().apply {
+    override fun desired(
+        primary: FlaisApplication,
+        context: Context<FlaisApplication>,
+    ) = IngressRoute().apply {
         metadata = createObjectMeta(primary)
         spec =
             IngressRouteSpec().apply {
-              entryPoints = listOf("web")
-              routes =
-                  primary.spec.ingress!!.let { ingress ->
-                    if (ingress.isLegacy()) listOf(createLegacyAppRoute(primary))
-                    else ingress.routes!!.map { createAppRoute(it, primary) }
-                  }
+                entryPoints = listOf("web")
+                routes =
+                    primary.spec.ingress!!.let { ingress ->
+                        if (ingress.isLegacy()) {
+                            listOf(createLegacyAppRoute(primary))
+                        } else {
+                            ingress.routes!!.map { createAppRoute(it, primary) }
+                        }
+                    }
             }
-      }
+    }
 
-  private fun createAppRoute(route: Route, primary: FlaisApplication) =
-      Routes().apply {
+    private fun createAppRoute(
+        route: Route,
+        primary: FlaisApplication,
+    ) = Routes().apply {
         kind = Routes.Kind.RULE
         match = createMatch(route)
         services =
             listOf(
                 Services().apply {
-                  port = IntOrString(primary.spec.port)
-                  name = primary.metadata.name
-                  namespace = primary.metadata.namespace
-                }
+                    port = IntOrString(primary.spec.port)
+                    name = primary.metadata.name
+                    namespace = primary.metadata.namespace
+                },
             )
         middlewares =
             route.allMiddlewares
                 .map {
-                  Middlewares().apply {
-                    name = it
-                    namespace = primary.metadata.namespace
-                  }
+                    Middlewares().apply {
+                        name = it
+                        namespace = primary.metadata.namespace
+                    }
+                }.ifEmpty { null }
+    }
+
+    private fun createMatch(route: Route) =
+        buildString {
+            append("Host(`${route.host}`)")
+            route.path
+                ?.takeIf { it.isNotEmpty() }
+                ?.let {
+                    append(" && ")
+                    append("PathPrefix(`$it`)")
                 }
-                .ifEmpty { null }
-      }
-
-  private fun createMatch(route: Route) = buildString {
-    append("Host(`${route.host}`)")
-    route.path
-        ?.takeIf { it.isNotEmpty() }
-        ?.let {
-          append(" && ")
-          append("PathPrefix(`$it`)")
-        }
-    route.queries
-        ?.filter { it.key.isNotEmpty() && it.value.isNotEmpty() }
-        ?.map { (key, value) -> "`$key=$value`" }
-        ?.let {
-          append(" && ")
-          append("Query(${it.joinToString(", ")})")
-        }
-    route.headers
-        ?.filter { it.key.isNotEmpty() && it.value.isNotEmpty() }
-        ?.forEach { (key, value) ->
-          append(" && ")
-          append(
-              if (value.isRegex()) "HeadersRegexp(`$key`, `${value.stripRegexPrefix().toRegex()}`)"
-              else "Headers(`$key`, `$value`)"
-          )
-        }
-  }
-
-  private fun String.isRegex() = this.startsWith("re:")
-
-  private fun String.stripRegexPrefix() = this.removePrefix("re:")
-
-  // region Legacy
-  private fun createLegacyAppRoute(primary: FlaisApplication) =
-      Routes().apply {
-        kind = Routes.Kind.RULE
-        match = createLegacyMatch(primary)
-        services =
-            listOf(
-                Services().apply {
-                  port = IntOrString(primary.spec.port)
-                  name = primary.metadata.name
-                  namespace = primary.metadata.namespace
+            route.queries
+                ?.filter { it.key.isNotEmpty() && it.value.isNotEmpty() }
+                ?.map { (key, value) -> "`$key=$value`" }
+                ?.let {
+                    append(" && ")
+                    append("Query(${it.joinToString(", ")})")
                 }
-            )
-        middlewares =
-            primary.spec.ingress?.middlewares?.map {
-              Middlewares().apply {
-                name = it
-                namespace = primary.metadata.namespace
-              }
-            }
-      }
+            route.headers
+                ?.filter { it.key.isNotEmpty() && it.value.isNotEmpty() }
+                ?.forEach { (key, value) ->
+                    append(" && ")
+                    append(
+                        if (value.isRegex()) {
+                            "HeadersRegexp(`$key`, `${value.stripRegexPrefix().toRegex()}`)"
+                        } else {
+                            "Headers(`$key`, `$value`)"
+                        },
+                    )
+                }
+        }
 
-  private fun createLegacyMatch(primary: FlaisApplication) =
-      listOfNotNull(
-              "Host(`${primary.spec.url.hostname}`)",
-              legacyBasePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
-          )
-          .joinToString(" && ")
+    private fun String.isRegex() = this.startsWith("re:")
 
-  private fun legacyBasePath(primary: FlaisApplication) =
-      primary.spec.ingress?.basePath.takeUnless { it.isNullOrEmpty() }
-          ?: primary.spec.url.basePath.orEmpty()
+    private fun String.stripRegexPrefix() = this.removePrefix("re:")
 
-  override fun shouldReconcile(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ): Boolean {
-    return primary.spec.isIngressEnabled()
-  }
-  // endregion
+    // region Legacy
+    private fun createLegacyAppRoute(primary: FlaisApplication) =
+        Routes().apply {
+            kind = Routes.Kind.RULE
+            match = createLegacyMatch(primary)
+            services =
+                listOf(
+                    Services().apply {
+                        port = IntOrString(primary.spec.port)
+                        name = primary.metadata.name
+                        namespace = primary.metadata.namespace
+                    },
+                )
+            middlewares =
+                primary.spec.ingress?.middlewares?.map {
+                    Middlewares().apply {
+                        name = it
+                        namespace = primary.metadata.namespace
+                    }
+                }
+        }
+
+    private fun createLegacyMatch(primary: FlaisApplication) =
+        listOfNotNull(
+            "Host(`${primary.spec.url.hostname}`)",
+            legacyBasePath(primary).takeUnless { it.isEmpty() }?.let { "PathPrefix(`$it`)" },
+        ).joinToString(" && ")
+
+    private fun legacyBasePath(primary: FlaisApplication) =
+        primary.spec.ingress
+            ?.basePath
+            .takeUnless { it.isNullOrEmpty() }
+            ?: primary.spec.url.basePath
+                .orEmpty()
+
+    override fun shouldReconcile(
+        primary: FlaisApplication,
+        context: Context<FlaisApplication>,
+    ): Boolean {
+        return primary.spec.isIngressEnabled()
+    }
+    // endregion
 }

@@ -13,26 +13,26 @@ import no.fintlabs.common.utils.createObjectMeta
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
 class ServiceDR : CRUDKubernetesDependentResource<Service, FlaisApplication>(Service::class.java) {
-  override fun name(): String = "service"
+    override fun name(): String = "service"
 
-  override fun desired(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ): Service =
-      Service().apply {
-        metadata = createObjectMeta(primary)
-        spec =
-            ServiceSpec().apply {
-              type = "ClusterIP"
-              ports =
-                  listOf(
-                      ServicePort().apply {
-                        name = "http"
-                        protocol = "TCP"
-                        port = primary.spec.port
-                      }
-                  )
-              selector = mapOf("app" to primary.metadata.name)
-            }
-      }
+    override fun desired(
+        primary: FlaisApplication,
+        context: Context<FlaisApplication>,
+    ): Service =
+        Service().apply {
+            metadata = createObjectMeta(primary)
+            spec =
+                ServiceSpec().apply {
+                    type = "ClusterIP"
+                    ports =
+                        listOf(
+                            ServicePort().apply {
+                                name = "http"
+                                protocol = "TCP"
+                                port = primary.spec.port
+                            },
+                        )
+                    selector = mapOf("app" to primary.metadata.name)
+                }
+        }
 }

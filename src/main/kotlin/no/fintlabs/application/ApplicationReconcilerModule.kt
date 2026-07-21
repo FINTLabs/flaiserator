@@ -8,13 +8,14 @@ import no.fintlabs.common.PostgresUserDR
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-fun applicationReconcilerModule() = module {
-  single<Reconciler<*>>(named("flais-application-reconciler")) { ApplicationReconciler() }
-  single { DeploymentDR() }
-  single { ServiceDR() }
-  single { PodMetricsDR() }
-  single { IngressDR() }
-  single { OnePasswordDR<FlaisApplication>() }
-  single { PostgresUserDR<FlaisApplication>() }
-  single { KafkaDR<FlaisApplication>() }
-}
+fun applicationReconcilerModule() =
+    module {
+        single<Reconciler<*>>(named("flais-application-reconciler")) { ApplicationReconciler() }
+        single { DeploymentDR() }
+        single { ServiceDR() }
+        single { PodMetricsDR() }
+        single { IngressDR() }
+        single { OnePasswordDR<FlaisApplication>() }
+        single { PostgresUserDR<FlaisApplication>() }
+        single { KafkaDR<FlaisApplication>() }
+    }

@@ -11,9 +11,12 @@ import no.fintlabs.common.utils.createObjectMeta
 class TestConfigDR :
     KubernetesDependentResource<ConfigMap, FlaisTestResource>(ConfigMap::class.java),
     Creator<ConfigMap, FlaisTestResource> {
-  override fun desired(primary: FlaisTestResource, context: Context<FlaisTestResource>): ConfigMap =
-      ConfigMap().apply {
-        metadata = createObjectMeta(primary)
-        data = mapOf("name" to primary.metadata.name)
-      }
+    override fun desired(
+        primary: FlaisTestResource,
+        context: Context<FlaisTestResource>,
+    ): ConfigMap =
+        ConfigMap().apply {
+            metadata = createObjectMeta(primary)
+            data = mapOf("name" to primary.metadata.name)
+        }
 }
