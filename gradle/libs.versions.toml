@@ -5,13 +5,13 @@ koin = "4.2.2"
 operatorSdk = "5.2.5"
 awaitility = "4.3.0"
 hoplite = "2.9.0"
-logback = "1.5.32"
+logback = "1.5.37"
 logstashEncoder = "8.1"
-jackson = "2.21.3"
+jackson = "2.21.5"
 logunit = "2.0.0"
 http4k = "6.53.0.0"
-micrometer = "1.16.5"
-netty = "4.1.133.Final"
+micrometer = "1.17.0"
+netty = "4.1.136.Final"
 
 [libraries]
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
@@ -51,9 +51,9 @@ koin-test = { module = "io.insert-koin:koin-test" }
 koin-test-junit5 = { module = "io.insert-koin:koin-test-junit5" }
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.3.21"}
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version = "2.4.0"}
 fabric8-generator = { id = "io.fabric8.java-generator", version.ref = "fabric8" }
-spotless = { id = "com.diffplug.spotless", version="8.5.1" }
+spotless = { id = "com.diffplug.spotless", version="8.8.0" }
 
 [bundles]
 operator = ["operator-framework-core", "operator-micrometer-support"]
