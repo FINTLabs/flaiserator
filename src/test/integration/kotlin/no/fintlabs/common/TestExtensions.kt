@@ -9,13 +9,14 @@ import no.fintlabs.v1alpha1.PGUser
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
-val testModule = module {
-  single<Reconciler<*>>(named("test-reconciler")) { TestReconciler() }
-  single { TestConfigDR() }
-  single { KafkaDR<FlaisTestResource>() }
-  single { PostgresUserDR<FlaisTestResource>() }
-  single { OnePasswordDR<FlaisTestResource>() }
-}
+val testModule =
+    module {
+        single<Reconciler<*>>(named("test-reconciler")) { TestReconciler() }
+        single { TestConfigDR() }
+        single { KafkaDR<FlaisTestResource>() }
+        single { PostgresUserDR<FlaisTestResource>() }
+        single { OnePasswordDR<FlaisTestResource>() }
+    }
 
 fun createKoinTestExtension() = createKoinTestExtension(testModule)
 
@@ -26,5 +27,5 @@ fun createKubernetesOperatorExtension() =
             KafkaUserAndAcl::class.java,
             PGUser::class.java,
             OnePasswordItem::class.java,
-        )
+        ),
     )

@@ -17,38 +17,38 @@ import no.fintlabs.operator.dependent.ReconcileCondition
 class PodMetricsDR :
     CRUDKubernetesDependentResource<PodMonitor, FlaisApplication>(PodMonitor::class.java),
     ReconcileCondition<FlaisApplication> {
-  override fun name(): String = "pod-metrics"
+    override fun name(): String = "pod-metrics"
 
-  override fun desired(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ): PodMonitor =
-      PodMonitor().apply {
+    override fun desired(
+        primary: FlaisApplication,
+        context: Context<FlaisApplication>,
+    ): PodMonitor =
+        PodMonitor().apply {
+            val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
+            val portName = if (metrics.port.toInt() == primary.spec.port) "http" else "metrics"
+
+            metadata = createObjectMeta(primary)
+            spec =
+                PodMonitorSpec().apply {
+                    jobLabel = "app.kubernetes.io/name"
+                    podTargetLabels = listOf("app", "fintlabs.no/team", "fintlabs.no/org-id")
+                    podMetricsEndpoints =
+                        listOf(
+                            PodMetricsEndpoints().apply {
+                                port = portName
+                                path = metrics.path
+                                honorLabels = false
+                            },
+                        )
+                    selector = Selector().apply { matchLabels = mapOf("app" to primary.metadata.name) }
+                }
+        }
+
+    override fun shouldReconcile(
+        primary: FlaisApplication,
+        context: Context<FlaisApplication>,
+    ): Boolean {
         val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
-        val portName = if (metrics.port.toInt() == primary.spec.port) "http" else "metrics"
-
-        metadata = createObjectMeta(primary)
-        spec =
-            PodMonitorSpec().apply {
-              jobLabel = "app.kubernetes.io/name"
-              podTargetLabels = listOf("app", "fintlabs.no/team", "fintlabs.no/org-id")
-              podMetricsEndpoints =
-                  listOf(
-                      PodMetricsEndpoints().apply {
-                        port = portName
-                        path = metrics.path
-                        honorLabels = false
-                      }
-                  )
-              selector = Selector().apply { matchLabels = mapOf("app" to primary.metadata.name) }
-            }
-      }
-
-  override fun shouldReconcile(
-      primary: FlaisApplication,
-      context: Context<FlaisApplication>,
-  ): Boolean {
-    val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
-    return metrics.enabled
-  }
+        return metrics.enabled
+    }
 }

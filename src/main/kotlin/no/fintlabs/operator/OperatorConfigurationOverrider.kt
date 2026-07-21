@@ -5,11 +5,11 @@ import io.javaoperatorsdk.operator.api.monitoring.Metrics
 import java.time.Duration
 
 interface OperatorConfigurationOverrider {
-  fun setMetrics(metrics: Metrics)
+    fun setMetrics(metrics: Metrics)
 
-  fun setKubernetesClient(client: KubernetesClient)
+    fun setKubernetesClient(client: KubernetesClient)
 
-  fun setCloseClientOnStop(stopClientOnStop: Boolean)
+    fun setCloseClientOnStop(stopClientOnStop: Boolean)
 
-  fun setReconciliationTerminationTimeout(timeout: Duration)
+    fun setReconciliationTerminationTimeout(timeout: Duration)
 }

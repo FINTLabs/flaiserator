@@ -14,72 +14,76 @@ class PodBuilder<T : FlaisResource<*>>(
     private val config: Config,
     private val customizers: List<PodCustomizer<T>>,
 ) {
-  fun build(
-      primary: T,
-      context: Context<T>,
-      buildMetadata: (builderContext: PodBuilderContext) -> ObjectMeta,
-      configurePodSpec: (builderContext: PodBuilderContext) -> Unit,
-  ): PodTemplateSpec {
-    val builderContext = PodBuilderContext()
-    createContainerEnvVars(primary, builderContext)
+    fun build(
+        primary: T,
+        context: Context<T>,
+        buildMetadata: (builderContext: PodBuilderContext) -> ObjectMeta,
+        configurePodSpec: (builderContext: PodBuilderContext) -> Unit,
+    ): PodTemplateSpec {
+        val builderContext = PodBuilderContext()
+        createContainerEnvVars(primary, builderContext)
 
-    customizers.forEach { it.customizePod(primary, builderContext, context) }
+        customizers.forEach { it.customizePod(primary, builderContext, context) }
 
-    val metadata = buildMetadata(builderContext)
-    configurePodSpec(builderContext)
+        val metadata = buildMetadata(builderContext)
+        configurePodSpec(builderContext)
 
-    val appName = primary.metadata.name
-    val appContainerIndex = builderContext.containers.indexOfFirst { it.name == appName }
-    if (appContainerIndex == -1) {
-      error("App container '$appName' not found in Pod configuration")
+        val appName = primary.metadata.name
+        val appContainerIndex = builderContext.containers.indexOfFirst { it.name == appName }
+        if (appContainerIndex == -1) {
+            error("App container '$appName' not found in Pod configuration")
+        }
+
+        if (appContainerIndex != 0) {
+            builderContext.containers.addFirst(builderContext.containers.removeAt(appContainerIndex))
+        }
+
+        return PodTemplateSpec().apply {
+            this.metadata =
+                metadata.apply {
+                    annotations.putAll(builderContext.annotations)
+                    labels.putAll(builderContext.labels)
+                }
+            spec =
+                PodSpec().apply {
+                    containers = builderContext.containers
+                    initContainers = builderContext.initContainers
+                    volumes = builderContext.volumes
+                    imagePullSecrets = createImagePullSecrets(primary)
+                }
+        }
     }
 
-    if (appContainerIndex != 0) {
-      builderContext.containers.addFirst(builderContext.containers.removeAt(appContainerIndex))
+    private fun createContainerEnvVars(
+        primary: T,
+        builderContext: PodBuilderContext,
+    ) {
+        builderContext.env += createDefaultEnvVars(primary)
+        builderContext.env +=
+            primary.spec.env
+                .map {
+                    if (it.value?.isEmpty() == true) {
+                        it.value = null
+                    }
+                    it
+                }.toMutableList()
     }
 
-    return PodTemplateSpec().apply {
-      this.metadata =
-          metadata.apply {
-            annotations.putAll(builderContext.annotations)
-            labels.putAll(builderContext.labels)
-          }
-      spec =
-          PodSpec().apply {
-            containers = builderContext.containers
-            initContainers = builderContext.initContainers
-            volumes = builderContext.volumes
-            imagePullSecrets = createImagePullSecrets(primary)
-          }
+    private fun createDefaultEnvVars(primary: T) =
+        listOf(
+            EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null),
+            EnvVar("TZ", "Europe/Oslo", null),
+        )
+
+    private fun createImagePullSecrets(primary: T) =
+        mutableSetOf<String>().plus(primary.spec.imagePullSecrets).plus(config.imagePullSecrets).map {
+            LocalObjectReference(it)
+        }
+
+    companion object {
+        fun <T : FlaisResource<*>> create(
+            config: Config,
+            vararg customizer: PodCustomizer<T>,
+        ) = PodBuilder(config, customizer.toList())
     }
-  }
-
-  private fun createContainerEnvVars(primary: T, builderContext: PodBuilderContext) {
-    builderContext.env += createDefaultEnvVars(primary)
-    builderContext.env +=
-        primary.spec.env
-            .map {
-              if (it.value?.isEmpty() == true) {
-                it.value = null
-              }
-              it
-            }
-            .toMutableList()
-  }
-
-  private fun createDefaultEnvVars(primary: T) =
-      listOf(
-          EnvVar("fint.org-id", primary.metadata.labels[ORG_ID_LABEL], null),
-          EnvVar("TZ", "Europe/Oslo", null),
-      )
-
-  private fun createImagePullSecrets(primary: T) =
-      mutableSetOf<String>().plus(primary.spec.imagePullSecrets).plus(config.imagePullSecrets).map {
-        LocalObjectReference(it)
-      }
-
-  companion object {
-    fun <T : FlaisResource<*>> create(config: Config, vararg customizer: PodCustomizer<T>) =
-        PodBuilder(config, customizer.toList())
-  }
 }

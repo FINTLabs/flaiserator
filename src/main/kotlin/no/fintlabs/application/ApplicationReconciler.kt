@@ -32,6 +32,8 @@ import org.koin.core.component.KoinComponent
         Dependent(PostgresUserDR::class),
         Dependent(OnePasswordDR::class),
         Dependent(KafkaDR::class),
-    ]
+    ],
 )
-class ApplicationReconciler : FlaisResourceReconciler<FlaisApplication>(), KoinComponent
+class ApplicationReconciler :
+    FlaisResourceReconciler<FlaisApplication>(),
+    KoinComponent

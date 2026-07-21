@@ -18,7 +18,7 @@ import no.fintlabs.common.utils.createObjectMeta
 import no.fintlabs.operator.dependent.ReconcileCondition
 
 interface WithOnePassword : FlaisResourceSpec {
-  val onePassword: OnePassword?
+    val onePassword: OnePassword?
 }
 
 @KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
@@ -26,25 +26,35 @@ class OnePasswordDR<P : FlaisResource<out WithOnePassword>> :
     CRUDKubernetesDependentResource<OnePasswordItem, P>(OnePasswordItem::class.java),
     ReconcileCondition<P>,
     PodCustomizer<P> {
-  override fun name(): String = "onepassword"
+    override fun name(): String = "onepassword"
 
-  override fun desired(primary: P, context: Context<P>) =
-      OnePasswordItem().apply {
+    override fun desired(
+        primary: P,
+        context: Context<P>,
+    ) = OnePasswordItem().apply {
         metadata = createObjectMeta(primary).apply { name = "${primary.metadata.name}-op" }
         spec = OnePasswordItemSpec().apply { itemPath = primary.spec.onePassword?.itemPath }
-      }
+    }
 
-  override fun shouldReconcile(
-      primary: P,
-      context: Context<P>,
-  ): Boolean = primary.spec.onePassword != null && primary.spec.onePassword!!.itemPath.isNotEmpty()
+    override fun shouldReconcile(
+        primary: P,
+        context: Context<P>,
+    ): Boolean =
+        primary.spec.onePassword != null &&
+            primary.spec.onePassword!!
+                .itemPath
+                .isNotEmpty()
 
-  override fun customizePod(primary: P, builderContext: PodBuilderContext, context: Context<P>) {
-    if (!shouldReconcile(primary, context)) return
+    override fun customizePod(
+        primary: P,
+        builderContext: PodBuilderContext,
+        context: Context<P>,
+    ) {
+        if (!shouldReconcile(primary, context)) return
 
-    builderContext.envFrom +=
-        EnvFromSource().apply {
-          secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-op" }
-        }
-  }
+        builderContext.envFrom +=
+            EnvFromSource().apply {
+                secretRef = SecretEnvSource().apply { name = "${primary.metadata.name}-op" }
+            }
+    }
 }

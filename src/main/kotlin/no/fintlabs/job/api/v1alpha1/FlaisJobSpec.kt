@@ -52,4 +52,7 @@ data class FlaisJobSpec(
         message = "Invalid restartPolicy, must be one of Never, OnFailure",
     )
     val restartPolicy: String = "Never",
-) : FlaisResourceSpec, WithOnePassword, WithKafka, WithPostgres
+) : FlaisResourceSpec,
+    WithOnePassword,
+    WithKafka,
+    WithPostgres

@@ -16,39 +16,39 @@ import org.koin.core.module.Module
 import us.containo.traefik.v1alpha1.IngressRoute
 
 object Utils {
-  fun createTestFlaisApplication(): FlaisApplication {
-    return FlaisApplication().apply {
-      metadata =
-          ObjectMeta().apply {
-            name = "test"
+    fun createTestFlaisApplication(): FlaisApplication {
+        return FlaisApplication().apply {
+            metadata =
+                ObjectMeta().apply {
+                    name = "test"
 
-            labels =
-                mutableMapOf(
-                    "fintlabs.no/team" to "test",
-                    "fintlabs.no/org-id" to "test.org",
-                )
-          }
-      spec = FlaisApplicationSpec(orgId = "test.org", image = "hello-world")
+                    labels =
+                        mutableMapOf(
+                            "fintlabs.no/team" to "test",
+                            "fintlabs.no/org-id" to "test.org",
+                        )
+                }
+            spec = FlaisApplicationSpec(orgId = "test.org", image = "hello-world")
+        }
     }
-  }
 
-  inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
-      source: FlaisApplication,
-      nameSelector: (FlaisApplication) -> String = { it.metadata.name },
-  ): T? = createAndGetResource<FlaisApplication, T>(source, nameSelector)
+    inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(
+        source: FlaisApplication,
+        nameSelector: (FlaisApplication) -> String = { it.metadata.name },
+    ): T? = createAndGetResource<FlaisApplication, T>(source, nameSelector)
 
-  fun createApplicationKoinTestExtension(vararg additionalModules: Module) =
-      createKoinTestExtension(applicationReconcilerModule(), *additionalModules)
+    fun createApplicationKoinTestExtension(vararg additionalModules: Module) =
+        createKoinTestExtension(applicationReconcilerModule(), *additionalModules)
 
-  fun createApplicationKubernetesOperatorExtension() =
-      KubernetesOperatorExtension.create(
-          listOf(
-              FlaisApplication::class.java,
-              IngressRoute::class.java,
-              PGUser::class.java,
-              KafkaUserAndAcl::class.java,
-              OnePasswordItem::class.java,
-              PodMonitor::class.java,
-          )
-      )
+    fun createApplicationKubernetesOperatorExtension() =
+        KubernetesOperatorExtension.create(
+            listOf(
+                FlaisApplication::class.java,
+                IngressRoute::class.java,
+                PGUser::class.java,
+                KafkaUserAndAcl::class.java,
+                OnePasswordItem::class.java,
+                PodMonitor::class.java,
+            ),
+        )
 }

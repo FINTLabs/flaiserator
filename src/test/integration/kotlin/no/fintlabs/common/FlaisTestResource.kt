@@ -25,7 +25,10 @@ data class FlaisTestResourceSpec(
     override val kafka: Kafka = Kafka(),
     override val database: Database = Database(),
     override val onePassword: OnePassword? = null,
-) : FlaisResourceSpec, WithKafka, WithPostgres, WithOnePassword
+) : FlaisResourceSpec,
+    WithKafka,
+    WithPostgres,
+    WithOnePassword
 
 @Group("fintlabs.no")
 @Version("v1alpha1")

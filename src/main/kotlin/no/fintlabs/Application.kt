@@ -34,80 +34,81 @@ import org.koin.mp.KoinPlatform.getKoin
 private const val PORT = 8080
 
 fun main() {
-  startKoin { modules(applicationReconcilerModule(), jobReconcilerModule(), baseModule) }
+    startKoin { modules(applicationReconcilerModule(), jobReconcilerModule(), baseModule) }
 
-  startHttpServer()
-  startOperator()
+    startHttpServer()
+    startOperator()
 }
 
-val baseModule = module {
-  single(createdAtStart = true) { defaultConfig() }
-  single {
-    PrometheusMeterRegistry(PrometheusConfig.DEFAULT).apply {
-      JvmMemoryMetrics().bindTo(this)
-      JvmGcMetrics().bindTo(this)
-      ProcessorMetrics().bindTo(this)
+val baseModule =
+    module {
+        single(createdAtStart = true) { defaultConfig() }
+        single {
+            PrometheusMeterRegistry(PrometheusConfig.DEFAULT).apply {
+                JvmMemoryMetrics().bindTo(this)
+                JvmGcMetrics().bindTo(this)
+                ProcessorMetrics().bindTo(this)
+            }
+        }
+        single { ObjectMapper().apply { registerKotlinModule() } }
+        single {
+            KubernetesClientBuilder()
+                .withKubernetesSerialization(KubernetesSerialization(get(), true))
+                .build()
+        }
+        single<Metrics> {
+            get<PrometheusMeterRegistry>().let { registry ->
+                MicrometerMetrics.withoutPerResourceMetrics(registry)
+            }
+        }
+        single {
+            OperatorPostConfigHandler { operator ->
+                getAll<Reconciler<*>>().forEach { operator.register(it) }
+            }
+        }
+        single<ConfigurationService> {
+            OperatorConfiguration().apply {
+                getAll<OperatorConfigHandler>().reversed().forEach { it.accept(this) }
+            }
+        }
+        single {
+            Operator(get<ConfigurationService>()).apply { get<OperatorPostConfigHandler>().accept(this) }
+        }
+        single<HttpHandler> {
+            val prometheusRegistry: PrometheusMeterRegistry = get()
+            val operator: Operator = get()
+            routes(
+                "/metrics" bind Method.GET to { Response(Status.OK).body(prometheusRegistry.scrape()) },
+                "/health" bind
+                    Method.GET to
+                    {
+                        when (operator.runtimeInfo.isStarted) {
+                            true -> Response(Status.OK).body("Operator is healthy.")
+                            false -> Response(Status.SERVICE_UNAVAILABLE).body("Operator is not healthy.")
+                        }
+                    },
+                "/ready" bind
+                    Method.GET to
+                    {
+                        when (operator.runtimeInfo.isStarted) {
+                            true -> Response(Status.OK).body("Operator is ready.")
+                            false -> Response(Status.SERVICE_UNAVAILABLE).body("Operator is not ready.")
+                        }
+                    },
+            )
+        }
     }
-  }
-  single { ObjectMapper().apply { registerKotlinModule() } }
-  single {
-    KubernetesClientBuilder()
-        .withKubernetesSerialization(KubernetesSerialization(get(), true))
-        .build()
-  }
-  single<Metrics> {
-    get<PrometheusMeterRegistry>().let { registry ->
-      MicrometerMetrics.withoutPerResourceMetrics(registry)
-    }
-  }
-  single {
-    OperatorPostConfigHandler { operator ->
-      getAll<Reconciler<*>>().forEach { operator.register(it) }
-    }
-  }
-  single<ConfigurationService> {
-    OperatorConfiguration().apply {
-      getAll<OperatorConfigHandler>().reversed().forEach { it.accept(this) }
-    }
-  }
-  single {
-    Operator(get<ConfigurationService>()).apply { get<OperatorPostConfigHandler>().accept(this) }
-  }
-  single<HttpHandler> {
-    val prometheusRegistry: PrometheusMeterRegistry = get()
-    val operator: Operator = get()
-    routes(
-        "/metrics" bind Method.GET to { Response(Status.OK).body(prometheusRegistry.scrape()) },
-        "/health" bind
-            Method.GET to
-            {
-              when (operator.runtimeInfo.isStarted) {
-                true -> Response(Status.OK).body("Operator is healthy.")
-                false -> Response(Status.SERVICE_UNAVAILABLE).body("Operator is not healthy.")
-              }
-            },
-        "/ready" bind
-            Method.GET to
-            {
-              when (operator.runtimeInfo.isStarted) {
-                true -> Response(Status.OK).body("Operator is ready.")
-                false -> Response(Status.SERVICE_UNAVAILABLE).body("Operator is not ready.")
-              }
-            },
-    )
-  }
-}
 
 fun startHttpServer() {
-  val service: HttpHandler = getKoin().get()
-  val server = service.asServer(Jetty(PORT)).start()
-  Runtime.getRuntime().addShutdownHook(Thread { server.stop() })
+    val service: HttpHandler = getKoin().get()
+    val server = service.asServer(Jetty(PORT)).start()
+    Runtime.getRuntime().addShutdownHook(Thread { server.stop() })
 }
 
 fun startOperator() {
-  val operator = getKoin().get<Operator>()
+    val operator = getKoin().get<Operator>()
 
-  Runtime.getRuntime().addShutdownHook(Thread { operator.stop() })
+    Runtime.getRuntime().addShutdownHook(Thread { operator.stop() })
 
-  operator.start()
+    operator.start()
 }

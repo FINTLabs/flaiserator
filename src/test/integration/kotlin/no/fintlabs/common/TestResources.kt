@@ -7,17 +7,17 @@ import no.fintlabs.extensions.KubernetesOperatorContext
 
 fun createTestResource() =
     FlaisTestResource().apply {
-      metadata =
-          ObjectMeta().apply {
-            name = "test"
+        metadata =
+            ObjectMeta().apply {
+                name = "test"
 
-            labels =
-                mutableMapOf(
-                    "fintlabs.no/team" to "test",
-                    "fintlabs.no/org-id" to "test.org",
-                )
-          }
-      spec = FlaisTestResourceSpec()
+                labels =
+                    mutableMapOf(
+                        "fintlabs.no/team" to "test",
+                        "fintlabs.no/org-id" to "test.org",
+                    )
+            }
+        spec = FlaisTestResourceSpec()
     }
 
 inline fun <reified T : HasMetadata> KubernetesOperatorContext.createAndGetResource(

@@ -20,6 +20,6 @@ import no.fintlabs.operator.workflow.Workflow
             Dependent(KafkaDR::class),
             Dependent(PostgresUserDR::class),
             Dependent(OnePasswordDR::class),
-        ]
+        ],
 )
 class TestReconciler : FlaisResourceReconciler<FlaisTestResource>()
