@@ -1,8 +1,8 @@
 [versions]
 mockk = "1.14.9"
-fabric8 = "7.6.1"
+fabric8 = "7.8.0"
 koin = "4.2.2"
-operatorSdk = "5.2.3"
+operatorSdk = "5.2.5"
 awaitility = "4.3.0"
 hoplite = "2.9.0"
 logback = "1.5.37"
@@ -11,7 +11,6 @@ jackson = "2.21.5"
 logunit = "2.0.0"
 http4k = "6.53.0.0"
 micrometer = "1.17.0"
-netty = "4.1.136.Final"
 
 [libraries]
 fabric8-kubernetes-client = { module = "io.fabric8:kubernetes-client", version.ref = "fabric8" }
@@ -31,7 +30,6 @@ http4k-server-jetty = { module = "org.http4k:http4k-server-jetty" }
 http4k-metrics-micrometer = { module = "org.http4k:http4k-ops-micrometer" }
 
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
-netty-bom = { module = "io.netty:netty-bom", version.ref = "netty" }
 
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstashEncoder" }
