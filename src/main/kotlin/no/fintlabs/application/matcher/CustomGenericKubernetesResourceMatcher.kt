@@ -138,16 +138,25 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
         resourceMap: MutableMap<String, Any>,
     ) {
         when (resource) {
-            is Pod -> resource.spec.containers.normalizeContainers(resourceMap)
-            is Deployment ->
+            is Pod -> {
+                resource.spec.containers.normalizeContainers(resourceMap)
+            }
+
+            is Deployment -> {
                 resource.spec.template.spec.containers
                     .normalizeContainers(resourceMap)
-            is Job ->
+            }
+
+            is Job -> {
                 resource.spec.template.spec.containers
                     .normalizeContainers(resourceMap)
-            is ReplicaSet ->
+            }
+
+            is ReplicaSet -> {
                 resource.spec.template.spec.containers
                     .normalizeContainers(resourceMap)
+            }
+
             is StatefulSet -> {
                 resource.spec.template.spec.containers
                     .normalizeContainers(resourceMap)
@@ -162,10 +171,14 @@ class CustomGenericKubernetesResourceMatcher<R : HasMetadata> {
                     )
                 }
             }
-            is PersistentVolumeClaim ->
+
+            is PersistentVolumeClaim -> {
                 resource.spec.resources?.normalizeResources(resourceMap, "spec", "resources")
-            is PersistentVolume ->
+            }
+
+            is PersistentVolume -> {
                 resource.spec.capacity?.normalizeQuantity(resourceMap, "spec", "capacity")
+            }
         }
     }
 

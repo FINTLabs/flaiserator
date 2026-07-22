@@ -8,7 +8,7 @@ plugins {
     kotlin("jvm")
     application
     alias(libs.plugins.fabric8.generator)
-    alias(libs.plugins.ktlint)
+    alias(libs.plugins.spotless)
 }
 
 group = "no.fintlabs"
@@ -184,6 +184,15 @@ tasks {
         dependsOn(startGlobalK3s)
         finalizedBy(stopK3s)
         environment(tcEnv)
+    }
+}
+
+spotless {
+    kotlin {
+        ktlint(libs.versions.ktlint.get())
+    }
+    kotlinGradle {
+        ktlint(libs.versions.ktlint.get())
     }
 }
 

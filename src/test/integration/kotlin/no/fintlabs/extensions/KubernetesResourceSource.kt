@@ -28,9 +28,13 @@ class KubernetesResourceSource(
 
         private fun fromPath(path: Path): List<KubernetesResourceSource> =
             when {
-                Files.isDirectory(path) ->
+                Files.isDirectory(path) -> {
                     path.toFile().listFiles()?.flatMap { fromPath(it.toPath()) } ?: emptyList()
-                else -> listOf(KubernetesResourceSource(path.toFile()))
+                }
+
+                else -> {
+                    listOf(KubernetesResourceSource(path.toFile()))
+                }
             }
 
         fun fromResources(resources: List<String>): List<KubernetesResourceSource> =

@@ -3,7 +3,7 @@
 repository_root=$(git rev-parse --show-toplevel)
 cd "$repository_root" || exit 1
 
-echo "[git pre-commit hook] Running ktlintFormat before commit."
+echo "[git pre-commit hook] Running spotlessApply before commit."
 
 staged_files=$(git diff --name-only --cached --diff-filter=d)
 if [ -z "$staged_files" ]; then
@@ -11,13 +11,13 @@ if [ -z "$staged_files" ]; then
     exit 0
 fi
 
-./gradlew :ktlintFormat --configuration-cache
+./gradlew :spotlessApply --configuration-cache --daemon
 status=$?
 
-echo "Finished ktlintFormat with status: $status"
+echo "Finished spotlessApply with status: $status"
 
 if [ "$status" -ne 0 ]; then
-    echo "Error running ktlintFormat, aborting commit."
+    echo "Error running spotlessApply, aborting commit."
     exit "$status"
 fi
 
