@@ -1,17 +1,33 @@
 version: 2
 updates:
   - package-ecosystem: "gradle"
-    directory: "/"
+    directories:
+      - "/"
+      - "/buildSrc"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "04:00"
       timezone: "Europe/Oslo"
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "gradle"
     commit-message:
       prefix: "chore"
       include: "scope"
+    ignore:
+      - dependency-name: "net.logstash.logback:logstash-logback-encoder"
+        update-types:
+          - "version-update:semver-major"
     groups:
+      security-patches:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
       kubernetes-stack:
         patterns:
           - "io.fabric8*"
@@ -46,10 +62,20 @@ updates:
       time: "04:00"
       timezone: "Europe/Oslo"
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
     commit-message:
       prefix: "chore"
       include: "scope"
     groups:
+      security-patches:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
       github-actions:
         patterns:
           - '*'
@@ -62,10 +88,20 @@ updates:
       time: "04:00"
       timezone: "Europe/Oslo"
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker"
     commit-message:
       prefix: "chore"
       include: "scope"
     groups:
+      security-patches:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
       docker:
         patterns:
           - '*'
