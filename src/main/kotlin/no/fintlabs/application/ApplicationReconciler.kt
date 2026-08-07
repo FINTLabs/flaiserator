@@ -32,6 +32,7 @@ import org.koin.core.component.KoinComponent
         Dependent(PostgresUserDR::class),
         Dependent(OnePasswordDR::class),
         Dependent(KafkaDR::class),
+        Dependent(IngressV3DR::class),
     ],
 )
 class ApplicationReconciler :

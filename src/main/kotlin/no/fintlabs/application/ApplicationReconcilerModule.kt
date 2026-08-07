@@ -15,6 +15,7 @@ fun applicationReconcilerModule() =
         single { ServiceDR() }
         single { PodMetricsDR() }
         single { IngressDR() }
+        single { IngressV3DR() }
         single { OnePasswordDR<FlaisApplication>() }
         single { PostgresUserDR<FlaisApplication>() }
         single { KafkaDR<FlaisApplication>() }

@@ -14,6 +14,7 @@ import no.fintlabs.v1alpha1.KafkaUserAndAcl
 import no.fintlabs.v1alpha1.PGUser
 import org.koin.core.module.Module
 import us.containo.traefik.v1alpha1.IngressRoute
+import io.traefik.v1alpha1.IngressRoute as IngressRouteV3
 
 object Utils {
     fun createTestFlaisApplication(): FlaisApplication {
@@ -45,6 +46,7 @@ object Utils {
             listOf(
                 FlaisApplication::class.java,
                 IngressRoute::class.java,
+                IngressRouteV3::class.java,
                 PGUser::class.java,
                 KafkaUserAndAcl::class.java,
                 OnePasswordItem::class.java,

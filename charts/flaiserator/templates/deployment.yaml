@@ -44,10 +44,13 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.env }}
+
           env:
-              {{- toYaml . | nindent 12 }}
-          {{- end }}
+            - name: FLAISERATOR_INGRESS_TRAEFIKV3CRDSUPPORT
+              value: {{ .Values.config.ingress.traefikV3CrdSupport | quote }}
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
 
           livenessProbe:
             httpGet:
@@ -70,4 +73,3 @@ spec:
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-

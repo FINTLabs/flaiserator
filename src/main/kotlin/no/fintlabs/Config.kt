@@ -4,8 +4,13 @@ import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.PropertySource
 import org.slf4j.LoggerFactory
 
+data class IngressConfig(
+    val traefikV3CrdSupport: Boolean = false,
+)
+
 data class Config(
     val imagePullSecrets: List<String> = emptyList(),
+    val ingress: IngressConfig = IngressConfig(),
 )
 
 private val logger = LoggerFactory.getLogger("Config")

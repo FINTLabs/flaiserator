@@ -39,3 +39,7 @@ resources:
 volumes: []
 # Additional volumeMounts on the output Deployment definition.
 volumeMounts: []
+
+config:
+    ingress:
+        traefikV3CrdSupport: false
