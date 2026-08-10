@@ -2,6 +2,7 @@ package no.fintlabs
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.PropertySource
+import com.sksamuel.hoplite.sources.EnvironmentVariablesPropertySource
 import org.slf4j.LoggerFactory
 
 data class IngressConfig(
@@ -20,8 +21,15 @@ fun loadConfig(vararg resources: PropertySource): Config {
     val configLoader =
         ConfigLoaderBuilder
             .default()
-            .addPropertySources(listOf(PropertySource.environment()) + resources)
-            .build()
+            .addPropertySources(
+                listOf(
+                    EnvironmentVariablesPropertySource(
+                        useUnderscoresAsSeparator = true,
+                        allowUppercaseNames = true,
+                        prefix = "FLAISERATOR",
+                    ),
+                ) + resources,
+            ).build()
     return configLoader.loadConfigOrThrow<Config>().also { logger.trace("Loaded config: {}", it) }
 }
 
