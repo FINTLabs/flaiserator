@@ -2,6 +2,7 @@ package no.fintlabs
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
 import com.sksamuel.hoplite.PropertySource
+import com.sksamuel.hoplite.defaultPropertySources
 import com.sksamuel.hoplite.sources.EnvironmentVariablesPropertySource
 import org.slf4j.LoggerFactory
 
@@ -24,9 +25,7 @@ fun loadConfig(vararg resources: PropertySource): Config {
             .addPropertySources(
                 listOf(
                     EnvironmentVariablesPropertySource(
-                        useUnderscoresAsSeparator = true,
-                        allowUppercaseNames = true,
-                        prefix = "FLAISERATOR",
+                        prefix = "FLAISERATOR_",
                     ),
                 ) + resources,
             ).build()
