@@ -1,5 +1,7 @@
 package no.fintlabs.application
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.fabric8.kubernetes.api.model.IntOrString
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition
 import io.fabric8.kubernetes.api.model.apps.DeploymentStrategy
@@ -40,6 +42,16 @@ import org.hamcrest.CoreMatchers.`is` as isEqualTo
 class FlaisApplicationTest {
     private lateinit var client: KubernetesClient
     private lateinit var crd: CustomResourceDefinition
+
+    @Test
+    fun `LogDestination should serialize as lowercase and deserialize case-insensitively`() {
+        val mapper = ObjectMapper().registerKotlinModule()
+
+        assertEquals("loki", LogDestination.LOKI.toString())
+        assertEquals("\"loki\"", mapper.writeValueAsString(LogDestination.LOKI))
+        assertEquals(LogDestination.LOKI, mapper.readValue("\"loki\"", LogDestination::class.java))
+        assertEquals(LogDestination.LOKI, mapper.readValue("\"LOKI\"", LogDestination::class.java))
+    }
 
     @BeforeEach
     fun beforeEach() {

@@ -878,7 +878,7 @@ class DeploymentDRTest {
         assertEquals("test", annotations["instrumentation.opentelemetry.io/container-names"])
         assertEquals("test", env["OTEL_SERVICE_NAME"]?.value)
         assertEquals(
-            "service.name=test,service.namespace=${deployment.metadata.namespace},flais.backend.logs=LOKI",
+            "service.name=test,service.namespace=${deployment.metadata.namespace},flais.backend.logs=loki",
             env["OTEL_RESOURCE_ATTRIBUTES"]?.value,
         )
         assertEquals("otlp", env["OTEL_LOGS_EXPORTER"]?.value)
@@ -1006,7 +1006,7 @@ class DeploymentDRTest {
         assertEquals("test", annotations["instrumentation.opentelemetry.io/container-names"])
         assertEquals("otlp", env["OTEL_LOGS_EXPORTER"]?.value)
         assertEquals(
-            "service.name=test,service.namespace=${deployment.metadata.namespace},flais.backend.logs=LOKI",
+            "service.name=test,service.namespace=${deployment.metadata.namespace},flais.backend.logs=loki",
             env["OTEL_RESOURCE_ATTRIBUTES"]?.value,
         )
         assertNull(env["OTEL_EXPORTER_OTLP_ENDPOINT"])
@@ -1365,7 +1365,7 @@ class DeploymentDROtelCollectorFallbackTest {
         assertEquals("none", env["OTEL_METRICS_EXPORTER"]?.value)
         assertEquals("none", env["OTEL_TRACES_EXPORTER"]?.value)
         assertEquals(
-            "service.name=test,service.namespace=${deployment.metadata.namespace},flais.backend.logs=LOKI",
+            "service.name=test,service.namespace=${deployment.metadata.namespace},flais.backend.logs=loki",
             env["OTEL_RESOURCE_ATTRIBUTES"]?.value,
         )
         assertEquals("http://otel-collector:4318", env["OTEL_EXPORTER_OTLP_ENDPOINT"]?.value)
