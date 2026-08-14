@@ -86,7 +86,7 @@ jobs:
 
       - name: Setup ORAS
         if: steps.publish-check.outputs.should_publish == 'true'
-        uses: oras-project/setup-oras@v1
+        uses: oras-project/setup-oras@v2
 
       - name: Login to Flais Helm Repository
         if: steps.publish-check.outputs.should_publish == 'true'
