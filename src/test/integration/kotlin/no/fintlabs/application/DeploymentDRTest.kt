@@ -1373,6 +1373,34 @@ class DeploymentDROtelCollectorFallbackTest {
         assertEquals("true", env["OTEL_EXPORTER_OTLP_INSECURE"]?.value)
     }
 
+    @Test
+    fun `should fall back to collector when auto instrumentation requested without sdk injection`(context: KubernetesOperatorContext) {
+        val flaisApplication =
+            createTestFlaisApplication().apply {
+                spec =
+                    spec.copy(
+                        observability =
+                            ApplicationObservability(
+                                autoInstrumentation = AutoInstrumentation(enabled = true, runtime = "java"),
+                            ),
+                    )
+            }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val annotations = deployment.spec.template.metadata.annotations ?: emptyMap()
+        val env =
+            deployment.spec.template.spec.containers[0]
+                .env
+                .associateBy { it.name }
+
+        assertFalse(annotations.keys.any { it.startsWith("instrumentation.opentelemetry.io/") })
+        assertEquals("otlp", env["OTEL_TRACES_EXPORTER"]?.value)
+        assertEquals("http://otel-collector:4318", env["OTEL_EXPORTER_OTLP_ENDPOINT"]?.value)
+        assertEquals("http/protobuf", env["OTEL_EXPORTER_OTLP_PROTOCOL"]?.value)
+        assertEquals("true", env["OTEL_EXPORTER_OTLP_INSECURE"]?.value)
+    }
+
     private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplication) = createAndGetResource<Deployment>(app)
 
     companion object {
@@ -1432,10 +1460,6 @@ class DeploymentDROtelEbpfTest {
                         observability =
                             ApplicationObservability(
                                 autoInstrumentation = AutoInstrumentation(enabled = true, runtime = "java"),
-                                // tracing disabled so no otel signal is active; this isolates the ebpf label
-                                // behaviour, since explicit sdk auto-instrumentation is unavailable in an
-                                // ebpf-only cluster (sdkInjectionEnabled = false).
-                                tracing = Tracing(enabled = false),
                             ),
                     )
             }

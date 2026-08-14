@@ -179,24 +179,30 @@ class DeploymentDR :
             ),
         )
 
+        val sdkInjectionEnabled = otelConfig.autoInstrumentation.sdkInjectionEnabled
+
         if (autoInstrumentation != null && autoInstrumentation.enabled) {
             if (autoInstrumentation.runtime.isNullOrBlank()) {
                 error("Auto-instrumentation runtime must be specified when auto-instrumentation is enabled")
             }
-            if (!config.observability.otel.autoInstrumentation.sdkInjectionEnabled) {
-                error("SDK based on auto-instrumentation is not enabled in this cluster")
+            if (sdkInjectionEnabled) {
+                configureAutoInstrumentation(otelConfig, autoInstrumentation, primary, builderContext)
+                return
             }
-            configureAutoInstrumentation(otelConfig, autoInstrumentation, primary, builderContext)
+            // SDK injection is unavailable in this cluster (e.g. an eBPF-only cluster). Rather than
+            // failing the reconciliation, fall back to exporting via the collector when one is configured.
+            logger.warn(
+                "Auto-instrumentation requested for ${primary.metadata.name} but SDK injection is not " +
+                    "enabled in this cluster; falling back to collector-based export if configured",
+            )
+            otelConfig.instrumentation?.let { configureCollectorFallback(it, builderContext) }
             return
         }
 
-        if (config.observability.otel.autoInstrumentation.sdkInjectionEnabled) {
+        if (sdkInjectionEnabled) {
             configureSdkInjection(otelConfig, primary, builderContext)
         } else {
-            val instrumentation = config.observability.otel.instrumentation
-            if (instrumentation != null) {
-                configureCollectorFallback(instrumentation, builderContext)
-            }
+            otelConfig.instrumentation?.let { configureCollectorFallback(it, builderContext) }
         }
     }
 
