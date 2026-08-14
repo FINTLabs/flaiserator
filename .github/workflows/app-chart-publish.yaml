@@ -1,0 +1,23 @@
+name: App Chart Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - charts/flaiserator/**
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  app-chart:
+    name: Publish Helm Chart ${{ github.event.repository.name }}
+    uses: ./.github/workflows/.chart-publish.yaml
+    with:
+      chart_name: ${{ github.event.repository.name }}
+      set_app_version: true
+      skip_if_app_changed: true
+    secrets: inherit

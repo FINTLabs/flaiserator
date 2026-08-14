@@ -1,0 +1,35 @@
+name: App Build and Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - src/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - buildSrc/**
+      - gradle.properties
+      - gradle/**
+      - Dockerfile
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  app:
+    name: Build and Publish App
+    uses: ./.github/workflows/.app-build-publish.yaml
+    secrets: inherit
+
+  app-chart:
+    name: Publish Helm Chart ${{ github.event.repository.name }}
+    needs: app
+    uses: ./.github/workflows/.chart-publish.yaml
+    with:
+      chart_name: ${{ github.event.repository.name }}
+      app_version: ${{ needs.app.outputs.version }}
+      set_app_version: true
+    secrets: inherit

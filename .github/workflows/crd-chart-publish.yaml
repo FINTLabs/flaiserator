@@ -1,0 +1,22 @@
+name: CRD Chart Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - charts/flaiserator-crd/**
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  crd-chart:
+    name: Publish Helm Chart ${{ github.event.repository.name }}-crd
+    uses: ./.github/workflows/.chart-publish.yaml
+    with:
+      chart_name: ${{ github.event.repository.name }}-crd
+      set_app_version: false
+    secrets: inherit
