@@ -1432,6 +1432,10 @@ class DeploymentDROtelEbpfTest {
                         observability =
                             ApplicationObservability(
                                 autoInstrumentation = AutoInstrumentation(enabled = true, runtime = "java"),
+                                // tracing disabled so no otel signal is active; this isolates the ebpf label
+                                // behaviour, since explicit sdk auto-instrumentation is unavailable in an
+                                // ebpf-only cluster (sdkInjectionEnabled = false).
+                                tracing = Tracing(enabled = false),
                             ),
                     )
             }
