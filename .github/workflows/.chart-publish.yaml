@@ -25,15 +25,13 @@ on:
 
 
 jobs:
-  publish-chart:
-    name: Publish Helm Chart
+  publish-check:
+    name: Determine whether to publish
     runs-on: ubuntu-latest
-    concurrency:
-      group: helm-chart-${{ inputs.chart_name }}
-      cancel-in-progress: false
     permissions:
       contents: read
-      packages: write
+    outputs:
+      should_publish: ${{ steps.publish-check.outputs.should_publish }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -76,28 +74,41 @@ jobs:
 
           echo "should_publish=${should_publish}" >> "$GITHUB_OUTPUT"
 
-      - name: Skip chart publish
-        if: steps.publish-check.outputs.should_publish != 'true'
-        run: echo 'No publish needed for ${{ inputs.chart_name }}' >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$should_publish" != "true" ]]; then
+            echo 'No publish needed for ${{ inputs.chart_name }}' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish-chart:
+    name: Publish Helm Chart
+    needs: publish-check
+    if: needs.publish-check.outputs.should_publish == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: helm-chart-${{ inputs.chart_name }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: azure/setup-helm@v5
         name: Setup Helm
-        if: steps.publish-check.outputs.should_publish == 'true'
 
       - name: Setup ORAS
-        if: steps.publish-check.outputs.should_publish == 'true'
         uses: oras-project/setup-oras@v2
 
       - name: Login to Flais Helm Repository
-        if: steps.publish-check.outputs.should_publish == 'true'
         run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm registry login "${{ vars.FLAIS_HELM_ENDPOINT }}" --username "${{ vars.FLAIS_HELM_USERNAME }}" --password-stdin
 
       - name: Login to Flais OCI Repository
-        if: steps.publish-check.outputs.should_publish == 'true'
         run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | oras login "${{ vars.FLAIS_HELM_ENDPOINT }}" --username "${{ vars.FLAIS_HELM_USERNAME }}" --password-stdin
 
       - name: Get latest app tag
-        if: steps.publish-check.outputs.should_publish == 'true' && inputs.set_app_version && inputs.app_version == ''
+        if: inputs.set_app_version && inputs.app_version == ''
         id: app-tag
         uses: actions/github-script@v9
         with:
@@ -119,7 +130,6 @@ jobs:
 
       - name: Apply chart metadata
         id: chart-meta
-        if: steps.publish-check.outputs.should_publish == 'true'
         shell: bash
         env:
           CHART_NAME: ${{ inputs.chart_name }}
@@ -167,13 +177,10 @@ jobs:
           fi
 
       - name: Build Chart
-        if: steps.publish-check.outputs.should_publish == 'true'
         run: helm package ./charts/${{ inputs.chart_name }} -d ./charts/${{ inputs.chart_name }}
 
       - name: Push Chart
-        if: steps.publish-check.outputs.should_publish == 'true'
         run: helm push ./charts/${{ inputs.chart_name }}/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
 
       - name: Print chart version
-        if: steps.publish-check.outputs.should_publish == 'true'
         run: echo 'Published ${{ inputs.chart_name }} chart version ${{ steps.chart-meta.outputs.chart-version }}' >> "$GITHUB_STEP_SUMMARY"
