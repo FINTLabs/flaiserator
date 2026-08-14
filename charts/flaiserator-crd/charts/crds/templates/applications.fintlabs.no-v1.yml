@@ -178,7 +178,7 @@ spec:
                     properties:
                       destination:
                         enum:
-                        - "LOKI"
+                        - "loki"
                         type: "string"
                       enabled:
                         type: "boolean"

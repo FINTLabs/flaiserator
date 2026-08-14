@@ -65,7 +65,7 @@ spec:
     logging:
       loki: true
       enabled: true
-      destination: LOKI
+      destination: loki
       otel: false
 
   env:
