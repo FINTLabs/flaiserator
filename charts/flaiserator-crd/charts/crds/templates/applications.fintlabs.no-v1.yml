@@ -163,19 +163,45 @@ spec:
                 type: "object"
               observability:
                 properties:
+                  autoInstrumentation:
+                    properties:
+                      enabled:
+                        type: "boolean"
+                      runtime:
+                        type: "string"
+                        x-kubernetes-validations:
+                        - message: "Invalid instrumentation runtime, must be one of\
+                            \ java, nodejs, python, dotnet, sdk"
+                          rule: "self in ['java', 'nodejs', 'python', 'dotnet', 'sdk']"
+                    type: "object"
                   logging:
                     properties:
+                      destination:
+                        enum:
+                        - "LOKI"
+                        type: "string"
+                      enabled:
+                        type: "boolean"
                       loki:
+                        type: "boolean"
+                      otel:
                         type: "boolean"
                     type: "object"
                   metrics:
                     properties:
                       enabled:
                         type: "boolean"
+                      otel:
+                        type: "boolean"
                       path:
                         type: "string"
                       port:
                         type: "string"
+                    type: "object"
+                  tracing:
+                    properties:
+                      enabled:
+                        type: "boolean"
                     type: "object"
                 type: "object"
               onePassword:

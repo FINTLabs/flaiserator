@@ -1,3 +1,9 @@
 imagePullSecrets:
   - reg-key-1
   - reg-key-2
+observability:
+  otel:
+    enabled: true
+    autoInstrumentation:
+      sdkInjectionEnabled: true
+      instrumentationConfig: flais-system/apps

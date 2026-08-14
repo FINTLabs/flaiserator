@@ -8,7 +8,6 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler
 import io.javaoperatorsdk.operator.processing.retry.GenericRetry
 import no.fintlabs.Utils.updateAndGetResource
 import no.fintlabs.application.api.LOKI_LOGGING_LABEL
-import no.fintlabs.application.api.v1alpha1.Logging
 import no.fintlabs.common.api.v1alpha1.Database
 import no.fintlabs.common.api.v1alpha1.Kafka
 import no.fintlabs.common.api.v1alpha1.OnePassword
@@ -19,6 +18,7 @@ import no.fintlabs.job.Utils.createJobKoinTestExtension
 import no.fintlabs.job.Utils.createJobKubernetesOperatorExtension
 import no.fintlabs.job.Utils.createTestFlaisJob
 import no.fintlabs.job.api.v1alpha1.FlaisJob
+import no.fintlabs.job.api.v1alpha1.JobLogging
 import no.fintlabs.job.api.v1alpha1.JobObservability
 import no.fintlabs.v1alpha1.kafkauserandaclspec.Acls
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -316,7 +316,7 @@ class CronJobDRTest : KoinTest {
     fun `should have loki logging enabled`(context: KubernetesOperatorContext) {
         val flaisJob =
             createTestFlaisJob().apply {
-                spec = spec.copy(observability = JobObservability(logging = Logging(loki = true)))
+                spec = spec.copy(observability = JobObservability(logging = JobLogging(loki = true)))
             }
 
         val deployment = context.createAndGetCronJob(flaisJob)
@@ -331,7 +331,7 @@ class CronJobDRTest : KoinTest {
     fun `should have loki logging disabled`(context: KubernetesOperatorContext) {
         val flaisJob =
             createTestFlaisJob().apply {
-                spec = spec.copy(observability = JobObservability(logging = Logging(loki = false)))
+                spec = spec.copy(observability = JobObservability(logging = JobLogging(loki = false)))
             }
 
         val deployment = context.createAndGetCronJob(flaisJob)

@@ -48,6 +48,22 @@ spec:
           env:
             - name: FLAISERATOR_INGRESS_TRAEFIKV3CRDSUPPORT
               value: {{ .Values.config.ingress.traefikV3CrdSupport | quote }}
+            - name: FLAISERATOR_OBSERVABILITY_OTEL_ENABLED
+              value: {{ .Values.config.observability.otel.enabled | quote }}
+            - name: FLAISERATOR_OBSERVABILITY_OTEL_AUTOINSTRUMENTATION_EBPFENABLED
+              value: {{ .Values.config.observability.otel.autoInstrumentation.ebpfEnabled | quote }}
+            - name: FLAISERATOR_OBSERVABILITY_OTEL_AUTOINSTRUMENTATION_SDKINJECTIONENABLED
+              value: {{ .Values.config.observability.otel.autoInstrumentation.sdkInjectionEnabled | quote }}
+            - name: FLAISERATOR_OBSERVABILITY_OTEL_AUTOINSTRUMENTATION_INSTRUMENTATIONCONFIG
+              value: {{ .Values.config.observability.otel.autoInstrumentation.instrumentationConfig | quote }}
+            {{- with .Values.config.observability.otel.instrumentation }}
+            - name: FLAISERATOR_OBSERVABILITY_OTEL_INSTRUMENTATION_COLLECTORENDPOINT
+              value: {{ .collectorEndpoint | quote }}
+            - name: FLAISERATOR_OBSERVABILITY_OTEL_INSTRUMENTATION_COLLECTORPROTOCOL
+              value: {{ .collectorProtocol | quote }}
+            - name: FLAISERATOR_OBSERVABILITY_OTEL_INSTRUMENTATION_COLLECTORINSECURE
+              value: {{ .collectorInsecure | quote }}
+            {{- end }}
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

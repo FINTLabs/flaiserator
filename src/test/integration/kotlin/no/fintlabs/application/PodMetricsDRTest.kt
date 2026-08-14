@@ -76,6 +76,23 @@ class PodMetricsDRTest {
         assertNull(podMonitor)
     }
 
+    @Test
+    fun `should not create PodMonitor when metrics uses otel`(context: KubernetesOperatorContext) {
+        val flaisApplication =
+            createTestFlaisApplication().apply {
+                spec =
+                    spec.copy(
+                        observability =
+                            ApplicationObservability(
+                                metrics = Metrics(enabled = true, path = "/actuator/prometheus", port = "8080", otel = true),
+                            ),
+                    )
+            }
+
+        val podMonitor = context.createAndGetPodMonitor(flaisApplication)
+        assertNull(podMonitor)
+    }
+
     // endregion
 
     private fun KubernetesOperatorContext.createAndGetPodMonitor(app: FlaisApplication) =

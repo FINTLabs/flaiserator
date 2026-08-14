@@ -4,5 +4,7 @@ import no.fintlabs.common.api.v1alpha1.Observability
 
 data class ApplicationObservability(
     val metrics: Metrics? = null,
-    override val logging: Logging? = null,
+    val tracing: Tracing? = null,
+    val logging: Logging? = null,
+    val autoInstrumentation: AutoInstrumentation? = null,
 ) : Observability

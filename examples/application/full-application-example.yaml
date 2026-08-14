@@ -56,8 +56,17 @@ spec:
     metrics:
       path: /metrics
       port: 8080
+      otel: false
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+    tracing:
+      enabled: true
     logging:
       loki: true
+      enabled: true
+      destination: LOKI
+      otel: false
 
   env:
     - name: ENV1
