@@ -3,49 +3,34 @@ name: Publish Chart
 on:
   workflow_call:
     inputs:
-      app-version:
-        description: "The version of the application"
+      app_version:
+        description: The version of the application
+        type: string
+        required: false
+        default: ""
+      chart_name:
+        description: The name of the chart
         type: string
         required: true
-      chart-version:
-        description: "The version of the Helm chart"
-        type: string
-        required: true
-      chart-name:
-        description: "The name of the chart"
-        type: string
-        required: true
+      set_app_version:
+        description: Whether to stamp appVersion in Chart.yaml
+        type: boolean
+        required: false
+        default: true
+      skip_if_app_changed:
+        description: Skip publishing on push events that include app changes
+        type: boolean
+        required: false
+        default: false
 
 
 jobs:
-  chart-meta:
-    name: Apply Chart Metadata
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Update Chart.yaml
-        uses: mikefarah/yq@v4
-        with:
-          cmd: |
-            yq e -i '.version = "${{ inputs.chart-version }}"' ./charts/${{ inputs.chart-name }}/Chart.yaml
-            yq e -i '.appVersion = "${{ inputs.app-version }}"' ./charts/${{ inputs.chart-name }}/Chart.yaml
-
-      - name: Save Chart Meta
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ inputs.chart-name }}-chart-metadata
-          path: ./charts/${{ inputs.chart-name }}/Chart.yaml
-
   publish-chart:
     name: Publish Helm Chart
-    needs: chart-meta
     runs-on: ubuntu-latest
+    concurrency:
+      group: helm-chart-${{ inputs.chart_name }}
+      cancel-in-progress: false
     permissions:
       contents: read
       packages: write
@@ -55,22 +40,140 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore Chart Metadata
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: ${{ inputs.chart-name }}-chart-metadata
-          path: ./charts/${{ inputs.chart-name }}
+      - name: Determine whether to publish
+        id: publish-check
+        shell: bash
+        env:
+          SKIP_IF_APP_CHANGED: ${{ inputs.skip_if_app_changed }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          should_publish=true
+
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$SKIP_IF_APP_CHANGED" == "true" ]]; then
+            if [[ -n "$BEFORE_SHA" && ! "$BEFORE_SHA" =~ ^0+$ ]]; then
+              changed_files="$(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA")"
+            else
+              changed_files="$(git diff --name-only HEAD^ HEAD 2>/dev/null || git ls-files)"
+            fi
+
+            app_changed=false
+
+            while IFS= read -r file; do
+              case "$file" in
+                src/*|build.gradle.kts|settings.gradle.kts|buildSrc/*|gradle.properties|gradle/*|Dockerfile)
+                  app_changed=true
+                  ;;
+              esac
+            done <<< "$changed_files"
+
+            if [[ "$app_changed" == "true" ]]; then
+              should_publish=false
+            fi
+          fi
+
+          echo "should_publish=${should_publish}" >> "$GITHUB_OUTPUT"
+
+      - name: Skip chart publish
+        if: steps.publish-check.outputs.should_publish != 'true'
+        run: echo 'No publish needed for ${{ inputs.chart_name }}' >> "$GITHUB_STEP_SUMMARY"
 
       - uses: azure/setup-helm@v5
         name: Setup Helm
+        if: steps.publish-check.outputs.should_publish == 'true'
+
+      - name: Setup ORAS
+        if: steps.publish-check.outputs.should_publish == 'true'
+        uses: oras-project/setup-oras@v1
 
       - name: Login to Flais Helm Repository
-        run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm registry login ${{ vars.FLAIS_HELM_ENDPOINT }} --username ${{ vars.FLAIS_HELM_USERNAME }} --password-stdin
+        if: steps.publish-check.outputs.should_publish == 'true'
+        run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm registry login "${{ vars.FLAIS_HELM_ENDPOINT }}" --username "${{ vars.FLAIS_HELM_USERNAME }}" --password-stdin
 
-      - name: Build Charts
-        run: |
-          helm package ./charts/${{ inputs.chart-name }} -d ./charts/${{ inputs.chart-name }}
+      - name: Login to Flais OCI Repository
+        if: steps.publish-check.outputs.should_publish == 'true'
+        run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | oras login "${{ vars.FLAIS_HELM_ENDPOINT }}" --username "${{ vars.FLAIS_HELM_USERNAME }}" --password-stdin
 
-      - name: Push Charts
+      - name: Get latest app tag
+        if: steps.publish-check.outputs.should_publish == 'true' && inputs.set_app_version && inputs.app_version == ''
+        id: app-tag
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const tagPattern = /^\d{8}-[a-f0-9]{7}$/;
+            const response = await github.request('GET /orgs/{owner}/packages/container/{package}/versions', {
+              owner: context.repo.owner,
+              package: context.repo.repo
+            });
+            const latestTag = response.data
+              .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+              .flatMap(v => v.metadata.container.tags)
+              .find(tag => tagPattern.test(tag));
+            if (!latestTag) {
+              core.setFailed('Could not find a published app image tag matching YYYYMMDD-sha');
+              return;
+            }
+            core.setOutput('latest_tag', latestTag);
+
+      - name: Apply chart metadata
+        id: chart-meta
+        if: steps.publish-check.outputs.should_publish == 'true'
+        shell: bash
+        env:
+          CHART_NAME: ${{ inputs.chart_name }}
+          INPUT_APP_VERSION: ${{ inputs.app_version }}
+          LATEST_APP_VERSION: ${{ steps.app-tag.outputs.latest_tag }}
+          SET_APP_VERSION: ${{ inputs.set_app_version }}
+          FLAIS_HELM_ENDPOINT: ${{ vars.FLAIS_HELM_ENDPOINT }}
         run: |
-          helm push ./charts/${{ inputs.chart-name }}/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
+          set -euo pipefail
+
+          chart_file="./charts/${CHART_NAME}/Chart.yaml"
+          base_version="$(awk '$1 == "version:" { gsub(/"/, "", $2); print $2; exit }' "$chart_file")"
+
+          if [[ ! "$base_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Chart version must be MAJOR.MINOR.PATCH, got: $base_version" >&2
+            exit 1
+          fi
+
+          major_minor="${base_version%.*}"
+          tag_regex="^${major_minor//./\\.}\.([0-9]+)$"
+          tags="$(oras repo tags "${FLAIS_HELM_ENDPOINT}/helm/${CHART_NAME}" 2>/dev/null || true)"
+          max_patch=-1
+
+          while IFS= read -r tag; do
+            if [[ "$tag" =~ $tag_regex ]]; then
+              patch="${BASH_REMATCH[1]}"
+              if (( patch > max_patch )); then
+                max_patch="$patch"
+              fi
+            fi
+          done <<< "$tags"
+
+          chart_version="${major_minor}.$((max_patch + 1))"
+          echo "chart-version=${chart_version}" >> "$GITHUB_OUTPUT"
+          CHART_VERSION="$chart_version" perl -0pi -e 's/^version:\s*.*/version: $ENV{CHART_VERSION}/m' "$chart_file"
+
+          if [[ "$SET_APP_VERSION" == "true" ]]; then
+            app_version="${INPUT_APP_VERSION:-$LATEST_APP_VERSION}"
+            if [[ -z "$app_version" ]]; then
+              echo "appVersion must be provided or resolvable from the latest app image tag" >&2
+              exit 1
+            fi
+            APP_VERSION="$app_version" perl -0pi -e 's/^appVersion:\s*.*/appVersion: "$ENV{APP_VERSION}"/m' "$chart_file"
+            echo "app-version=${app_version}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build Chart
+        if: steps.publish-check.outputs.should_publish == 'true'
+        run: helm package ./charts/${{ inputs.chart_name }} -d ./charts/${{ inputs.chart_name }}
+
+      - name: Push Chart
+        if: steps.publish-check.outputs.should_publish == 'true'
+        run: helm push ./charts/${{ inputs.chart_name }}/*.tgz oci://${{ vars.FLAIS_HELM_ENDPOINT }}/helm
+
+      - name: Print chart version
+        if: steps.publish-check.outputs.should_publish == 'true'
+        run: echo 'Published ${{ inputs.chart_name }} chart version ${{ steps.chart-meta.outputs.chart-version }}' >> "$GITHUB_STEP_SUMMARY"
