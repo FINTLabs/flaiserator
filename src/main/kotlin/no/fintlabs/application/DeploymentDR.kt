@@ -98,7 +98,9 @@ class DeploymentDR :
         labels.putAll(builderContext.labels)
 
         annotations["kubectl.kubernetes.io/default-container"] = primary.metadata.name
-        labels["observability.fintlabs.no/loki"] = lokiLabelEnabled(primary.spec.observability?.logging).toString()
+        lokiLabelEnabled(primary.spec.observability?.logging)?.let {
+            labels["observability.fintlabs.no/loki"] = it.toString()
+        }
 
         if (ebpfAutoInstrumentationEnabled(primary)) {
             labels["observability.fintlabs.no/ebpf-auto-instrumentation"] = "true"
@@ -148,7 +150,7 @@ class DeploymentDR :
         val autoInstrumentation = observability.autoInstrumentation
         val loggingEnabled = observability.logging?.otel == true
         val metricsEnabled = observability.metrics?.otel == true
-        val tracingEnabled = observability.tracing?.enabled == true
+        val tracingEnabled = observability.tracing?.enabled ?: (autoInstrumentation?.enabled == true)
 
         if (!loggingEnabled && !metricsEnabled && !tracingEnabled) return
 
@@ -328,8 +330,9 @@ class DeploymentDR :
 
     private fun exporterFor(enabled: Boolean) = if (enabled) "otlp" else "none"
 
-    private fun lokiLabelEnabled(logging: Logging?): Boolean {
+    private fun lokiLabelEnabled(logging: Logging?): Boolean? {
         if (logging == null) return true
+        if (logging.otel) return null
         logging.loki?.let { return it }
         return (logging.enabled ?: true) && logging.destination == LogDestination.LOKI
     }

@@ -51,7 +51,25 @@ fun loadConfig(vararg resources: PropertySource): Config {
                     ),
                 ) + resources,
             ).build()
-    return configLoader.loadConfigOrThrow<Config>().also { logger.trace("Loaded config: {}", it) }
+    return configLoader
+        .loadConfigOrThrow<Config>()
+        .also { it.validate() }
+        .also { logger.trace("Loaded config: {}", it) }
+}
+
+private fun Config.validate() {
+    val otel = observability.otel
+    if (otel.enabled &&
+        !otel.autoInstrumentation.sdkInjectionEnabled &&
+        otel.instrumentation == null
+    ) {
+        error(
+            "Invalid OpenTelemetry configuration: when observability.otel.enabled is true and " +
+                "observability.otel.autoInstrumentation.sdkInjectionEnabled is false, " +
+                "observability.otel.instrumentation (collector) must be configured, " +
+                "otherwise applications have no OTLP export target.",
+        )
+    }
 }
 
 fun defaultConfig() = loadConfig(PropertySource.resource("/application.yaml", optional = true))

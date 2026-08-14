@@ -770,7 +770,7 @@ class DeploymentDRTest {
     }
 
     @Test
-    fun `should keep loki label when logging uses otel`(context: KubernetesOperatorContext) {
+    fun `should not set loki label when logging uses otel`(context: KubernetesOperatorContext) {
         val flaisApplication =
             createTestFlaisApplication().apply {
                 spec =
@@ -784,7 +784,7 @@ class DeploymentDRTest {
 
         val deployment = context.createAndGetDeployment(flaisApplication)
         assertNotNull(deployment)
-        assertEquals("true", deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
+        assertNull(deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
     }
 
     @Test
@@ -873,7 +873,7 @@ class DeploymentDRTest {
                 .env
                 .associateBy { it.name }
 
-        assertEquals("true", deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
+        assertNull(deployment.spec.template.metadata.labels[LOKI_LOGGING_LABEL])
         assertEquals("flais-system/apps", annotations["instrumentation.opentelemetry.io/inject-java"])
         assertEquals("test", annotations["instrumentation.opentelemetry.io/container-names"])
         assertEquals("test", env["OTEL_SERVICE_NAME"]?.value)
@@ -883,7 +883,7 @@ class DeploymentDRTest {
         )
         assertEquals("otlp", env["OTEL_LOGS_EXPORTER"]?.value)
         assertEquals("none", env["OTEL_METRICS_EXPORTER"]?.value)
-        assertEquals("none", env["OTEL_TRACES_EXPORTER"]?.value)
+        assertEquals("otlp", env["OTEL_TRACES_EXPORTER"]?.value)
         assertNull(env["OTEL_EXPORTER_OTLP_ENDPOINT"])
         assertNull(env["OTEL_EXPORTER_OTLP_PROTOCOL"])
         assertNull(env["OTEL_EXPORTER_OTLP_INSECURE"])
@@ -931,7 +931,7 @@ class DeploymentDRTest {
         )
         assertEquals("none", env["OTEL_LOGS_EXPORTER"]?.value)
         assertEquals("otlp", env["OTEL_METRICS_EXPORTER"]?.value)
-        assertEquals("none", env["OTEL_TRACES_EXPORTER"]?.value)
+        assertEquals("otlp", env["OTEL_TRACES_EXPORTER"]?.value)
         assertNull(env["OTEL_EXPORTER_OTLP_ENDPOINT"])
         assertNull(env["OTEL_EXPORTER_OTLP_PROTOCOL"])
         assertNull(env["OTEL_EXPORTER_OTLP_INSECURE"])
@@ -1010,6 +1010,75 @@ class DeploymentDRTest {
             env["OTEL_RESOURCE_ATTRIBUTES"]?.value,
         )
         assertNull(env["OTEL_EXPORTER_OTLP_ENDPOINT"])
+    }
+
+    @Test
+    fun `should enable tracing by default when auto instrumentation is enabled`(context: KubernetesOperatorContext) {
+        val flaisApplication =
+            createTestFlaisApplication().apply {
+                spec =
+                    spec.copy(
+                        observability =
+                            ApplicationObservability(
+                                autoInstrumentation = AutoInstrumentation(enabled = true, runtime = "java"),
+                            ),
+                    )
+            }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val annotations = deployment.spec.template.metadata.annotations
+        val env =
+            deployment.spec.template.spec.containers[0]
+                .env
+                .associateBy { it.name }
+
+        assertEquals("flais-system/apps", annotations["instrumentation.opentelemetry.io/inject-java"])
+        assertEquals("none", env["OTEL_LOGS_EXPORTER"]?.value)
+        assertEquals("none", env["OTEL_METRICS_EXPORTER"]?.value)
+        assertEquals("otlp", env["OTEL_TRACES_EXPORTER"]?.value)
+    }
+
+    @Test
+    fun `should not enable tracing when explicitly disabled with auto instrumentation`(context: KubernetesOperatorContext) {
+        val flaisApplication =
+            createTestFlaisApplication().apply {
+                spec =
+                    spec.copy(
+                        observability =
+                            ApplicationObservability(
+                                autoInstrumentation = AutoInstrumentation(enabled = true, runtime = "java"),
+                                tracing = Tracing(enabled = false),
+                            ),
+                    )
+            }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        assertNoOtel(deployment)
+    }
+
+    @Test
+    fun `should not enable tracing by default without auto instrumentation`(context: KubernetesOperatorContext) {
+        val flaisApplication =
+            createTestFlaisApplication().apply {
+                spec =
+                    spec.copy(
+                        observability =
+                            ApplicationObservability(
+                                logging = Logging(otel = true),
+                            ),
+                    )
+            }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+        assertNotNull(deployment)
+        val env =
+            deployment.spec.template.spec.containers[0]
+                .env
+                .associateBy { it.name }
+
+        assertEquals("none", env["OTEL_TRACES_EXPORTER"]?.value)
     }
 
     // endregion
