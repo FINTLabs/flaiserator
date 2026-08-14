@@ -8,10 +8,16 @@ import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient
 import no.fintlabs.CustomKubernetesClientBuilder
+import no.fintlabs.application.api.v1alpha1.ApplicationObservability
+import no.fintlabs.application.api.v1alpha1.AutoInstrumentation
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.FlaisApplicationSpec
 import no.fintlabs.application.api.v1alpha1.Ingress
+import no.fintlabs.application.api.v1alpha1.LogDestination
+import no.fintlabs.application.api.v1alpha1.Logging
 import no.fintlabs.application.api.v1alpha1.Metrics
+import no.fintlabs.application.api.v1alpha1.Prometheus
+import no.fintlabs.application.api.v1alpha1.Tracing
 import no.fintlabs.application.api.v1alpha1.Url
 import no.fintlabs.common.api.v1alpha1.Database
 import no.fintlabs.common.api.v1alpha1.Kafka
@@ -146,13 +152,40 @@ class FlaisApplicationTest {
     fun `FlaisApplicationCrd should have correct prometheus`() {
         createAndApplyFlaisApplication(
             FlaisApplicationSpec(
-                prometheus = Metrics(enabled = true, path = "/metrics/nono", port = "8081"),
+                prometheus = Prometheus(enabled = true, path = "/metrics/nono", port = "8081"),
             ),
         )
         val resFlaisApplication = getFlaisApplication()
         assertEquals(true, resFlaisApplication.spec.prometheus.enabled)
         assertEquals("/metrics/nono", resFlaisApplication.spec.prometheus.path)
         assertEquals("8081", resFlaisApplication.spec.prometheus.port)
+    }
+
+    @Test
+    fun `FlaisApplicationCrd should have correct observability`() {
+        createAndApplyFlaisApplication(
+            FlaisApplicationSpec(
+                observability =
+                    ApplicationObservability(
+                        autoInstrumentation = AutoInstrumentation(enabled = true, runtime = "java"),
+                        logging = Logging(loki = true, enabled = true, destination = LogDestination.LOKI, otel = true),
+                        metrics = Metrics(enabled = true, path = "/metrics", port = "8081", otel = true),
+                        tracing = Tracing(enabled = true),
+                    ),
+            ),
+        )
+        val observability = assertNotNull(getFlaisApplication().spec.observability)
+        assertEquals(true, observability.autoInstrumentation?.enabled)
+        assertEquals("java", observability.autoInstrumentation?.runtime)
+        assertEquals(true, observability.logging?.loki)
+        assertEquals(true, observability.logging?.enabled)
+        assertEquals(LogDestination.LOKI, observability.logging?.destination)
+        assertEquals(true, observability.logging?.otel)
+        assertEquals(true, observability.metrics?.enabled)
+        assertEquals("/metrics", observability.metrics?.path)
+        assertEquals("8081", observability.metrics?.port)
+        assertEquals(true, observability.metrics?.otel)
+        assertEquals(true, observability.tracing?.enabled)
     }
 
     @Test

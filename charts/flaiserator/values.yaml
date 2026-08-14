@@ -43,3 +43,11 @@ volumeMounts: []
 config:
     ingress:
         traefikV3CrdSupport: false
+    observability:
+        otel:
+            enabled: false
+            autoInstrumentation:
+                ebpfEnabled: false
+                sdkInjectionEnabled: false
+                instrumentationConfig: flais-system/apps
+            instrumentation: null

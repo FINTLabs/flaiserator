@@ -10,6 +10,7 @@ import io.javaoperatorsdk.operator.processing.dependent.kubernetes.CRUDKubernete
 import io.javaoperatorsdk.operator.processing.dependent.kubernetes.KubernetesDependent
 import no.fintlabs.application.api.MANAGED_BY_FLAISERATOR_SELECTOR
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
+import no.fintlabs.application.api.v1alpha1.toMetrics
 import no.fintlabs.common.utils.createObjectMeta
 import no.fintlabs.operator.dependent.ReconcileCondition
 
@@ -24,7 +25,7 @@ class PodMetricsDR :
         context: Context<FlaisApplication>,
     ): PodMonitor =
         PodMonitor().apply {
-            val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
+            val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus.toMetrics()
             val portName = if (metrics.port.toInt() == primary.spec.port) "http" else "metrics"
 
             metadata = createObjectMeta(primary)
@@ -48,7 +49,11 @@ class PodMetricsDR :
         primary: FlaisApplication,
         context: Context<FlaisApplication>,
     ): Boolean {
-        val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus
-        return metrics.enabled
+        val otelEnabled =
+            primary.spec.observability
+                ?.metrics
+                ?.otel ?: false
+        val metrics = primary.spec.observability?.metrics ?: primary.spec.prometheus.toMetrics()
+        return metrics.enabled && !otelEnabled
     }
 }

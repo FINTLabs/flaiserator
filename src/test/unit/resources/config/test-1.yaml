@@ -1,2 +1,13 @@
 imagePullSecrets:
   - secret1
+observability:
+  otel:
+    enabled: true
+    autoInstrumentation:
+      ebpfEnabled: true
+      sdkInjectionEnabled: true
+      instrumentationConfig: observability/apps
+    instrumentation:
+      collectorEndpoint: http://otel-collector:4318
+      collectorProtocol: http/protobuf
+      collectorInsecure: true

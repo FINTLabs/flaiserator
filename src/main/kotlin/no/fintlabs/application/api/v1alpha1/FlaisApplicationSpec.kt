@@ -43,7 +43,7 @@ data class FlaisApplicationSpec(
     override val onePassword: OnePassword? = null,
     override val kafka: Kafka = Kafka(),
     override val database: Database = Database(),
-    val prometheus: Metrics = Metrics(),
+    val prometheus: Prometheus = Prometheus(),
     val url: Url = Url(),
     val ingress: Ingress? = null,
     override val observability: ApplicationObservability? = null,
