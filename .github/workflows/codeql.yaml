@@ -33,7 +33,8 @@ jobs:
         with:
           filters: |
             actions:
-              - ".github/**"
+              - ".github/workflows/**"
+              - ".github/actions/**"
             java_kotlin:
               - "src/**"
               - "buildSrc/**"
