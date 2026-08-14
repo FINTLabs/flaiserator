@@ -1,0 +1,30 @@
+name: Chart Test
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - charts/**
+      - scripts/test-helm-charts.sh
+
+concurrency:
+  group: chart-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  helm-chart-tests:
+    name: Run Helm Chart Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v5
+
+      - name: Run Helm Chart Tests
+        run: scripts/test-helm-charts.sh

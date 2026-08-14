@@ -99,7 +99,7 @@ jobs:
         name: Setup Helm
 
       - name: Setup ORAS
-        uses: oras-project/setup-oras@v1
+        uses: oras-project/setup-oras@v2
 
       - name: Login to Flais Helm Repository
         run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm registry login "${{ vars.FLAIS_HELM_ENDPOINT }}" --username "${{ vars.FLAIS_HELM_USERNAME }}" --password-stdin
