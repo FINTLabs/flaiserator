@@ -21,7 +21,10 @@ import no.fintlabs.operator.dependent.ReconcileCondition
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-@KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
+@KubernetesDependent(
+    createResourceOnlyIfNotExistingWithSSA = false,
+    informer = Informer(name = "ingress-v3", labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR),
+)
 class IngressV3DR :
     CRUDKubernetesDependentResource<IngressRoute, FlaisApplication>(IngressRoute::class.java),
     ReconcileCondition<FlaisApplication>,
