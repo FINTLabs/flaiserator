@@ -343,13 +343,13 @@ class DeploymentDR :
         return (logging.enabled ?: true) && logging.destination == LogDestination.LOKI
     }
 
-    private fun ebpfAutoInstrumentationEnabled(primary: FlaisApplication): Boolean {
-        if (!config.observability.otel.autoInstrumentation.ebpfEnabled) return false
-        if (config.observability.otel.autoInstrumentation.sdkInjectionEnabled) return false
-        return primary.spec.observability
+    private fun ebpfAutoInstrumentationEnabled(primary: FlaisApplication): Boolean =
+        config.observability.otel.autoInstrumentation.ebpfEnabled && primary.spec.observability
             ?.autoInstrumentation
-            ?.enabled != true
-    }
+            ?.enabled != true &&
+            primary.spec.observability
+                ?.tracing
+                ?.enabled != true
 
     companion object {
         private const val OTEL_EXPORTER_OTLP_ENDPOINT = "OTEL_EXPORTER_OTLP_ENDPOINT"

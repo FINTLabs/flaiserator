@@ -1470,6 +1470,25 @@ class DeploymentDROtelEbpfTest {
         assertNull(deployment.spec.template.metadata.labels["observability.fintlabs.no/ebpf-auto-instrumentation"])
     }
 
+    @Test
+    fun `should not add ebpf auto instrumentation label for enabled tracing`(context: KubernetesOperatorContext) {
+        val flaisApplication =
+            createTestFlaisApplication().apply {
+                spec =
+                    spec.copy(
+                        observability =
+                            ApplicationObservability(
+                                tracing = Tracing(enabled = true),
+                            ),
+                    )
+            }
+
+        val deployment = context.createAndGetDeployment(flaisApplication)
+
+        assertNotNull(deployment)
+        assertNull(deployment.spec.template.metadata.labels["observability.fintlabs.no/ebpf-auto-instrumentation"])
+    }
+
     private fun KubernetesOperatorContext.createAndGetDeployment(app: FlaisApplication) = createAndGetResource<Deployment>(app)
 
     companion object {
@@ -1488,7 +1507,7 @@ class DeploymentDROtelEbpfTest {
                                             autoInstrumentation =
                                                 OtelAutoInstrumentationConfig(
                                                     ebpfEnabled = true,
-                                                    sdkInjectionEnabled = false,
+                                                    sdkInjectionEnabled = true,
                                                 ),
                                         ),
                                 ),
