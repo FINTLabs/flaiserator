@@ -3,14 +3,18 @@ package no.fintlabs.common.utils
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.module.kotlin.kotlinModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.security.MessageDigest
 
 private val mapper =
-    ObjectMapper()
-        .registerKotlinModule()
+    JsonMapper
+        .builder()
+        .addModule(kotlinModule { })
         .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
         .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+        .build()
 
 fun createHash(map: Map<*, *>): String {
     val json = mapper.writeValueAsBytes(map)
