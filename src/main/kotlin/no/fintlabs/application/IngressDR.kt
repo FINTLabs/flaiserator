@@ -18,11 +18,14 @@ import us.containo.traefik.v1alpha1.ingressroutespec.Routes
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Middlewares
 import us.containo.traefik.v1alpha1.ingressroutespec.routes.Services
 
-@KubernetesDependent(informer = Informer(labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR))
+@KubernetesDependent(
+    createResourceOnlyIfNotExistingWithSSA = false,
+    informer = Informer(name = "ingress-v2", labelSelector = MANAGED_BY_FLAISERATOR_SELECTOR),
+)
 class IngressDR :
     CRUDKubernetesDependentResource<IngressRoute, FlaisApplication>(IngressRoute::class.java),
     ReconcileCondition<FlaisApplication> {
-    override fun name(): String = "ingress"
+    override fun name(): String = "ingress-v2"
 
     override fun desired(
         primary: FlaisApplication,

@@ -1,57 +1,21 @@
-package no.fintlabs.application
+package no.fintlabs.application.ingress
 
-import no.fintlabs.application.Utils.createAndGetResource
-import no.fintlabs.application.Utils.createApplicationKoinTestExtension
-import no.fintlabs.application.Utils.createApplicationKubernetesOperatorExtension
 import no.fintlabs.application.Utils.createTestFlaisApplication
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.application.api.v1alpha1.Ingress
 import no.fintlabs.extensions.KubernetesOperatorContext
-import org.junit.jupiter.api.extension.RegisterExtension
-import us.containo.traefik.v1alpha1.IngressRoute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class IngressDRTest {
-    // region General
+abstract class BaseIngressRouteDRTest {
     @Test
     fun `should create simple IngressRoute`(context: KubernetesOperatorContext) {
-        val flaisApplication =
-            createTestFlaisApplication().apply {
-                spec =
-                    spec.copy(
-                        ingress = Ingress(routes = listOf(Ingress.Route("test.example.com", "/test"))),
-                    )
-            }
+        val ingressRoute = context.createAndGetIngressRouteView(simpleIngressApplication())
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("test", ingressRoute.metadata.name)
-        assertEquals("web", ingressRoute.spec.entryPoints[0])
-        assertEquals(
-            "Host(`test.example.com`) && PathPrefix(`/test`)",
-            ingressRoute.spec.routes[0].match,
-        )
-        assertEquals(
-            8080,
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .port.intVal,
-        )
-        assertEquals(
-            "test",
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .namespace,
-        )
+        assertSimpleIngressRoute(ingressRoute, context.namespace)
     }
 
     @Test
@@ -77,56 +41,19 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
-        assertEquals("test", ingressRoute.metadata.name)
-        assertEquals("web", ingressRoute.spec.entryPoints[0])
-        assertEquals(
+        assertEquals("test", ingressRoute.name)
+        assertEquals("web", ingressRoute.entryPoints[0])
+        assertRoute(
+            ingressRoute.routes[0],
+            context.namespace,
             "Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`) && Headers(`header`, `value`)",
-            ingressRoute.spec.routes[0].match,
         )
-        assertEquals(
-            8080,
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .port.intVal,
-        )
-        assertEquals(
-            "test",
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .namespace,
-        )
-        assertEquals(
-            "middleware_1",
-            ingressRoute.spec.routes[0]
-                .middlewares[0]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[0]
-                .middlewares[0]
-                .namespace,
-        )
-        assertEquals(
-            "middleware_2",
-            ingressRoute.spec.routes[0]
-                .middlewares[1]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[0]
-                .middlewares[1]
-                .namespace,
-        )
+        assertEquals("middleware_1", ingressRoute.routes[0].middlewares[0].name)
+        assertEquals(context.namespace, ingressRoute.routes[0].middlewares[0].namespace)
+        assertEquals("middleware_2", ingressRoute.routes[0].middlewares[1].name)
+        assertEquals(context.namespace, ingressRoute.routes[0].middlewares[1].namespace)
     }
 
     @Test
@@ -146,53 +73,17 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
-
-        assertEquals(
+        assertRoute(
+            ingressRoute.routes[0],
+            context.namespace,
             "Host(`test.example.com`) && PathPrefix(`/test`)",
-            ingressRoute.spec.routes[0].match,
         )
-        assertEquals(
-            8080,
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .port.intVal,
-        )
-        assertEquals(
-            "test",
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .name,
-        )
-        assertEquals(
+        assertRoute(
+            ingressRoute.routes[1],
             context.namespace,
-            ingressRoute.spec.routes[0]
-                .services[0]
-                .namespace,
-        )
-
-        assertEquals(
             "Host(`test2.example.com`) && PathPrefix(`/test2`)",
-            ingressRoute.spec.routes[1].match,
-        )
-        assertEquals(
-            8080,
-            ingressRoute.spec.routes[1]
-                .services[0]
-                .port.intVal,
-        )
-        assertEquals(
-            "test",
-            ingressRoute.spec.routes[1]
-                .services[0]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[1]
-                .services[0]
-                .namespace,
         )
     }
 
@@ -217,58 +108,23 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
-
-        assertEquals(
-            "middleware_1",
-            ingressRoute.spec.routes[0]
-                .middlewares[0]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[0]
-                .middlewares[0]
-                .namespace,
-        )
-        assertEquals(
-            "middleware_2",
-            ingressRoute.spec.routes[0]
-                .middlewares[1]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[0]
-                .middlewares[1]
-                .namespace,
-        )
-        assertEquals(
-            "middleware_3",
-            ingressRoute.spec.routes[0]
-                .middlewares[2]
-                .name,
-        )
-        assertEquals(
-            context.namespace,
-            ingressRoute.spec.routes[0]
-                .middlewares[2]
-                .namespace,
-        )
+        assertEquals("middleware_1", ingressRoute.routes[0].middlewares[0].name)
+        assertEquals(context.namespace, ingressRoute.routes[0].middlewares[0].namespace)
+        assertEquals("middleware_2", ingressRoute.routes[0].middlewares[1].name)
+        assertEquals(context.namespace, ingressRoute.routes[0].middlewares[1].namespace)
+        assertEquals("middleware_3", ingressRoute.routes[0].middlewares[2].name)
+        assertEquals(context.namespace, ingressRoute.routes[0].middlewares[2].namespace)
     }
 
     @Test
     fun `should not create IngressRoute`(context: KubernetesOperatorContext) {
-        val flaisApplication = createTestFlaisApplication()
+        val ingressRoute = context.createAndGetIngressRouteView(createTestFlaisApplication())
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
         assertNull(ingressRoute)
     }
 
-    // endregion
-
-    // region Rules
     @Test
     fun `should create IngressRoute with multiple queries`(context: KubernetesOperatorContext) {
         val flaisApplication =
@@ -289,11 +145,11 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
         assertEquals(
             "Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`, `key2=value2`)",
-            ingressRoute.spec.routes[0].match,
+            ingressRoute.routes[0].match,
         )
     }
 
@@ -317,11 +173,11 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
         assertEquals(
             "Host(`test.example.com`) && PathPrefix(`/test`) && Headers(`header`, `value`) && Headers(`header2`, `value2`)",
-            ingressRoute.spec.routes[0].match,
+            ingressRoute.routes[0].match,
         )
     }
 
@@ -336,11 +192,11 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
         assertEquals(
             "Host(`test.example.com`) && PathPrefix(`/{path:test.*}`)",
-            ingressRoute.spec.routes[0].match,
+            ingressRoute.routes[0].match,
         )
     }
 
@@ -364,11 +220,11 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
         assertEquals(
             "Host(`test.example.com`) && PathPrefix(`/test`) && HeadersRegexp(`header`, `value.*`)",
-            ingressRoute.spec.routes[0].match,
+            ingressRoute.routes[0].match,
         )
     }
 
@@ -393,11 +249,11 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
         assertEquals(
             "Host(`test.example.com`) && PathPrefix(`/{name:test.*}`) && Query(`key=value`) && HeadersRegexp(`header`, `value.*`)",
-            ingressRoute.spec.routes[0].match,
+            ingressRoute.routes[0].match,
         )
     }
 
@@ -423,22 +279,13 @@ class IngressDRTest {
                     )
             }
 
-        val ingressRoute = context.createAndGetIngressRoute(flaisApplication)
+        val ingressRoute = context.createAndGetIngressRouteView(flaisApplication)
         assertNotNull(ingressRoute)
         assertEquals(
             "Host(`test.example.com`) && PathPrefix(`/test`) && Query(`key=value`, `key2=value2`) && HeadersRegexp(`header`, `value.*`) && Headers(`header2`, `value2`)",
-            ingressRoute.spec.routes[0].match,
+            ingressRoute.routes[0].match,
         )
     }
 
-    // endregion
-
-    private fun KubernetesOperatorContext.createAndGetIngressRoute(app: FlaisApplication) = createAndGetResource<IngressRoute>(app)
-
-    companion object {
-        @RegisterExtension val koinTestExtension = createApplicationKoinTestExtension()
-
-        @RegisterExtension
-        val kubernetesOperatorExtension = createApplicationKubernetesOperatorExtension()
-    }
+    protected abstract fun KubernetesOperatorContext.createAndGetIngressRouteView(app: FlaisApplication): IngressRouteView?
 }
