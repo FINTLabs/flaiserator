@@ -10,7 +10,7 @@ logstashEncoder = "8.1"
 jackson = "2.22.2"
 logunit = "2.0.0"
 http4k = "6.58.0.0"
-micrometer = "1.17.0"
+micrometer = "1.17.1"
 ktlint = "1.8.0"
 spotless = "8.9.0"
 
