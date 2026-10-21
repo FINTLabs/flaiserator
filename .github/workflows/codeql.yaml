@@ -24,11 +24,11 @@ jobs:
       actions: ${{ steps.filter.outputs.actions }}
       java_kotlin: ${{ steps.filter.outputs.java_kotlin }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
 
-      - uses: dorny/paths-filter@v4
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: filter
         with:
           filters: |
@@ -51,15 +51,15 @@ jobs:
       run_analysis: ${{ github.event_name == 'schedule' || needs.detect-changes.outputs.actions == 'true' }}
     steps:
       - if: env.run_analysis == 'true'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@793b778da9c9275a0f276522b27cb5fc14bba279
         with:
           languages: actions
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@793b778da9c9275a0f276522b27cb5fc14bba279
         with:
           category: /language:actions
 
@@ -71,21 +71,21 @@ jobs:
       run_analysis: ${{ github.event_name == 'schedule' || needs.detect-changes.outputs.java_kotlin == 'true' }}
     steps:
       - if: env.run_analysis == 'true'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - if: env.run_analysis == 'true'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
         with:
           distribution: temurin
           java-version: 21
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@793b778da9c9275a0f276522b27cb5fc14bba279
         with:
           languages: java-kotlin
           build-mode: autobuild
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@793b778da9c9275a0f276522b27cb5fc14bba279
         with:
           category: /language:java-kotlin

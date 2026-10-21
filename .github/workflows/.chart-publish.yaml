@@ -34,7 +34,7 @@ jobs:
       should_publish: ${{ steps.publish-check.outputs.should_publish }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
 
@@ -91,15 +91,15 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
 
-      - uses: azure/setup-helm@v5
+      - uses: azure/setup-helm@59b1c81c6280f5abebb1fb1bc585696daa7dfb42
         name: Setup Helm
 
       - name: Setup ORAS
-        uses: oras-project/setup-oras@v2
+        uses: oras-project/setup-oras@005458ad77f1c8facd38a094e4af2e69e5607ff4
 
       - name: Login to Flais Helm Repository
         run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm registry login "${{ vars.FLAIS_HELM_ENDPOINT }}" --username "${{ vars.FLAIS_HELM_USERNAME }}" --password-stdin
@@ -110,7 +110,7 @@ jobs:
       - name: Get latest app tag
         if: inputs.set_app_version && inputs.app_version == ''
         id: app-tag
-        uses: actions/github-script@v9
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553
         with:
           script: |
             const tagPattern = /^\d{8}-[a-f0-9]{7}$/;
