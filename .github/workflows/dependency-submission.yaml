@@ -24,4 +24,4 @@ jobs:
           java-version: 21
 
       - name: Generate and submit dependency graph
-        uses: gradle/actions/dependency-submission@b9bee63ef481cc545e4517ec730544a4d8b1dfa0
+        uses: gradle/actions/dependency-submission@3f5f9adaf7d9fecd50b5935e54106014257a94e6
