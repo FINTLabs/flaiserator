@@ -54,12 +54,12 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/init@793b778da9c9275a0f276522b27cb5fc14bba279
+        uses: github/codeql-action/init@0911ee96d2d6c8def97122c36c5cadd93829a4b4
         with:
           languages: actions
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/analyze@793b778da9c9275a0f276522b27cb5fc14bba279
+        uses: github/codeql-action/analyze@0911ee96d2d6c8def97122c36c5cadd93829a4b4
         with:
           category: /language:actions
 
@@ -74,18 +74,18 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - if: env.run_analysis == 'true'
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: temurin
           java-version: 21
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/init@793b778da9c9275a0f276522b27cb5fc14bba279
+        uses: github/codeql-action/init@0911ee96d2d6c8def97122c36c5cadd93829a4b4
         with:
           languages: java-kotlin
           build-mode: autobuild
 
       - if: env.run_analysis == 'true'
-        uses: github/codeql-action/analyze@793b778da9c9275a0f276522b27cb5fc14bba279
+        uses: github/codeql-action/analyze@0911ee96d2d6c8def97122c36c5cadd93829a4b4
         with:
           category: /language:java-kotlin
