@@ -30,13 +30,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: temurin
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@b9bee63ef481cc545e4517ec730544a4d8b1dfa0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
 
       - name: Run Spotless Check
         run: ./gradlew :spotlessCheck --stacktrace --configuration-cache
@@ -49,19 +49,19 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: temurin
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@b9bee63ef481cc545e4517ec730544a4d8b1dfa0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
 
       - name: Run Unit Tests
         run: ./gradlew :test --stacktrace --configuration-cache
 
       - name: Unit Test Reports
-        uses: dorny/test-reporter@314489e487ddee6222e16a61677dfb5c5a530b52
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a
         if: always()
         with:
           name: Unit Test Reports
@@ -80,13 +80,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: temurin
           java-version: 21
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@b9bee63ef481cc545e4517ec730544a4d8b1dfa0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
 
       - name: Run Integration Tests
         env:
@@ -94,7 +94,7 @@ jobs:
         run: ./gradlew :integrationTest --stacktrace --configuration-cache
 
       - name: Integration Test Reports
-        uses: dorny/test-reporter@314489e487ddee6222e16a61677dfb5c5a530b52
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a
         if: always()
         with:
           name: Integration Test Reports - Kubernetes ${{ matrix.kubernetes }}
