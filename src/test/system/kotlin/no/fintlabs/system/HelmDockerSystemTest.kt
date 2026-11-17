@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
+import java.io.ByteArrayOutputStream
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -84,18 +86,7 @@ class HelmDockerSystemTest {
         await.atMost(timeout).untilAsserted {
             assertEquals(
                 "flaiserator-system-test",
-                cluster.kubectl(
-                    "-n",
-                    namespace,
-                    "exec",
-                    "deployment/system-test-app",
-                    "--",
-                    "wget",
-                    "-T",
-                    "10",
-                    "-qO-",
-                    "http://system-test-app:8080",
-                ),
+                applicationResponse(namespace),
             )
         }
 
@@ -140,6 +131,30 @@ class HelmDockerSystemTest {
             assertNull(cronJob.get())
             assertNull(job.get())
         }
+    }
+
+    private fun applicationResponse(namespace: String): String {
+        val pod =
+            client
+                .pods()
+                .inNamespace(namespace)
+                .withLabel("app", "system-test-app")
+                .list()
+                .items
+                .single()
+        val output = ByteArrayOutputStream()
+        val errors = ByteArrayOutputStream()
+        client
+            .pods()
+            .inNamespace(namespace)
+            .withName(pod.metadata.name)
+            .writingOutput(output)
+            .writingError(errors)
+            .exec("wget", "-T", "10", "-qO-", "http://system-test-app:8080")
+            .use { execution ->
+                assertEquals(0, execution.exitCode().get(30, TimeUnit.SECONDS), errors.toString(Charsets.UTF_8))
+            }
+        return output.toString(Charsets.UTF_8).trim()
     }
 
     private fun applyFixture(

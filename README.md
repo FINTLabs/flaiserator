@@ -38,8 +38,8 @@ The entire specification for the manifest is documented [TODO]().
 
 ## System tests
 
-Run `./gradlew systemTest` from a checkout with Java 21, Docker,
-Helm, and kubectl installed. Docker must be running. The first run downloads
+Run `./gradlew systemTest` from a checkout with Java 21, Docker, and Helm installed.
+Docker must be running. The first run downloads
 Gradle dependencies and container images; allow a few minutes and enough Docker
 memory for a Kubernetes node and the operator (4 GiB is a useful starting point).
 
@@ -50,7 +50,10 @@ K3s cluster, imports the locally built images, and installs both the CRD chart a
 operator chart using Helm. It then creates a minimal `Application` and one-shot `Job`, checks the
 application's readiness and HTTP response through its Service, checks successful
 job completion and output, and verifies that deleting the custom resources removes
-their generated workloads.
+their generated workloads. Image builds use Testcontainers' `ImageFromDockerfile`
+and image export uses its docker-java client. Fabric8 handles Kubernetes resources,
+readiness, pod execution, and diagnostics. Helm is the only external CLI used by
+the system tests.
 
 The test installs the external CRD definitions from `src/main/resources/kubernetes`
 because the operator watches those APIs. It does not install their controllers or
