@@ -75,6 +75,6 @@ XML to `build/test-results/systemTest/`, and the HTML report to
 `build/reports/tests/systemTest/index.html`. Use Gradle's `--info` option to show
 successful test output.
 
-The **System Test** GitHub Actions workflow runs the same Gradle suite for relevant pull
+The **App Test** GitHub Actions workflow runs the same Gradle suite for relevant pull
 request changes and can also be triggered manually. The faster chart rendering
 checks remain available through `scripts/test-helm-charts.sh`.
