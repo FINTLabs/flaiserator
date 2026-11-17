@@ -80,7 +80,12 @@ testing {
         val integrationTest by
             registering(JvmTestSuite::class) {
                 sources {
-                    kotlin { srcDirs(layout.projectDirectory.dir("src/test/integration/kotlin")) }
+                    kotlin {
+                        srcDirs(
+                            layout.projectDirectory.dir("src/test/integration/kotlin"),
+                            layout.projectDirectory.dir("src/test/common/kotlin"),
+                        )
+                    }
                     resources { setSrcDirs(listOf("src/test/integration/resources")) }
                 }
 
@@ -99,7 +104,12 @@ testing {
         val systemTest by
             registering(JvmTestSuite::class) {
                 sources {
-                    kotlin { srcDirs(layout.projectDirectory.dir("src/test/system/kotlin")) }
+                    kotlin {
+                        srcDirs(
+                            layout.projectDirectory.dir("src/test/system/kotlin"),
+                            layout.projectDirectory.dir("src/test/common/kotlin"),
+                        )
+                    }
                     resources { setSrcDirs(listOf("src/test/system/resources")) }
                 }
 
@@ -179,7 +189,7 @@ tasks {
     }
 
     named<Test>("systemTest") {
-        description = "Build the Docker image and test Helm installation and reconciliation in Kind"
+        description = "Build the Docker image and test Helm installation and reconciliation in K3s"
         dependsOn(jar)
         maxParallelForks = 1
         systemProperty("systemTest.projectRoot", layout.projectDirectory.asFile.absolutePath)

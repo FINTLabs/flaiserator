@@ -5,6 +5,9 @@ import io.fabric8.kubernetes.client.Config
 import io.fabric8.kubernetes.client.KubernetesClient
 import io.fabric8.kubernetes.client.KubernetesClientBuilder
 import io.fabric8.kubernetes.client.utils.KubernetesSerialization
+import no.fintlabs.extensions.TcK3s
+import org.testcontainers.k3s.K3sContainer
+import org.testcontainers.utility.MountableFile
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -16,10 +19,11 @@ class SystemTestCluster {
     private val root = Path.of(System.getProperty("systemTest.projectRoot", ".")).toAbsolutePath()
     private val workdir = Files.createTempDirectory("flaiserator-system-test-")
     private val kubeconfig = workdir.resolve("kubeconfig")
-    private val clusterName = "flaiserator-test-${UUID.randomUUID().toString().take(8)}"
+    private val clusterKey = "system-${UUID.randomUUID().toString().take(8)}"
+    private val clusterName = "${TcK3s.CONTAINER_NAME_PREFIX}$clusterKey"
     private val artifacts = Files.createDirectories(root.resolve("build/system-test/$clusterName"))
     private var commandNumber = 0
-    private var clusterCreated = false
+    private var k3s: K3sContainer? = null
     lateinit var client: KubernetesClient
         private set
 
@@ -38,31 +42,22 @@ class SystemTestCluster {
             )
         }
 
-        // Mark before creation so teardown also handles a partially created cluster.
-        clusterCreated = true
+        val archive = workdir.resolve("images.tar")
         command(
-            "kind",
-            "create",
-            "cluster",
-            "--name",
-            clusterName,
-            "--kubeconfig",
-            kubeconfig.toString(),
-            "--image",
-            System.getenv("KIND_NODE_IMAGE") ?: "kindest/node:v1.35.0",
-            "--wait",
-            "180s",
-        )
-        command(
-            "kind",
-            "load",
-            "docker-image",
-            "--name",
-            clusterName,
+            "docker",
+            "save",
+            "--output",
+            archive.toString(),
             "flaiserator:system-test",
             "flaiserator-test-application:system-test",
             "flaiserator-test-job:system-test",
         )
+        val container = TcK3s.scoped(clusterKey, reuse = false).also { k3s = it }
+        Files.writeString(kubeconfig, container.kubeConfigYaml)
+        container.copyFileToContainer(MountableFile.forHostPath(archive), "/tmp/system-test-images.tar")
+        val imported = container.execInContainer("ctr", "--namespace", "k8s.io", "images", "import", "/tmp/system-test-images.tar")
+        Files.writeString(artifacts.resolve("image-import.log"), imported.stdout + imported.stderr)
+        check(imported.exitCode == 0) { "Could not import test images into K3s: ${imported.stderr}" }
         client =
             KubernetesClientBuilder()
                 .withConfig(Config.fromKubeconfig(kubeconfig.readText()))
@@ -117,7 +112,10 @@ class SystemTestCluster {
 
     fun close() {
         try {
-            if (clusterCreated) {
+            k3s?.let { container ->
+                runCatching { Files.writeString(artifacts.resolve("k3s.log"), container.logs) }
+            }
+            if (::client.isInitialized) {
                 // Preserve diagnostics even if setup or an assertion failed.
                 val diagnostics =
                     listOf(
@@ -131,16 +129,14 @@ class SystemTestCluster {
                 diagnostics.forEach { args ->
                     runCatching { kubectl(*args.toTypedArray()) }.onFailure { System.err.println(it.message) }
                 }
-                runCatching { command("kind", "export", "logs", "--name", clusterName, artifacts.resolve("kind").toString()) }
                 println("System test diagnostics: $artifacts")
             }
         } finally {
-            if (::client.isInitialized) client.close()
-            if (clusterCreated && System.getenv("KEEP_CLUSTER").toBoolean()) {
-                println("Cluster kept: $clusterName\nKubeconfig: $kubeconfig")
-            } else {
+            try {
+                if (::client.isInitialized) client.close()
+            } finally {
                 try {
-                    if (clusterCreated) command("kind", "delete", "cluster", "--name", clusterName)
+                    TcK3s.stopScoped(clusterKey)
                 } finally {
                     check(workdir.toFile().deleteRecursively()) { "Could not delete $workdir" }
                 }
@@ -158,7 +154,6 @@ class SystemTestCluster {
                 .redirectOutput(output.toFile())
                 .apply {
                     environment()["KUBECONFIG"] = kubeconfig.toString()
-                    environment()["KIND_EXPERIMENTAL_PROVIDER"] = "docker"
                 }.start()
         try {
             check(process.waitFor(Duration.ofMinutes(5).toMillis(), TimeUnit.MILLISECONDS)) {

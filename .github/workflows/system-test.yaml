@@ -17,6 +17,7 @@ on:
       - gradle/**
       - gradlew
       - src/test/system/**
+      - src/test/common/**
       - .github/workflows/system-test.yaml
 
 concurrency:
@@ -47,14 +48,9 @@ jobs:
       - name: Setup Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310
 
-      - name: Setup Kind
-        run: |
-          mkdir -p "$RUNNER_TEMP/bin"
-          curl --fail --location --retry 3 https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64 -o "$RUNNER_TEMP/bin/kind"
-          chmod +x "$RUNNER_TEMP/bin/kind"
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-
       - name: Run system tests
+        env:
+          TEST_KUBERNETES_VERSION: v1.35.1
         run: ./gradlew --no-daemon systemTest --stacktrace
 
       - name: Upload system test diagnostics

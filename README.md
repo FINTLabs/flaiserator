@@ -38,16 +38,16 @@ The entire specification for the manifest is documented [TODO]().
 
 ## System tests
 
-Run `./gradlew systemTest` from a checkout with Java 21, Docker, Kind v0.33.0,
+Run `./gradlew systemTest` from a checkout with Java 21, Docker,
 Helm, and kubectl installed. Docker must be running. The first run downloads
 Gradle dependencies and container images; allow a few minutes and enough Docker
 memory for a Kubernetes node and the operator (4 GiB is a useful starting point).
 
 The Kotlin/JUnit suite lives in `src/test/system/kotlin`, with workload fixtures in
 `src/test/system/resources`. Gradle builds the application JARs first. JUnit's
-`@BeforeAll` builds the repository's Dockerfile, creates a
-disposable Kind cluster, and installs both the CRD chart and operator chart using
-Helm. It then creates a minimal `Application` and one-shot `Job`, checks the
+`@BeforeAll` builds the repository's Dockerfile, starts a disposable Testcontainers
+K3s cluster, imports the locally built images, and installs both the CRD chart and
+operator chart using Helm. It then creates a minimal `Application` and one-shot `Job`, checks the
 application's readiness and HTTP response through its Service, checks successful
 job completion and output, and verifies that deleting the custom resources removes
 their generated workloads.
@@ -56,23 +56,21 @@ The test installs the external CRD definitions from `src/main/resources/kubernet
 because the operator watches those APIs. It does not install their controllers or
 exercise Kafka, PostgreSQL, 1Password, ingress routing, or telemetry delivery.
 
-The cluster uses its own temporary kubeconfig and JUnit's `@AfterAll` deletes it on
-success or failure, including failed setup. Each workload test uses a separate
-namespace and can run independently. This suite is opt-in and is not part of the
-default `test` or `check` tasks. Every invocation runs against a fresh cluster.
-Diagnostics are saved to `build/system-test/`, JUnit XML to
-`build/test-results/systemTest/`, and the HTML report to
-`build/reports/tests/systemTest/index.html`. To inspect a failed cluster, run:
+Integration and system tests share `TcK3s.kt` from `src/test/common/kotlin`.
+System tests request a uniquely named scoped container with reuse disabled, and
+JUnit's `@AfterAll` stops only that container, including on test failure. The suite
+uses its own temporary kubeconfig. Each workload test uses a separate namespace
+and can run independently. This suite is opt-in and is not part of the default
+`test` or `check` tasks. Every invocation runs against a fresh cluster.
 
-```bash
-KEEP_CLUSTER=true ./gradlew systemTest
-```
+Like the integration tests, use `TEST_KUBERNETES_VERSION` (for example `v1.35.1`)
+and `TEST_KUBERNETES_IMAGE` (default `rancher/k3s`) to select the K3s image. The
+shared helper appends `-k3s1` to the version; when unset it uses `latest`.
 
-The test output prints the cluster name and kubeconfig path. Use
-`KUBECONFIG=<printed-path> kubectl ...` to inspect it, then
-`kind delete cluster --name <printed-name>` when finished. Use Gradle's `--info`
-option to show successful test output. Override `KIND_NODE_IMAGE` to test a
-different Kubernetes version.
+Diagnostics, including K3s container logs, are saved to `build/system-test/`, JUnit
+XML to `build/test-results/systemTest/`, and the HTML report to
+`build/reports/tests/systemTest/index.html`. Use Gradle's `--info` option to show
+successful test output.
 
 The **System Test** GitHub Actions workflow runs the same Gradle suite for relevant pull
 request changes and can also be triggered manually. The faster chart rendering

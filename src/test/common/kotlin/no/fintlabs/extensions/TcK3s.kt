@@ -17,16 +17,22 @@ object TcK3s {
 
     fun global(): K3sContainer = globalContainer
 
-    fun scoped(key: String): K3sContainer = scopedContainers.computeIfAbsent(key) { createContainer(key) }
+    fun scoped(
+        key: String,
+        reuse: Boolean = true,
+    ): K3sContainer = scopedContainers.computeIfAbsent(key) { createContainer(key, reuse) }
 
     fun stopScoped(key: String) {
         scopedContainers.remove(key)?.stop()
     }
 
-    private fun createContainer(name: String): K3sContainer =
+    private fun createContainer(
+        name: String,
+        reuse: Boolean = true,
+    ): K3sContainer =
         K3sContainer(DockerImageName.parse("$kubernetesImage:$kubernetesVersion")).apply {
             withCreateContainerCmdModifier { it.withName("$CONTAINER_NAME_PREFIX$name") }
-            withReuse(true)
+            withReuse(reuse)
             start()
         }
 
