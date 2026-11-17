@@ -1,6 +1,7 @@
 package no.fintlabs
 
 import com.sksamuel.hoplite.ConfigLoaderBuilder
+import com.sksamuel.hoplite.ExperimentalHoplite
 import com.sksamuel.hoplite.PropertySource
 import com.sksamuel.hoplite.sources.EnvironmentVariablesPropertySource
 import org.slf4j.LoggerFactory
@@ -39,11 +40,13 @@ data class Config(
 
 private val logger = LoggerFactory.getLogger("Config")
 
+@OptIn(ExperimentalHoplite::class)
 fun loadConfig(vararg resources: PropertySource): Config {
     logger.trace("Loading config...")
     val configLoader =
         ConfigLoaderBuilder
             .default()
+            .withExplicitSealedTypes()
             .addPropertySources(
                 listOf(
                     EnvironmentVariablesPropertySource(
