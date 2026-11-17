@@ -16,8 +16,7 @@ on:
       - gradle.properties
       - gradle/**
       - gradlew
-      - scripts/test-system.sh
-      - tests/system/**
+      - src/test/system/**
       - .github/workflows/system-test.yaml
 
 concurrency:
@@ -56,13 +55,16 @@ jobs:
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       - name: Run system tests
-        run: scripts/test-system.sh
+        run: ./gradlew --no-daemon systemTest --stacktrace
 
       - name: Upload system test diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: system-test-diagnostics
-          path: build/system-test/
+          path: |
+            build/system-test/
+            build/test-results/systemTest/
+            build/reports/tests/systemTest/
           if-no-files-found: ignore
           retention-days: 7

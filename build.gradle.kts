@@ -94,6 +94,25 @@ testing {
                     }
                 }
             }
+
+        @Suppress("UnstableApiUsage", "unused")
+        val systemTest by
+            registering(JvmTestSuite::class) {
+                sources {
+                    kotlin { srcDirs(layout.projectDirectory.dir("src/test/system/kotlin")) }
+                    resources { setSrcDirs(listOf("src/test/system/resources")) }
+                }
+
+                dependencies {
+                    implementation(project())
+                }
+
+                configurations {
+                    named("${name}Implementation").configure {
+                        extendsFrom(configurations.testImplementation.get())
+                    }
+                }
+            }
     }
 }
 
@@ -157,6 +176,15 @@ tasks {
             events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
             exceptionFormat = TestExceptionFormat.FULL
         }
+    }
+
+    named<Test>("systemTest") {
+        description = "Build the Docker image and test Helm installation and reconciliation in Kind"
+        dependsOn(jar)
+        maxParallelForks = 1
+        systemProperty("systemTest.projectRoot", layout.projectDirectory.asFile.absolutePath)
+        outputs.upToDateWhen { false }
+        outputs.doNotCacheIf("System tests exercise a live Kubernetes cluster") { true }
     }
 
     val tcEnv =

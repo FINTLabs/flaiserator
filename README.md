@@ -38,12 +38,14 @@ The entire specification for the manifest is documented [TODO]().
 
 ## System tests
 
-Run `scripts/test-system.sh` from a checkout with Java 21, Docker, Kind v0.33.0,
+Run `./gradlew systemTest` from a checkout with Java 21, Docker, Kind v0.33.0,
 Helm, and kubectl installed. Docker must be running. The first run downloads
 Gradle dependencies and container images; allow a few minutes and enough Docker
 memory for a Kubernetes node and the operator (4 GiB is a useful starting point).
 
-The script builds the application JARs and the repository's Dockerfile, creates a
+The Kotlin/JUnit suite lives in `src/test/system/kotlin`, with workload fixtures in
+`src/test/system/resources`. Gradle builds the application JARs first. JUnit's
+`@BeforeAll` builds the repository's Dockerfile, creates a
 disposable Kind cluster, and installs both the CRD chart and operator chart using
 Helm. It then creates a minimal `Application` and one-shot `Job`, checks the
 application's readiness and HTTP response through its Service, checks successful
@@ -54,19 +56,24 @@ The test installs the external CRD definitions from `src/main/resources/kubernet
 because the operator watches those APIs. It does not install their controllers or
 exercise Kafka, PostgreSQL, 1Password, ingress routing, or telemetry delivery.
 
-The cluster uses its own temporary kubeconfig and is deleted on success or failure.
-Diagnostics are saved to `build/system-test/`. To inspect a failed cluster, run:
+The cluster uses its own temporary kubeconfig and JUnit's `@AfterAll` deletes it on
+success or failure, including failed setup. Each workload test uses a separate
+namespace and can run independently. This suite is opt-in and is not part of the
+default `test` or `check` tasks. Every invocation runs against a fresh cluster.
+Diagnostics are saved to `build/system-test/`, JUnit XML to
+`build/test-results/systemTest/`, and the HTML report to
+`build/reports/tests/systemTest/index.html`. To inspect a failed cluster, run:
 
 ```bash
-KEEP_CLUSTER=true scripts/test-system.sh
+KEEP_CLUSTER=true ./gradlew systemTest
 ```
 
-The script prints the cluster name and kubeconfig path. Use
+The test output prints the cluster name and kubeconfig path. Use
 `KUBECONFIG=<printed-path> kubectl ...` to inspect it, then
-`kind delete cluster --name <printed-name>` when finished. You can override
-`KIND_NODE_IMAGE`, `SYSTEM_TEST_TIMEOUT` (default `180s` per wait), and
-`SYSTEM_TEST_ARTIFACTS` (diagnostics directory).
+`kind delete cluster --name <printed-name>` when finished. Use Gradle's `--info`
+option to show successful test output. Override `KIND_NODE_IMAGE` to test a
+different Kubernetes version.
 
-The **System Test** GitHub Actions workflow runs the same script for relevant pull
+The **System Test** GitHub Actions workflow runs the same Gradle suite for relevant pull
 request changes and can also be triggered manually. The faster chart rendering
 checks remain available through `scripts/test-helm-charts.sh`.
