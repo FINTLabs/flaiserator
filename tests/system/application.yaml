@@ -1,0 +1,21 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: Application
+metadata:
+  name: system-test-app
+  labels:
+    app.kubernetes.io/name: system-test-app
+spec:
+  orgId: system-test.example
+  image: flaiserator-test-application:system-test
+  imagePullPolicy: Never
+  port: 8080
+  replicas: 1
+  probes:
+    readiness:
+      path: /
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      memory: 32Mi

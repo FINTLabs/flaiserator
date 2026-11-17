@@ -1,0 +1,68 @@
+name: System Test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - charts/**
+      - src/main/**
+      - build.gradle.kts
+      - settings.gradle.kts
+      - buildSrc/**
+      - gradle.properties
+      - gradle/**
+      - gradlew
+      - scripts/test-system.sh
+      - tests/system/**
+      - .github/workflows/system-test.yaml
+
+concurrency:
+  group: system-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  system-test:
+    name: Test Docker image and Helm installation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup Java
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6
+
+      - name: Setup Helm
+        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310
+
+      - name: Setup Kind
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl --fail --location --retry 3 https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64 -o "$RUNNER_TEMP/bin/kind"
+          chmod +x "$RUNNER_TEMP/bin/kind"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Run system tests
+        run: scripts/test-system.sh
+
+      - name: Upload system test diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: system-test-diagnostics
+          path: build/system-test/
+          if-no-files-found: ignore
+          retention-days: 7
