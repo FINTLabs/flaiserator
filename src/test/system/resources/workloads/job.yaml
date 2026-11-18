@@ -1,0 +1,18 @@
+apiVersion: fintlabs.no/v1alpha1
+kind: Job
+metadata:
+  name: system-test-job
+  labels:
+    app.kubernetes.io/name: system-test-job
+spec:
+  orgId: system-test.example
+  image: flaiserator-test-job:system-test
+  imagePullPolicy: Never
+  backoffLimit: 0
+  activeDeadlineSeconds: 60
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      memory: 32Mi
