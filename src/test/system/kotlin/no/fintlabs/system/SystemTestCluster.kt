@@ -8,11 +8,14 @@ import io.fabric8.kubernetes.client.utils.KubernetesSerialization
 import no.fintlabs.application.api.v1alpha1.FlaisApplication
 import no.fintlabs.extensions.TcK3s
 import no.fintlabs.job.api.v1alpha1.FlaisJob
+import org.awaitility.kotlin.await
 import org.testcontainers.k3s.K3sContainer
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
 import java.util.UUID
-import java.util.concurrent.TimeUnit
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class SystemTestCluster {
     private val root = Path.of(System.getProperty("systemTest.projectRoot", ".")).toAbsolutePath()
@@ -60,11 +63,21 @@ class SystemTestCluster {
 
     private fun waitForCrds(names: List<String>) {
         names.forEach { name ->
-            client.apiextensions().v1().customResourceDefinitions().withName(name).waitUntilCondition(
-                { crd -> crd?.status?.conditions?.any { it.type == "Established" && it.status == "True" } == true },
-                3,
-                TimeUnit.MINUTES,
-            )
+            val definition =
+                client
+                    .apiextensions()
+                    .v1()
+                    .customResourceDefinitions()
+                    .withName(name)
+            // Read current API state on each attempt instead of depending on informer delivery during startup.
+            await.alias("CRD $name to become Established").pollInterval(Duration.ofSeconds(1)).atMost(Duration.ofMinutes(3)).untilAsserted {
+                val crd = assertNotNull(definition.get(), "CRD $name does not exist")
+                val conditions = crd.status?.conditions.orEmpty()
+                assertTrue(
+                    conditions.any { it.type == "Established" && it.status == "True" },
+                    "CRD $name is not Established; conditions: $conditions",
+                )
+            }
         }
     }
 
@@ -87,6 +100,13 @@ class SystemTestCluster {
     private fun captureDiagnostics() {
         k3s?.let { container -> save("k3s.log") { container.logs } }
         if (!::client.isInitialized) return
+        save("crds.yaml") {
+            client
+                .apiextensions()
+                .v1()
+                .customResourceDefinitions()
+                .list()
+        }
         save("pods.yaml") { client.pods().inAnyNamespace().list() }
         save("events.yaml") {
             client
