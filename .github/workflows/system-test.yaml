@@ -59,6 +59,16 @@ jobs:
           TEST_KUBERNETES_VERSION: ${{ matrix.kubernetes }}
         run: ./gradlew --no-daemon spotlessCheck systemTest --stacktrace
 
+      - name: Upload system test diagnostics
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: failure()
+        with:
+          name: system-test-diagnostics-${{ matrix.kubernetes }}
+          path: |
+            build/system-test/
+            build/test-results/systemTest/
+          retention-days: 7
+
       - name: System Test Reports
         uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a
         if: always()
