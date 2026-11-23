@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/java21-debian13:nonroot@sha256:e331c420616bf4771ac477c1c5b6cfc92de3d07a7d59bb15235bf2a7955ae881
+FROM gcr.io/distroless/java21-debian13:nonroot@sha256:128bd878463537eef7771b50fecf68faace9089f654a2d233f1c4f344e6817d9
 ENV TZ="Europe/Oslo"
 WORKDIR /app
 COPY build/libs/*-*.jar ./
