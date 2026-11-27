@@ -36,41 +36,6 @@ FLAIS resources for external system provisioning:
 
 The entire specification for the manifest is documented [TODO]().
 
-## Logging and trace correlation
-
-The operator writes one JSON object per line to stdout by default (`LOGBACK_APPENDER=STDOUT_JSON`).
-Logs include `timestamp`, `level`, `class`, `thread`, `message`, exception stack traces,
-and MDC fields such as the reconciliation `correlationId`.
-
-With OpenTelemetry Java auto-instrumentation enabled, logs emitted within an active
-span also contain top-level `trace_id` and `span_id` fields. The Java agent supplies
-these through MDC; Logstash Encoder includes them automatically. Logs outside a
-trace omit those fields. The reconciliation `correlationId` remains a separate
-identifier for resource updates.
-
-To instrument the operator through an installed OpenTelemetry Operator, configure
-its Helm values with the appropriate `Instrumentation` resource:
-
-```yaml
-podAnnotations:
-  instrumentation.opentelemetry.io/inject-java: flais-system/apps
-podLabels:
-  observability.fintlabs.no/loki: "true"
-```
-
-Adjust the annotation to match your installed `Instrumentation` resource and ensure
-logs are collected into Loki. The chart's `config.observability.otel` settings configure
-managed applications; the pod annotation above instruments FLAISerator itself.
-
-Set `LOGBACK_APPENDER=STDOUT` for local plain-text output, which also includes
-`trace_id` and `span_id` when present. No tracing dependency or appender wrapper is
-required when using the Java agent. Without instrumentation, this logging configuration
-does not create spans or trace IDs.
-
-To verify correlation, find a log with `trace_id` in Loki and follow its trace link,
-or open a trace in Tempo and select **View logs**. See the
-[Novari trace/log correlation guide](https://docs.novari.cloud.nais.io/observability/tracing/how-to/correlate-traces-logs/).
-
 ## System tests
 
 Run `./gradlew systemTest` from a checkout with Java 21, Docker, and Helm installed.

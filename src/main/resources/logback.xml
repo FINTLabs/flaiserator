@@ -7,15 +7,13 @@
         <then>
             <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
                 <encoder>
-                    <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} trace_id=%X{trace_id} span_id=%X{span_id} - %message%n</pattern>
+                    <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %message%n</pattern>
                 </encoder>
             </appender>
         </then>
         <else>
             <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
                 <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                    <!-- Includes trace_id and span_id injected by the OpenTelemetry Java agent. -->
-                    <includeMdc>true</includeMdc>
                     <fieldNames>
                         <timestamp>timestamp</timestamp>
                         <version>version</version>
