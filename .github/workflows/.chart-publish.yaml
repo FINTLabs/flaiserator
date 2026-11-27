@@ -95,11 +95,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: azure/setup-helm@v5.0.1
+      - uses: azure/setup-helm@v5.1.0
         name: Setup Helm
 
       - name: Setup ORAS
-        uses: oras-project/setup-oras@v2.0.3
+        uses: oras-project/setup-oras@v2.0.4
 
       - name: Login to Flais Helm Repository
         run: echo "${{ secrets.FLAIS_HELM_PASSWORD }}" | helm registry login "${{ vars.FLAIS_HELM_ENDPOINT }}" --username "${{ vars.FLAIS_HELM_USERNAME }}" --password-stdin

@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v7.0.1
 
       - name: Setup Helm
-        uses: azure/setup-helm@v5.0.1
+        uses: azure/setup-helm@v5.1.0
 
       - name: Run Helm Chart Tests
         run: scripts/test-helm-charts.sh
