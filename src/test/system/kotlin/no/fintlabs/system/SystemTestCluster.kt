@@ -41,7 +41,8 @@ class SystemTestCluster {
         val crdChart = workdir.resolve("flaiserator-crd")
         check(root.resolve("charts/flaiserator-crd").toFile().copyRecursively(crdChart.toFile()))
         helm.buildDependencies(crdChart)
-        helm.install("flaiserator-crd", crdChart, "flais-system")
+        // Helm can miss CRD establishment updates; poll the API directly after installation.
+        helm.install("flaiserator-crd", crdChart, "flais-system", wait = false)
         waitForCrds(listOf("applications.fintlabs.no", "jobs.fintlabs.no"))
         helm.install(
             "flaiserator",
