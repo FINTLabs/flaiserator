@@ -20,6 +20,7 @@ class Helm(
         chart: Path,
         namespace: String,
         values: Map<String, String> = emptyMap(),
+        wait: Boolean = true,
     ) {
         run(
             listOf(
@@ -29,10 +30,9 @@ class Helm(
                 "--namespace",
                 namespace,
                 "--create-namespace",
-                "--wait",
                 "--timeout",
                 "180s",
-            ) + values.flatMap { (key, value) -> listOf("--set-string", "$key=$value") },
+            ) + (if (wait) listOf("--wait") else emptyList()) + values.flatMap { (key, value) -> listOf("--set-string", "$key=$value") },
         )
     }
 
