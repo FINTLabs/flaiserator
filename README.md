@@ -78,3 +78,22 @@ successful test output.
 The **System Test** GitHub Actions workflow runs the same Gradle suite for relevant pull
 request changes and can also be triggered manually. The faster chart rendering
 checks remain available through `scripts/test-helm-charts.sh`.
+
+## GitHub Actions dependencies
+
+Workflows reference exact semver tags. GitHub's native lockfile at
+`.github/workflows/actions.lock` records the resolved commits for each workflow.
+Dependabot updates the action versions and matching lockfile entries together.
+
+After adding a workflow or changing an action version, run these commands from
+the repository root with an authenticated GitHub CLI:
+
+```sh
+gh extension install github/gh-actions-lock # once
+gh actions-lock
+gh actions-lock --verify
+```
+
+Commit the workflow changes and regenerated lockfile together. The
+**Verify Actions Lockfile** workflow checks the lockfile on pull requests and
+pushes to `main`. For an offline coverage check, use `gh actions-lock --verify-local`.
